@@ -75,8 +75,32 @@ async function drawGraph(filePath) {
     app.stage.addChild(priceLabel);
 
 
-    let currentIndex = 0;
+    const stackLabel = new PIXI.Text("", textStyle);
+    stackLabel.anchor.set(0.5,1.0)
+    app.stage.addChild(stackLabel);
+
+
+
+    let yourCoins = 0
+    let yourFiat = 1000
     const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
+
+
+    addEventListener('pointerup', () => {
+        let price = parseFloat(parsedData[Math.min(currentIndex + maxVisiblePoints, parsedData.length)-1].price) 
+        if (yourCoins > 0) {
+            yourFiat = yourCoins * price
+            yourCoins = 0
+        } else {
+            yourCoins = yourFiat / price
+            yourFiat = 0
+        }
+    })
+
+
+
+
+    let currentIndex = 0;
     let elapsedTime = 0; // Zeitverfolgung
     const intervalInMilliSeconds = 100; // Intervall in Sekunden
     app.ticker.add((deltaTime) => {
@@ -85,6 +109,9 @@ async function drawGraph(filePath) {
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = 0*app.renderer.width
         textStyle.fontSize = (app.renderer.width / 1080)*36
+
+        stackLabel.y = app.renderer.height;
+        stackLabel.x = 0.5*app.renderer.width
 
         graph.clear();
         graph.setStrokeStyle(2, 0xff0000, 1);
@@ -97,11 +124,11 @@ async function drawGraph(filePath) {
             maxPrice = Math.max(maxPrice, parseFloat(parsedData[i].price))
             minPrice = Math.min(minPrice, parseFloat(parsedData[i].price))
         }
-        console.log(minPrice, maxPrice)
+       
         for (let i = currentIndex; i < Math.min(currentIndex + maxVisiblePoints, parsedData.length); i++) {
             const x = startX + (i - currentIndex) * stepX;
             const price = (parseFloat(parsedData[i].price) || 0)
-            const y = app.renderer.height-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+            const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             if (i === currentIndex) {
                 graph.moveTo(x, y);
             } else {
@@ -114,14 +141,14 @@ async function drawGraph(filePath) {
             }
         }
         graph.stroke({ width: 1, color: 0x00FF00 });
-        //console.log(graph)
 
         const currentDate = parsedData[currentIndex]?.snapped_at;
         if (currentDate) {
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
         }
 
-        
+        stackLabel.text = (yourCoins > 0 && (yourCoins.toFixed(8) + ' BTC ') || '') + (yourFiat > 0 && (yourFiat.toFixed(2) + ' USD') || '')
+       
 
         if (elapsedTime >= intervalInMilliSeconds) {
             currentIndex = (currentIndex + 1) % parsedData.length; // Nächster Tag
