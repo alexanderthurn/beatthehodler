@@ -1,3 +1,16 @@
+function formatCurrency(amount, currency, fractionDigits) {
+
+    const locale = navigator.language;
+
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits,
+    }).format(amount);
+
+}
+
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseCSV(csvString) {
     const lines = csvString.split('\n'); // Aufteilen nach Zeilen
@@ -77,7 +90,7 @@ async function drawGraph(filePath) {
     app.stage.addChild(dateLabel);
 
     const priceLabel = new PIXI.Text("", textStyle);
-    priceLabel.anchor.set(0.5,1.0)
+    priceLabel.anchor.set(1.5,1.0)
     app.stage.addChild(priceLabel);
 
     const bitcoinSvg = await PIXI.Assets.load({
@@ -85,6 +98,7 @@ async function drawGraph(filePath) {
     });
     const bitcoinLogo = new PIXI.Sprite(bitcoinSvg);
     app.stage.addChild(bitcoinLogo);
+    bitcoinLogo.anchor.set(0.5,0.5)
 
     const stackLabel = new PIXI.Text("", textStyle);
     stackLabel.anchor.set(0.5,1.0)
@@ -113,7 +127,7 @@ async function drawGraph(filePath) {
 
     let currentIndex = 0;
     let elapsedTime = 0; // Zeitverfolgung
-    const intervalInMilliSeconds = 100; // Intervall in Sekunden
+    const intervalInMilliSeconds = 50; // Intervall in Sekunden
     app.ticker.add((deltaTime) => {
         elapsedTime += deltaTime.elapsedMS;
 
@@ -147,7 +161,7 @@ async function drawGraph(filePath) {
                 if (i === Math.min(currentIndex + maxVisiblePoints, parsedData.length)-1) {
                     priceLabel.y = y
                     priceLabel.x = x
-                    priceLabel.text = Math.floor(price) + " $"
+                    priceLabel.text = formatCurrency(Math.floor(price), 'USD', 0)
                     bitcoinLogo.x = x
                     bitcoinLogo.y = y
                     bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
@@ -161,12 +175,13 @@ async function drawGraph(filePath) {
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
         }
 
-        stackLabel.text = (yourCoins > 0 && (yourCoins.toFixed(8) + ' BTC ') || '') + (yourFiat > 0 && (yourFiat.toFixed(2) + ' $') || '')
-       
-
+        stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 2) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', 2) || '')
+        
         if (elapsedTime >= intervalInMilliSeconds) {
-            currentIndex = (currentIndex + 1) % parsedData.length; // Nächster Tag
-
+            currentIndex = (currentIndex + 1) 
+            if (currentIndex >= parsedData.length) {
+                currentIndex = parsedData.length -1
+            } 
             elapsedTime = 0; // Timer zurücksetzen
         }
     });
