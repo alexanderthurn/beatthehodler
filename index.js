@@ -147,7 +147,7 @@ async function drawGraph(filePath) {
                 if (i === Math.min(currentIndex + maxVisiblePoints, parsedData.length)-1) {
                     priceLabel.y = y
                     priceLabel.x = x
-                    priceLabel.text = Math.floor(price) + "$"
+                    priceLabel.text = Math.floor(price) + " $"
                     bitcoinLogo.x = x
                     bitcoinLogo.y = y
                     bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
@@ -161,7 +161,7 @@ async function drawGraph(filePath) {
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
         }
 
-        stackLabel.text = (yourCoins > 0 && (yourCoins.toFixed(8) + ' BTC ') || '') + (yourFiat > 0 && (yourFiat.toFixed(2) + ' USD') || '')
+        stackLabel.text = (yourCoins > 0 && (yourCoins.toFixed(8) + ' BTC ') || '') + (yourFiat > 0 && (yourFiat.toFixed(2) + ' $') || '')
        
 
         if (elapsedTime >= intervalInMilliSeconds) {
