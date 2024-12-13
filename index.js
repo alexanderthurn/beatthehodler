@@ -1,13 +1,34 @@
-function formatCurrency(amount, currency, fractionDigits) {
+function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
 
     const locale = navigator.language;
 
-    let formatted = new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: currency,
-        minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits,
-    }).format(amount);
+    let formatted;
+
+    if (abbreviate) {
+        const suffixes = ['', 'K', 'M', 'B', 'T']; // Tausend, Million, Milliarde, Billion
+        let tier = Math.floor(Math.log10(Math.abs(amount)) / 3); // Bestimmen des Tiers
+        tier = Math.min(tier, suffixes.length - 1); // Begrenzen auf verfügbare Suffixe
+
+        const scale = Math.pow(10, tier * 3); // Skalieren der Zahl
+        const scaledValue = amount / scale;
+
+        formatted = new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits,
+        }).format(scaledValue);
+
+        // Suffix hinzufügen
+        formatted += suffixes[tier];
+    } else {
+        formatted = new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits,
+        }).format(amount);
+    }
 
     // Bitcoin-Symbol hinzufügen, falls die Währung BTC ist
     if (currency === 'BTC') {
@@ -15,7 +36,6 @@ function formatCurrency(amount, currency, fractionDigits) {
     }
 
     return formatted;
-
 }
 
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
@@ -146,7 +166,7 @@ async function drawGraph(filePath) {
 
 
 
-    let currentIndex = 0 + parsedData.length-500 +maxVisiblePoints
+    let currentIndex = 0 + 0*(parsedData.length-500) +maxVisiblePoints
     let elapsedTime = 0; // Zeitverfolgung
     const intervalInMilliSeconds = 1; // Intervall in Sekunden
     
@@ -190,7 +210,7 @@ async function drawGraph(filePath) {
                 if (i === currentIndex) {
                     priceLabel.y = 0.9*priceLabel.y + 0.1*y
                     priceLabel.x = 0.9*priceLabel.x + 0.1*x
-                    priceLabel.text = formatCurrency(price, 'USD', price >= 1000 ? 0 : 2)
+                    priceLabel.text = formatCurrency(price, 'USD', price >= 100 ? 0 : 2, true)
                     bitcoinLogo.x = x
                     bitcoinLogo.y = y 
                     bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
