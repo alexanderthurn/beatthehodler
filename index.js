@@ -149,7 +149,6 @@ async function drawGraph(filePath) {
         wordWrap: false,
         wordWrapWidth: 440,
     });
-    
     const dateLabel = new PIXI.Text("", textStyle);
     dateLabel.anchor.set(0.0,0.0)
     app.stage.addChild(dateLabel);
@@ -274,6 +273,7 @@ async function drawGraph(filePath) {
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
         textStyle.fontSize = Math.max(32, (Math.max(app.renderer.height, app.renderer.width) / 1080)*36)
+        textStyle.stroke.width = textStyle.fontSize*0.2
 
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
