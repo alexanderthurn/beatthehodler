@@ -185,21 +185,40 @@ async function drawGraph(filePath) {
             price: price, 
             coins: yourCoins, 
             fiat: yourFiat,
-            sprite: new PIXI.Sprite(bitcoinSvg)
+            sprite: null,
+            container: new PIXI.Container()
         }
-        app.stage.addChild(trade.sprite);
-        trade.sprite.anchor.set(0.5,0.5)
-        trades.push(trade)
+       
         
         if (yourCoins > 0) {
+            trade.sold = 'BTC'
+            trade.bought = 'USD'
             trade.coins = yourCoins
             yourFiat = yourCoins * price
             yourCoins = 0
+            trade.sprite = new PIXI.Graphics()
+            trade.sprite.circle(0, 0, 50);
+            trade.sprite.fill(0x00FF00, 1);
+
+            const label = new PIXI.Text("$", textStyle);
+            label.anchor.set(0.5,0.5)
+            trade.container.addChild(trade.sprite)
+            trade.container.addChild(label);
         } else {
+            trade.sold = 'USD'
+            trade.bought = 'BTC'
             trade.fiat = yourFiat
             yourCoins = yourFiat / price
             yourFiat = 0
+            trade.sprite = new PIXI.Sprite(bitcoinSvg)
+            trade.sprite.anchor.set(0.5,0.5)
+            trade.container.addChild(trade.sprite)
+
         }
+
+
+        trades.push(trade)
+        app.stage.addChild(trade.container)
         paused = buyPaused
     })
 
@@ -214,14 +233,17 @@ async function drawGraph(filePath) {
 
   
         let gradientWidth = app.renderer.width; 
-       let gradientHeight = app.renderer.height * 0.5; 
-       let gradientFill = new PIXI.FillGradient(0, gradientHeight, 0, app.renderer.height);
-       gradientFill.addColorStop(0, 0x000000);
-       gradientFill.addColorStop(0.7, 0x000000);
-       if (yourCoins > 0) {
+       let gradientHeight = app.renderer.height; 
+       let gradientFill = new PIXI.FillGradient(0, 0, 0, gradientHeight);
+
+       if (yourCoins > 0) {       
+        gradientFill.addColorStop(0, 0x000000);
+        gradientFill.addColorStop(0.9 + Math.sin(elapsedTime*0.1)*0.05, 0x333333);
         gradientFill.addColorStop(1, 0xffa500);
        } else {
-        gradientFill.addColorStop(1, 0x00a500);
+        gradientFill.addColorStop(0, 0x1E90FF);
+        gradientFill.addColorStop(0.9 + Math.sin(elapsedTime*0.1)*0.05, 0x1E90FF);
+        gradientFill.addColorStop(1, 0x32CD32);
        }
         graphic1.clear();
         graphic1.drawRect(0, app.renderer.height - gradientHeight,gradientWidth, gradientHeight).fill(gradientFill);
@@ -289,8 +311,8 @@ async function drawGraph(filePath) {
         graph.stroke({ width: Math.max(app.renderer.height,app.renderer.width)*0.005, color: 0x00FF00 });
 
         trades.forEach((trade) => {
-            trade.sprite.x =  (trade.index - (currentIndex-maxVisiblePoints)) * stepX;
-            trade.sprite.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+            trade.container.x =  (trade.index - (currentIndex-maxVisiblePoints)) * stepX;
+            trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, trade.coins / 10.0)))
          })
 
