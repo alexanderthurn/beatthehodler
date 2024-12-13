@@ -9,18 +9,29 @@ function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
         let tier = Math.floor(Math.log10(Math.abs(amount)) / 3); // Bestimmen des Tiers
         tier = Math.min(tier, suffixes.length - 1); // Begrenzen auf verfügbare Suffixe
 
-        const scale = Math.pow(10, tier * 3); // Skalieren der Zahl
-        const scaledValue = amount / scale;
+        // Abkürzung erst ab zwei Stellen verwenden
+        if (tier >= 1) { // Abkürzen ab Tausender (1 oder mehr Stellen im Tier)
+            const scale = Math.pow(10, tier * 3); // Skalieren der Zahl
+            const scaledValue = amount / scale;
 
-        formatted = new Intl.NumberFormat(locale, {
-            style: 'currency',
-            currency: currency,
-            minimumFractionDigits: fractionDigits,
-            maximumFractionDigits: fractionDigits,
-        }).format(scaledValue);
+            formatted = new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: fractionDigits,
+                maximumFractionDigits: fractionDigits,
+            }).format(scaledValue);
 
-        // Suffix hinzufügen
-        formatted += suffixes[tier];
+            // Suffix hinzufügen
+            formatted += suffixes[tier];
+        } else {
+            // Keine Abkürzung, normale Formatierung
+            formatted = new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: fractionDigits,
+                maximumFractionDigits: fractionDigits,
+            }).format(amount);
+        }
     } else {
         formatted = new Intl.NumberFormat(locale, {
             style: 'currency',
@@ -37,6 +48,9 @@ function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
 
     return formatted;
 }
+
+
+
 
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseCSV(csvString) {
@@ -149,8 +163,9 @@ async function drawGraph(filePath) {
     let yourCoins = 0
     let yourFiat = 1000
     let paused = Number.MAX_VALUE
+    let buyPaused = 2000
     const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
-
+    
     addEventListener('pointerup', () => {
         let price = parsedData[currentIndex].price
         if (yourCoins > 0) {
@@ -160,25 +175,39 @@ async function drawGraph(filePath) {
             yourCoins = yourFiat / price
             yourFiat = 0
         }
-        paused = 1000
+        paused = buyPaused
     })
 
 
 
 
-    let currentIndex = 0 + 0*(parsedData.length-500) +maxVisiblePoints
-    let elapsedTime = 0; // Zeitverfolgung
-    const intervalInMilliSeconds = 1; // Intervall in Sekunden
-    
-
+    let currentIndex = 0
+    const gameDurationMilliseconds = 90000
+    const factorMilliSeconds =  parsedData.length / gameDurationMilliseconds; // Intervall in Sekunden
+    let elapsedTime = maxVisiblePoints/factorMilliSeconds; // Zeitverfolgung
+   
     app.ticker.add((deltaTime) => {
-
+        console.log(currentIndex, paused, elapsedTime)
         if (paused <= 0) {
-            elapsedTime += deltaTime.elapsedMS;
+            elapsedTime += deltaTime.elapsedMS*factorMilliSeconds;
         } else {
             paused -= deltaTime.elapsedMS
+            if (paused < buyPaused) {
+                elapsedTime += deltaTime.elapsedMS*factorMilliSeconds*(Math.max(0,(buyPaused-paused*2)/buyPaused));
+            }
         }
-       
+
+        currentIndex = Math.floor(elapsedTime)
+
+        if (currentIndex > parsedData.length-1) {
+            currentIndex = parsedData.length -1
+        } 
+
+        if (currentIndex < maxVisiblePoints) {
+            currentIndex = maxVisiblePoints
+        } 
+
+        
 
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = 0*app.renderer.width
@@ -208,9 +237,9 @@ async function drawGraph(filePath) {
             } else {
                 graph.lineTo(x, y);
                 if (i === currentIndex) {
-                    priceLabel.y = 0.9*priceLabel.y + 0.1*y
+                    priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
                     priceLabel.x = 0.9*priceLabel.x + 0.1*x
-                    priceLabel.text = formatCurrency(price, 'USD', price >= 100 ? 0 : 2, true)
+                    priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
                     bitcoinLogo.x = x
                     bitcoinLogo.y = y 
                     bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
@@ -225,14 +254,6 @@ async function drawGraph(filePath) {
         }
 
         stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
-        
-        if (elapsedTime >= intervalInMilliSeconds) {
-            currentIndex = (currentIndex + 1) 
-            if (currentIndex > parsedData.length-1) {
-                currentIndex = parsedData.length -1
-            } 
-            elapsedTime = 0; // Timer zurücksetzen
-        }
     });
 }
 
