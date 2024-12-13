@@ -108,11 +108,11 @@ async function drawGraph(filePath) {
 
     let yourCoins = 0
     let yourFiat = 1000
+    let paused = Number.MAX_VALUE
     const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
 
-
     addEventListener('pointerup', () => {
-        let price = parsedData[Math.min(currentIndex + maxVisiblePoints, parsedData.length)-1].price
+        let price = parsedData[currentIndex].price
         if (yourCoins > 0) {
             yourFiat = yourCoins * price
             yourCoins = 0
@@ -120,16 +120,25 @@ async function drawGraph(filePath) {
             yourCoins = yourFiat / price
             yourFiat = 0
         }
+        paused = 1000
     })
 
 
 
 
-    let currentIndex = 0;
+    let currentIndex = 0 + parsedData.length-500 +maxVisiblePoints
     let elapsedTime = 0; // Zeitverfolgung
-    const intervalInMilliSeconds = 50; // Intervall in Sekunden
+    const intervalInMilliSeconds = 1; // Intervall in Sekunden
+    
+
     app.ticker.add((deltaTime) => {
-        elapsedTime += deltaTime.elapsedMS;
+
+        if (paused <= 0) {
+            elapsedTime += deltaTime.elapsedMS;
+        } else {
+            paused -= deltaTime.elapsedMS
+        }
+       
 
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = 0*app.renderer.width
@@ -142,28 +151,28 @@ async function drawGraph(filePath) {
         graph.setStrokeStyle(2, 0xff0000, 1);
 
         let startX = 0;
-        const stepX = app.renderer.width / maxVisiblePoints * 0.75;
+        const stepX = app.renderer.width / maxVisiblePoints * 0.85;
         let maxPrice = 0
         let minPrice = Number.MAX_VALUE
-        for (let i = currentIndex; i < Math.min(currentIndex + maxVisiblePoints, parsedData.length); i++) {
+        for (let i = currentIndex-maxVisiblePoints; i <= currentIndex; i++) {
             maxPrice = Math.max(maxPrice, parsedData[i].price)
             minPrice = Math.min(minPrice, parsedData[i].price)
         }
        
-        for (let i = currentIndex; i < Math.min(currentIndex + maxVisiblePoints, parsedData.length); i++) {
-            const x = startX + (i - currentIndex) * stepX;
+        for (let i = currentIndex-maxVisiblePoints; i <= currentIndex; i++) {
+            const x = startX + (i - (currentIndex-maxVisiblePoints)) * stepX;
             const price = parsedData[i].price
             const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            if (i === currentIndex) {
+            if (i === currentIndex-maxVisiblePoints) {
                 graph.moveTo(x, y);
             } else {
                 graph.lineTo(x, y);
-                if (i === Math.min(currentIndex + maxVisiblePoints, parsedData.length)-1) {
+                if (i === currentIndex) {
                     priceLabel.y = y
                     priceLabel.x = x
                     priceLabel.text = formatCurrency(Math.floor(price), 'USD', 0)
                     bitcoinLogo.x = x
-                    bitcoinLogo.y = y
+                    bitcoinLogo.y = y 
                     bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
                 }
             }
@@ -179,7 +188,7 @@ async function drawGraph(filePath) {
         
         if (elapsedTime >= intervalInMilliSeconds) {
             currentIndex = (currentIndex + 1) 
-            if (currentIndex >= parsedData.length) {
+            if (currentIndex > parsedData.length-1) {
                 currentIndex = parsedData.length -1
             } 
             elapsedTime = 0; // Timer zurücksetzen
