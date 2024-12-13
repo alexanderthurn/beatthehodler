@@ -2,12 +2,19 @@ function formatCurrency(amount, currency, fractionDigits) {
 
     const locale = navigator.language;
 
-    return new Intl.NumberFormat(locale, {
+    let formatted = new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currency,
         minimumFractionDigits: fractionDigits,
         maximumFractionDigits: fractionDigits,
     }).format(amount);
+
+    // Bitcoin-Symbol hinzufügen, falls die Währung BTC ist
+    if (currency === 'BTC') {
+        formatted = formatted.replace(currency, "\u20BF"); // Symbol manuell ersetzen
+    }
+
+    return formatted;
 
 }
 
@@ -69,11 +76,24 @@ async function drawGraph(filePath) {
     const graph = new PIXI.Graphics();
     app.stage.addChild(graph);
 
+
+    PIXI.Assets.addBundle('fonts', {
+        XoloniumBold: {
+            src: './XoloniumBold-xKZO.ttf',
+            data: { family: 'Xolonium Bold' },
+        },
+        Xolonium: {
+            src: './Xolonium-pn4D.ttf',
+            data: { family: 'Xolonium' },
+        },
+    });
+
+    await PIXI.Assets.loadBundle('fonts')
+
     const textStyle = new PIXI.TextStyle({
-        fontFamily: 'Arial',
+        fontFamily: 'Xolonium',
+        fontStyle: 'Bold',
         fontSize: 36,
-        fontStyle: 'italic',
-        fontWeight: 'bold',
         stroke: { color: '#fff', width: 5, join: 'round' },
         dropShadow: {
             color: '#000',
@@ -81,7 +101,7 @@ async function drawGraph(filePath) {
             angle: Math.PI / 6,
             distance: 6,
         },
-        wordWrap: true,
+        wordWrap: false,
         wordWrapWidth: 440,
     });
     
@@ -168,9 +188,9 @@ async function drawGraph(filePath) {
             } else {
                 graph.lineTo(x, y);
                 if (i === currentIndex) {
-                    priceLabel.y = y
-                    priceLabel.x = x
-                    priceLabel.text = formatCurrency(Math.floor(price), 'USD', 0)
+                    priceLabel.y = 0.9*priceLabel.y + 0.1*y
+                    priceLabel.x = 0.9*priceLabel.x + 0.1*x
+                    priceLabel.text = formatCurrency(price, 'USD', price >= 1000 ? 0 : 2)
                     bitcoinLogo.x = x
                     bitcoinLogo.y = y 
                     bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
@@ -184,7 +204,7 @@ async function drawGraph(filePath) {
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
         }
 
-        stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 2) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', 2) || '')
+        stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
         
         if (elapsedTime >= intervalInMilliSeconds) {
             currentIndex = (currentIndex + 1) 
