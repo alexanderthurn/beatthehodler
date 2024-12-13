@@ -1,13 +1,21 @@
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseCSV(csvString) {
     const lines = csvString.split('\n'); // Aufteilen nach Zeilen
-    const headers = lines[0].split(','); // Erste Zeile als Header verwenden
-
+    const headers = lines[0].split(',').map(h => h.trim()); // Erste Zeile als Header verwenden
+    function parseDate(dateString) {
+        // ISO-Format sicherstellen
+        return new Date(dateString.replace(" ", "T").replace(" UTC", "Z"));
+    }
     // Restliche Zeilen in Objekte umwandeln
-    const data = lines.slice(1).map(line => {
+    const data = lines.slice(1).filter(line => line?.length > 0).map(line => {
         const values = line.split(',');
         return headers.reduce((obj, header, index) => {
-            obj[header.trim()] = values[index] ? values[index].trim() : null;
+            obj[header] = values[index] ? values[index].trim() : null;
+            if (header === 'snapped_at') {
+                obj[header] = parseDate(obj[header])
+            } else  if (header === 'price') {
+                obj[header] = parseFloat(obj[header])
+            } 
             return obj;
         }, {});
     });
@@ -68,12 +76,15 @@ async function drawGraph(filePath) {
     dateLabel.anchor.set(0.0,0.0)
     app.stage.addChild(dateLabel);
 
-
-
     const priceLabel = new PIXI.Text("", textStyle);
-    priceLabel.anchor.set(0.0,0.0)
+    priceLabel.anchor.set(0.5,1.0)
     app.stage.addChild(priceLabel);
 
+    const bitcoinSvg = await PIXI.Assets.load({
+        src: './bitcoin.png',
+    });
+    const bitcoinLogo = new PIXI.Sprite(bitcoinSvg);
+    app.stage.addChild(bitcoinLogo);
 
     const stackLabel = new PIXI.Text("", textStyle);
     stackLabel.anchor.set(0.5,1.0)
@@ -87,7 +98,7 @@ async function drawGraph(filePath) {
 
 
     addEventListener('pointerup', () => {
-        let price = parseFloat(parsedData[Math.min(currentIndex + maxVisiblePoints, parsedData.length)-1].price) 
+        let price = parsedData[Math.min(currentIndex + maxVisiblePoints, parsedData.length)-1].price
         if (yourCoins > 0) {
             yourFiat = yourCoins * price
             yourCoins = 0
@@ -108,7 +119,7 @@ async function drawGraph(filePath) {
 
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = 0*app.renderer.width
-        textStyle.fontSize = (app.renderer.width / 1080)*36
+        textStyle.fontSize = Math.max(32, (Math.max(app.renderer.height, app.renderer.width) / 1080)*36)
 
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
@@ -117,17 +128,17 @@ async function drawGraph(filePath) {
         graph.setStrokeStyle(2, 0xff0000, 1);
 
         let startX = 0;
-        const stepX = app.renderer.width / maxVisiblePoints * 0.9;
+        const stepX = app.renderer.width / maxVisiblePoints * 0.75;
         let maxPrice = 0
         let minPrice = Number.MAX_VALUE
         for (let i = currentIndex; i < Math.min(currentIndex + maxVisiblePoints, parsedData.length); i++) {
-            maxPrice = Math.max(maxPrice, parseFloat(parsedData[i].price))
-            minPrice = Math.min(minPrice, parseFloat(parsedData[i].price))
+            maxPrice = Math.max(maxPrice, parsedData[i].price)
+            minPrice = Math.min(minPrice, parsedData[i].price)
         }
        
         for (let i = currentIndex; i < Math.min(currentIndex + maxVisiblePoints, parsedData.length); i++) {
             const x = startX + (i - currentIndex) * stepX;
-            const price = (parseFloat(parsedData[i].price) || 0)
+            const price = parsedData[i].price
             const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             if (i === currentIndex) {
                 graph.moveTo(x, y);
@@ -137,6 +148,9 @@ async function drawGraph(filePath) {
                     priceLabel.y = y
                     priceLabel.x = x
                     priceLabel.text = Math.floor(price) + "$"
+                    bitcoinLogo.x = x
+                    bitcoinLogo.y = y
+                    bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
                 }
             }
         }
