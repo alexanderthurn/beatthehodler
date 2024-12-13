@@ -104,8 +104,19 @@ async function drawGraph(filePath) {
         resolution: window.devicePixelRatio || 1,
         autoDensity: true
     });
-    await app.init({ background: '#1099bb', resizeTo: window });
+    await app.init({ background: '#000', resizeTo: window });
     document.body.appendChild(app.canvas);
+
+    let gradientWidth = app.renderer.width; 
+    let gradientHeight = app.renderer.height * 0.5; 
+    let gradientFill = new PIXI.FillGradient(0, gradientHeight, 0, app.renderer.height);
+    gradientFill.addColorStop(0, 0x000000);
+    gradientFill.addColorStop(0.7, 0x000000);
+    gradientFill.addColorStop(1, 0xffa500);
+    const graphic1 = new PIXI.Graphics().drawRect(0, app.renderer.height - gradientHeight, gradientWidth, gradientHeight).fill(gradientFill);
+    app.stage.addChild(graphic1);
+
+
 
     const graph = new PIXI.Graphics();
     app.stage.addChild(graph);
@@ -200,6 +211,23 @@ async function drawGraph(filePath) {
     let elapsedTime = maxVisiblePoints; // Zeitverfolgung
    
     app.ticker.add((deltaTime) => {
+
+  
+        let gradientWidth = app.renderer.width; 
+       let gradientHeight = app.renderer.height * 0.5; 
+       let gradientFill = new PIXI.FillGradient(0, gradientHeight, 0, app.renderer.height);
+       gradientFill.addColorStop(0, 0x000000);
+       gradientFill.addColorStop(0.7, 0x000000);
+       if (yourCoins > 0) {
+        gradientFill.addColorStop(1, 0xffa500);
+       } else {
+        gradientFill.addColorStop(1, 0x00a500);
+       }
+        graphic1.clear();
+        graphic1.drawRect(0, app.renderer.height - gradientHeight,gradientWidth, gradientHeight).fill(gradientFill);
+
+        
+
         if (paused <= 0) {
             elapsedTime += deltaTime.elapsedMS*factorMilliSeconds;
         } else {
@@ -229,7 +257,6 @@ async function drawGraph(filePath) {
         stackLabel.x = 0.5*app.renderer.width
 
         graph.clear();
-        graph.setStrokeStyle(2, 0xff0000, 1);
 
         const stepX = app.renderer.width / maxVisiblePoints * 0.85;
         let maxPrice = 0
@@ -259,7 +286,7 @@ async function drawGraph(filePath) {
 
            
         }
-        graph.stroke({ width: 1, color: 0x00FF00 });
+        graph.stroke({ width: Math.max(app.renderer.height,app.renderer.width)*0.005, color: 0x00FF00 });
 
         trades.forEach((trade) => {
             trade.sprite.x =  (trade.index - (currentIndex-maxVisiblePoints)) * stepX;
