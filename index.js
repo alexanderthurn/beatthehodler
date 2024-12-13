@@ -165,13 +165,27 @@ async function drawGraph(filePath) {
     let paused = Number.MAX_VALUE
     let buyPaused = 2000
     const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
+    const trades = []
     
     addEventListener('pointerup', () => {
         let price = parsedData[currentIndex].price
+        let trade =  {
+            index: currentIndex, 
+            price: price, 
+            coins: yourCoins, 
+            fiat: yourFiat,
+            sprite: new PIXI.Sprite(bitcoinSvg)
+        }
+        app.stage.addChild(trade.sprite);
+        trade.sprite.anchor.set(0.5,0.5)
+        trades.push(trade)
+        
         if (yourCoins > 0) {
+            trade.coins = yourCoins
             yourFiat = yourCoins * price
             yourCoins = 0
         } else {
+            trade.fiat = yourFiat
             yourCoins = yourFiat / price
             yourFiat = 0
         }
@@ -180,14 +194,12 @@ async function drawGraph(filePath) {
 
 
 
-
     let currentIndex = 0
     const gameDurationMilliseconds = 90000
     const factorMilliSeconds =  parsedData.length / gameDurationMilliseconds; // Intervall in Sekunden
-    let elapsedTime = maxVisiblePoints/factorMilliSeconds; // Zeitverfolgung
+    let elapsedTime = maxVisiblePoints; // Zeitverfolgung
    
     app.ticker.add((deltaTime) => {
-        console.log(currentIndex, paused, elapsedTime)
         if (paused <= 0) {
             elapsedTime += deltaTime.elapsedMS*factorMilliSeconds;
         } else {
@@ -210,7 +222,7 @@ async function drawGraph(filePath) {
         
 
         dateLabel.y = 0*textStyle.fontSize;
-        dateLabel.x = 0*app.renderer.width
+        dateLabel.x = textStyle.fontSize*0.1
         textStyle.fontSize = Math.max(32, (Math.max(app.renderer.height, app.renderer.width) / 1080)*36)
 
         stackLabel.y = app.renderer.height;
@@ -219,7 +231,6 @@ async function drawGraph(filePath) {
         graph.clear();
         graph.setStrokeStyle(2, 0xff0000, 1);
 
-        let startX = 0;
         const stepX = app.renderer.width / maxVisiblePoints * 0.85;
         let maxPrice = 0
         let minPrice = Number.MAX_VALUE
@@ -229,7 +240,7 @@ async function drawGraph(filePath) {
         }
        
         for (let i = currentIndex-maxVisiblePoints; i <= currentIndex; i++) {
-            const x = startX + (i - (currentIndex-maxVisiblePoints)) * stepX;
+            const x = (i - (currentIndex-maxVisiblePoints)) * stepX;
             const price = parsedData[i].price
             const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             if (i === currentIndex-maxVisiblePoints) {
@@ -242,11 +253,19 @@ async function drawGraph(filePath) {
                     priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
                     bitcoinLogo.x = x
                     bitcoinLogo.y = y 
-                    bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05
+                    bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
                 }
             }
+
+           
         }
         graph.stroke({ width: 1, color: 0x00FF00 });
+
+        trades.forEach((trade) => {
+            trade.sprite.x =  (trade.index - (currentIndex-maxVisiblePoints)) * stepX;
+            trade.sprite.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+            trade.sprite.height = trade.sprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, trade.coins / 10.0)))
+         })
 
         const currentDate = parsedData[currentIndex]?.snapped_at;
         if (currentDate) {
