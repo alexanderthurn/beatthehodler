@@ -48,9 +48,39 @@ function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
 
     return formatted;
 }
+function findClosestDateIndex(array, targetDate) {
+    const targetTime = targetDate.getTime(); // Zielzeit in Millisekunden
+
+    return array.reduce((closestIndex, current, currentIndex, arr) => {
+        const currentTime = current.snapped_at.getTime(); // Zeit des aktuellen Eintrags
+        const closestTime = arr[closestIndex].snapped_at.getTime(); // Zeit des nächstgelegenen Eintrags
+
+        // Prüfen, ob das aktuelle Datum näher am Ziel ist als das bisherige
+        return Math.abs(currentTime - targetTime) < Math.abs(closestTime - targetTime)
+            ? currentIndex
+            : closestIndex;
+    }, 0); // Start mit dem ersten Index (0)
+}
 
 
+function generateDatesBetween(startDate, endDate, n) {
+    if (n < 2) {
+        throw new Error('Die Anzahl der Einträge (n) muss mindestens 2 sein.');
+    }
 
+    const start = new Date(startDate).getTime(); // Startdatum als Timestamp
+    const end = new Date(endDate).getTime(); // Enddatum als Timestamp
+
+    const interval = (end - start) / (n - 1); // Zeitintervall zwischen den Datumswerten
+
+    const dates = [];
+    for (let i = 0; i < n; i++) {
+        const currentTimestamp = start + i * interval;
+        dates.push(new Date(currentTimestamp));
+    }
+
+    return dates;
+}
 
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseCSV(csvString) {
@@ -170,8 +200,42 @@ async function drawGraph(filePath) {
 
 
 
+
+    let options = {
+        fiatStart: 1000,
+        dateStart: new Date(2011,0,1), // new Date(year, monthIndex, day, hours, minutes, seconds, milliseconds);
+        dateEnd: new Date(2015,6,1),
+        stops: 7
+    }
+
+    if (typeof options.stops === 'number' && !isNaN(options.stops)) {
+        options.stops = generateDatesBetween(options.dateStart, options.dateEnd, options.stops)
+    }
+    
+    options.indexStart = findClosestDateIndex(parsedData, options.dateStart)
+    options.indexEnd = findClosestDateIndex(parsedData, options.dateEnd)
+/*
+
+    for (let i = 0; i < parsedData.length; i++) {
+        var d = parsedData[i].snapped_at
+        const toleranceMillis = 12 * 60 * 60 * 1000; // Toleranz in Millisekunden
+
+        if (Math.abs(options.dateStart.getTime() - d.getTime()) <= toleranceMillis) {
+            options.indexStart = i
+        }
+
+        if (Math.abs(options.dateEnd.getTime() - d.getTime()) <= toleranceMillis) {
+            options.indexEnd = i
+        }
+    }*/
+
+        
+
+
+   console.log(options)
+
     let yourCoins = 0
-    let yourFiat = 1000
+    let yourFiat = options.fiatStart
     let paused = Number.MAX_VALUE
     let buyPaused = 2000
     const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
@@ -223,15 +287,19 @@ async function drawGraph(filePath) {
 
 
 
+
     let currentIndex = 0
     const gameDurationMilliseconds = 90000
     const factorMilliSeconds =  parsedData.length / gameDurationMilliseconds; // Intervall in Sekunden
     let elapsedTime = maxVisiblePoints; // Zeitverfolgung
    
+    
+
+
     app.ticker.add((deltaTime) => {
 
   
-        let gradientWidth = app.renderer.width; 
+       let gradientWidth = app.renderer.width; 
        let gradientHeight = app.renderer.height; 
        let gradientFill = new PIXI.FillGradient(0, 0, 0, gradientHeight);
 
