@@ -1,3 +1,13 @@
+async function loadShader(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Fehler beim Laden von ${url}: ${response.statusText}`);
+    }
+    return response.text(); // Shader als Text zurückgeben
+}
+
+
+
 function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
 
     const locale = navigator.language;
@@ -124,6 +134,10 @@ async function fetchCSV(filePath) {
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function drawGraph(filePath) {
+
+    const graphVertexShader = await loadShader('./graph.vert')
+    const graphFragmentShader = await loadShader('./graph.frag')
+
     const parsedData = await fetchCSV(filePath);
     if (!parsedData.length) return;
 
@@ -145,12 +159,6 @@ async function drawGraph(filePath) {
     gradientFill.addColorStop(1, 0xffa500);
     const graphic1 = new PIXI.Graphics().drawRect(0, app.renderer.height - gradientHeight, gradientWidth, gradientHeight).fill(gradientFill);
     app.stage.addChild(graphic1);
-
-
-
-    const graph = new PIXI.Graphics();
-    app.stage.addChild(graph);
-
 
     PIXI.Assets.addBundle('fonts', {
         XoloniumBold: {
@@ -277,8 +285,28 @@ async function drawGraph(filePath) {
     const factorMilliSeconds =  parsedData.length / gameDurationMilliseconds; // Intervall in Sekunden
     let currentIndexFloat = options.indexStart; // Zeitverfolgung
     let currentIndexInteger = Math.floor(currentIndexFloat)
+
+
+    let graphPoints = new Float32Array(maxVisiblePoints * 2); // x, y für jeden Punkt
+    const gl = { vertex: graphVertexShader, fragment: graphFragmentShader };
+    const graphShader = PIXI.Shader.from(gl);
+    const graphGeometry = new PIXI.Geometry({
+        attributes: {
+            aPosition: graphPoints
+        }
+    })
    
+   // .addIndex([...Array(maxVisiblePoints).keys()]); // Indizes für GL_LINE_STRIP
+    const graphMesh = new PIXI.Mesh({
+        geometry: graphGeometry, 
+        shader: graphShader
+    });
+    graphMesh.drawMode = PIXI.DRAW_MODES.LINE_STRIP;
+    graphMesh.position.set(200,200)
+    app.stage.addChild(graphMesh)
+
     app.ticker.add((deltaTime) => {
+
         if (paused <= 0) {
             currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds;
         } else {
@@ -324,7 +352,7 @@ async function drawGraph(filePath) {
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
 
-        graph.clear();
+      
 
         const stepX = app.renderer.width / maxVisiblePoints * 0.85;
         let maxPrice = 0
@@ -335,26 +363,23 @@ async function drawGraph(filePath) {
         }
        
         for (let i = currentIndexInteger-maxVisiblePoints; i <= currentIndexInteger; i++) {
-            const x = (i - (currentIndexInteger-maxVisiblePoints)) * stepX;
             const price = parsedData[i].price
+            const x = (i - (currentIndexInteger-maxVisiblePoints)) * stepX;
             const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            if (i === currentIndexInteger-maxVisiblePoints) {
-                graph.moveTo(x, y);
-            } else {
-                graph.lineTo(x, y);
-                if (i === currentIndexInteger) {
-                    priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
-                    priceLabel.x = 0.9*priceLabel.x + 0.1*x
-                    priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
-                    bitcoinLogo.x = x
-                    bitcoinLogo.y = y 
-                    bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
-                }
+            graphPoints[2*(i-(currentIndexInteger-maxVisiblePoints))] = x
+            graphPoints[1+2*(i-(currentIndexInteger-maxVisiblePoints))] = y
+            if (i === currentIndexInteger) {
+                priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
+                priceLabel.x = 0.9*priceLabel.x + 0.1*x
+                priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
+                bitcoinLogo.x = x
+                bitcoinLogo.y = y 
+                bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
             }
-
-           
         }
-        graph.stroke({ width: Math.max(app.renderer.height,app.renderer.width)*0.005, color: 0x00FF00 });
+        
+        graphGeometry.getBuffer('aPosition').update(graphPoints);
+        //graph.stroke({ width: Math.max(app.renderer.height,app.renderer.width)*0.005, color: 0x00FF00 });
 
         trades.forEach((trade) => {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints)) * stepX;
