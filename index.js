@@ -201,10 +201,13 @@ async function drawGraph(filePath) {
 
 
 
+    const buyPaused = 2000
+    const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
+
     let options = {
         fiatStart: 1000,
         dateStart: new Date(2011,0,1), // new Date(year, monthIndex, day, hours, minutes, seconds, milliseconds);
-        dateEnd: new Date(2015,6,1),
+        dateEnd: new Date(2011,3,3),
         stops: 7
     }
 
@@ -212,39 +215,20 @@ async function drawGraph(filePath) {
         options.stops = generateDatesBetween(options.dateStart, options.dateEnd, options.stops)
     }
     
-    options.indexStart = findClosestDateIndex(parsedData, options.dateStart)
-    options.indexEnd = findClosestDateIndex(parsedData, options.dateEnd)
-/*
-
-    for (let i = 0; i < parsedData.length; i++) {
-        var d = parsedData[i].snapped_at
-        const toleranceMillis = 12 * 60 * 60 * 1000; // Toleranz in Millisekunden
-
-        if (Math.abs(options.dateStart.getTime() - d.getTime()) <= toleranceMillis) {
-            options.indexStart = i
-        }
-
-        if (Math.abs(options.dateEnd.getTime() - d.getTime()) <= toleranceMillis) {
-            options.indexEnd = i
-        }
-    }*/
-
-        
-
+    options.indexStart = Math.max(maxVisiblePoints, findClosestDateIndex(parsedData, options.dateStart))
+    options.indexEnd = Math.max(maxVisiblePoints, findClosestDateIndex(parsedData, options.dateEnd))
 
    console.log(options)
 
     let yourCoins = 0
     let yourFiat = options.fiatStart
     let paused = Number.MAX_VALUE
-    let buyPaused = 2000
-    const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
     const trades = []
     
     addEventListener('pointerup', () => {
-        let price = parsedData[currentIndex].price
+        let price = parsedData[currentIndexInteger].price
         let trade =  {
-            index: currentIndex, 
+            index: currentIndexInteger, 
             price: price, 
             coins: yourCoins, 
             fiat: yourFiat,
@@ -285,57 +269,47 @@ async function drawGraph(filePath) {
         paused = buyPaused
     })
 
-
-
-
-    let currentIndex = 0
     const gameDurationMilliseconds = 90000
     const factorMilliSeconds =  parsedData.length / gameDurationMilliseconds; // Intervall in Sekunden
-    let elapsedTime = maxVisiblePoints; // Zeitverfolgung
+    let currentIndexFloat = options.indexStart; // Zeitverfolgung
+    let currentIndexInteger = Math.floor(currentIndexFloat)
    
-    
-
-
     app.ticker.add((deltaTime) => {
-
-  
-       let gradientWidth = app.renderer.width; 
-       let gradientHeight = app.renderer.height; 
-       let gradientFill = new PIXI.FillGradient(0, 0, 0, gradientHeight);
-
-       if (yourCoins > 0) {       
-        gradientFill.addColorStop(0, 0x000000);
-        gradientFill.addColorStop(0.9 + Math.sin(elapsedTime*0.1)*0.05, 0x333333);
-        gradientFill.addColorStop(1, 0xffa500);
-       } else {
-        gradientFill.addColorStop(0, 0x1E90FF);
-        gradientFill.addColorStop(0.9 + Math.sin(elapsedTime*0.1)*0.05, 0x1E90FF);
-        gradientFill.addColorStop(1, 0x32CD32);
-       }
-        graphic1.clear();
-        graphic1.drawRect(0, app.renderer.height - gradientHeight,gradientWidth, gradientHeight).fill(gradientFill);
-
-        
-
         if (paused <= 0) {
-            elapsedTime += deltaTime.elapsedMS*factorMilliSeconds;
+            currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds;
         } else {
             paused -= deltaTime.elapsedMS
             if (paused < buyPaused) {
-                elapsedTime += deltaTime.elapsedMS*factorMilliSeconds*(Math.max(0,(buyPaused-paused*2)/buyPaused));
+                currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds*(Math.max(0,(buyPaused-paused*2)/buyPaused));
             }
         }
 
-        currentIndex = Math.floor(elapsedTime)
+        if (currentIndexFloat > options.indexEnd) {
+            currentIndexFloat = options.indexEnd
+        }
 
-        if (currentIndex > parsedData.length-1) {
-            currentIndex = parsedData.length -1
-        } 
+        currentIndexInteger = Math.floor(currentIndexFloat)
 
-        if (currentIndex < maxVisiblePoints) {
-            currentIndex = maxVisiblePoints
-        } 
 
+
+
+        let gradientWidth = app.renderer.width; 
+        let gradientHeight = app.renderer.height; 
+        let gradientFill = new PIXI.FillGradient(0, 0, 0, gradientHeight);
+ 
+        if (yourCoins > 0) {       
+         gradientFill.addColorStop(0, 0x000000);
+         gradientFill.addColorStop(0.9 + Math.sin(currentIndexFloat*0.1)*0.05, 0x333333);
+         gradientFill.addColorStop(1, 0xffa500);
+        } else {
+         gradientFill.addColorStop(0, 0x1E90FF);
+         gradientFill.addColorStop(0.9 + Math.sin(currentIndexFloat*0.1)*0.05, 0x1E90FF);
+         gradientFill.addColorStop(1, 0x32CD32);
+        }
+         graphic1.clear();
+         graphic1.drawRect(0, app.renderer.height - gradientHeight,gradientWidth, gradientHeight).fill(gradientFill);
+ 
+         
         
 
         dateLabel.y = 0*textStyle.fontSize;
@@ -351,20 +325,20 @@ async function drawGraph(filePath) {
         const stepX = app.renderer.width / maxVisiblePoints * 0.85;
         let maxPrice = 0
         let minPrice = Number.MAX_VALUE
-        for (let i = currentIndex-maxVisiblePoints; i <= currentIndex; i++) {
+        for (let i = currentIndexInteger-maxVisiblePoints; i <= currentIndexInteger; i++) {
             maxPrice = Math.max(maxPrice, parsedData[i].price)
             minPrice = Math.min(minPrice, parsedData[i].price)
         }
        
-        for (let i = currentIndex-maxVisiblePoints; i <= currentIndex; i++) {
-            const x = (i - (currentIndex-maxVisiblePoints)) * stepX;
+        for (let i = currentIndexInteger-maxVisiblePoints; i <= currentIndexInteger; i++) {
+            const x = (i - (currentIndexInteger-maxVisiblePoints)) * stepX;
             const price = parsedData[i].price
             const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            if (i === currentIndex-maxVisiblePoints) {
+            if (i === currentIndexInteger-maxVisiblePoints) {
                 graph.moveTo(x, y);
             } else {
                 graph.lineTo(x, y);
-                if (i === currentIndex) {
+                if (i === currentIndexInteger) {
                     priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
                     priceLabel.x = 0.9*priceLabel.x + 0.1*x
                     priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
@@ -379,12 +353,12 @@ async function drawGraph(filePath) {
         graph.stroke({ width: Math.max(app.renderer.height,app.renderer.width)*0.005, color: 0x00FF00 });
 
         trades.forEach((trade) => {
-            trade.container.x =  (trade.index - (currentIndex-maxVisiblePoints)) * stepX;
+            trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, trade.coins / 10.0)))
          })
 
-        const currentDate = parsedData[currentIndex]?.snapped_at;
+        const currentDate = parsedData[currentIndexInteger]?.snapped_at;
         if (currentDate) {
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
         }
