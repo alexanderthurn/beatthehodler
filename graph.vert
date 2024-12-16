@@ -1,7 +1,15 @@
 precision mediump float;
 
-attribute vec2 aPosition;
+in vec2 aPosition;
+in vec4 aColor;
+out vec4 vColor;
+
+uniform mat3 uProjectionMatrix;
+uniform mat3 uWorldTransformMatrix;
+uniform mat3 uTransformMatrix;
 
 void main() {
-    gl_Position = vec4(aPosition, 0.0, 1.0);
+    mat3 mvp = uProjectionMatrix * uWorldTransformMatrix * uTransformMatrix;
+    gl_Position = vec4((mvp * vec3(aPosition, 1.0)).xy, 0.0, 1.0);
+    vColor = aColor;
 }

@@ -206,8 +206,6 @@ async function drawGraph(filePath) {
     app.stage.addChild(stackLabel);
 
 
-
-
     const buyPaused = 2000
     const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
 
@@ -287,39 +285,9 @@ async function drawGraph(filePath) {
 
 
     let graphPoints = new Float32Array(maxVisiblePoints * 2); // x, y für jeden Punkt
-    const gl = { vertex: graphVertexShader, fragment: graphFragmentShader };
-    const graphShader = PIXI.Shader.from(gl);
-    const graphGeometry = new PIXI.Geometry({
-        attributes: {
-            aPosition: graphPoints
-        }
-    })
-   
-   // .addIndex([...Array(maxVisiblePoints).keys()]); // Indizes für GL_LINE_STRIP
-    const graphMesh = new PIXI.Mesh({
-        geometry: graphGeometry, 
-        shader: graphShader
-    });
-    graphMesh.drawMode = PIXI.DRAW_MODES.LINE_STRIP;
-    graphMesh.position.set(200,200)
-    app.stage.addChild(graphMesh)
-
-    const geometry = new PIXI.Geometry({
-        attributes: {
-            aPosition: [-1, -1, 1, -1, 0, 1],
-            aColor: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-        },
-    });
-    const shader = PIXI.Shader.from({
-        gl
-    });
-    const triangle = new PIXI.Mesh({
-        geometry,
-        shader,
-    });
-    triangle.position.set(0, 0);
-    triangle.scale.set(0.5,0.5)
-    app.stage.addChild(triangle);
+    var graph = createGraph(graphPoints, graphVertexShader, graphFragmentShader)
+    graph.position.set(0, 0);
+    app.stage.addChildAt(graph,1);
 
     app.ticker.add((deltaTime) => {
 
@@ -382,8 +350,10 @@ async function drawGraph(filePath) {
             const price = parsedData[i].price
             const x = (i - (currentIndexInteger-maxVisiblePoints)) * stepX;
             const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            graphPoints[2*(i-(currentIndexInteger-maxVisiblePoints))] = x
-            graphPoints[1+2*(i-(currentIndexInteger-maxVisiblePoints))] = y
+            var pi = (i-(currentIndexInteger-maxVisiblePoints))
+            graphPoints[2*pi] = x
+            graphPoints[1+2*pi] = y
+        
             if (i === currentIndexInteger) {
                 priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
                 priceLabel.x = 0.9*priceLabel.x + 0.1*x
@@ -393,10 +363,9 @@ async function drawGraph(filePath) {
                 bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
             }
         }
-        
-        graphGeometry.getBuffer('aPosition').update(graphPoints);
-        //graph.stroke({ width: Math.max(app.renderer.height,app.renderer.width)*0.005, color: 0x00FF00 });
-
+        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,Math.max(app.renderer.height,app.renderer.width)*0.005) 
+        graph.geometry.getBuffer('aColor').data = createThickLineColors(graphPoints)
+   
         trades.forEach((trade) => {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
