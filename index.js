@@ -207,7 +207,7 @@ async function drawGraph(filePath) {
     let options = {
         fiatStart: 1000,
         dateStart: new Date(2011,0,1), // new Date(year, monthIndex, day, hours, minutes, seconds, milliseconds);
-        dateEnd: new Date(2011,3,3),
+        dateEnd: new Date(2020,3,3),
         stops: 7
     }
 
