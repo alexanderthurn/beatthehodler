@@ -134,7 +134,6 @@ async function fetchCSV(filePath) {
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function drawGraph(filePath) {
-
     const graphVertexShader = await loadShader('./graph.vert')
     const graphFragmentShader = await loadShader('./graph.frag')
 
@@ -304,6 +303,23 @@ async function drawGraph(filePath) {
     graphMesh.drawMode = PIXI.DRAW_MODES.LINE_STRIP;
     graphMesh.position.set(200,200)
     app.stage.addChild(graphMesh)
+
+    const geometry = new PIXI.Geometry({
+        attributes: {
+            aPosition: [-1, -1, 1, -1, 0, 1],
+            aColor: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        },
+    });
+    const shader = PIXI.Shader.from({
+        gl
+    });
+    const triangle = new PIXI.Mesh({
+        geometry,
+        shader,
+    });
+    triangle.position.set(0, 0);
+    triangle.scale.set(0.5,0.5)
+    app.stage.addChild(triangle);
 
     app.ticker.add((deltaTime) => {
 
