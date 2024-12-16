@@ -206,19 +206,23 @@ async function drawGraph(filePath) {
 
     let options = {
         fiatStart: 1000,
-        dateStart: new Date(2011,0,1), // new Date(year, monthIndex, day, hours, minutes, seconds, milliseconds);
-        dateEnd: new Date(2020,3,3),
+        dateStart: new Date(2014,0,1), // new Date(year, monthIndex, day, hours, minutes, seconds, milliseconds);
+        dateEnd: new Date(2020,0,1),
         stops: 7
     }
 
-    if (typeof options.stops === 'number' && !isNaN(options.stops)) {
-        options.stops = generateDatesBetween(options.dateStart, options.dateEnd, options.stops)
-    }
-    
+    options.dateStart = parsedData[findClosestDateIndex(parsedData, options.dateStart)].snapped_at
+    options.dateEnd = parsedData[findClosestDateIndex(parsedData, options.dateEnd)].snapped_at
     options.indexStart = Math.max(maxVisiblePoints, findClosestDateIndex(parsedData, options.dateStart))
     options.indexEnd = Math.max(maxVisiblePoints, findClosestDateIndex(parsedData, options.dateEnd))
+    if (typeof options.stops === 'number' && !isNaN(options.stops)) {
+        options.stops = generateDatesBetween(options.dateStart, options.dateEnd, options.stops)
+    } else if (Array.isArray(options.stops)) {
+        options.stops = options.stops.map(d => typeof d === 'string' && parseDate(d))
+    }
+    options.stopIndizes = options.stops.map(d => findClosestDateIndex(parsedData, d))
 
-   console.log(options)
+   console.log(options, parsedData)
 
     let yourCoins = 0
     let yourFiat = options.fiatStart
