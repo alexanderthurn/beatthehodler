@@ -190,16 +190,19 @@ async function drawGraph(filePath) {
        
         for (let i = currentIndexInteger-maxVisiblePoints; i <= currentIndexInteger; i++) {
             const price = parsedData[i].price
-            const x = (i - (currentIndexInteger-maxVisiblePoints));
-            const y = -(price-minPrice)/(maxPrice-minPrice);
+            const x = i;
+            const y = price;
             var pi = (i-(currentIndexInteger-maxVisiblePoints))
             graphPoints[2*pi] = x
             graphPoints[1+2*pi] = y
         }
-
-        graph.position.set(0, app.renderer.height*0.9);
-        graph.scale.set(stepX, app.renderer.height*0.8);
-        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,Math.max(app.renderer.height,app.renderer.width)*0.005) 
+//-(price-minPrice)/(maxPrice-minPrice);
+        var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
+        var scaleX = stepX
+        graph.position.set(- (currentIndexInteger-maxVisiblePoints)*scaleX, app.renderer.height*0.9-minPrice*scaleY);
+        graph.scale.set(scaleX, scaleY);
+        //graph.shader.resources.graphUniforms.uniforms.uScale = [1.0, 1.0]
+        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,0.001 * (app.renderer.height*0.8)) 
         graph.geometry.getBuffer('aColor').data = createThickLineColors(graphPoints)
    
         const price = parsedData[currentIndexInteger].price

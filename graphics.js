@@ -86,9 +86,19 @@ function createGraph(graphPoints, graphVertexShader, graphFragmentShader) {
         },
         topology: 'triangle-strip'
     });
-    const shader = PIXI.Shader.from({
-       gl: { vertex: graphVertexShader, fragment: graphFragmentShader }
+
+    const shader = new PIXI.Shader({
+        glProgram: new PIXI.GlProgram({ 
+            vertex: graphVertexShader, 
+            fragment: graphFragmentShader, 
+            }),
+        resources: {
+            graphUniforms: {
+                uScale: { value: [1.0, 1.0], type: 'vec2<f32>' },
+            }
+        }
     });
+
 
     const graph = new PIXI.Mesh({
         geometry,
