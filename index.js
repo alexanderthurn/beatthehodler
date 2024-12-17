@@ -100,7 +100,6 @@ async function drawGraph(filePath) {
     let options = gameData.levels[0]
     const maxVisiblePoints = gameData.maxVisiblePoints; // Anzahl der sichtbaren Punkte im Graph
 
-   console.log(options, parsedData)
 
     let yourCoins = 0
     let yourFiat = options.fiatStart
@@ -157,9 +156,7 @@ async function drawGraph(filePath) {
     let currentIndexFloat = options.indexStart; // Zeitverfolgung
     let currentIndexInteger = Math.floor(currentIndexFloat)
 
-
-    let graphPoints = new Float32Array(maxVisiblePoints * 2); // x, y für jeden Punkt
-    var graph = createGraph(graphPoints, graphVertexShader, graphFragmentShader)
+    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader)
     graph.position.set(0, 0);
     app.stage.addChildAt(graph,1);
 
@@ -202,23 +199,18 @@ async function drawGraph(filePath) {
             minPrice = Math.min(minPrice, parsedData[i].price)
         }
        
-        for (let i = currentIndexInteger-maxVisiblePoints+1; i <= currentIndexInteger; i++) {
-            const price = parsedData[i].price
-            const x = i;
-            const y = price;
-            var pi = (i-(currentIndexInteger-maxVisiblePoints+1))
-            graphPoints[2*pi] = x
-            graphPoints[1+2*pi] = y
-        }
+        
+
+
 //-(price-minPrice)/(maxPrice-minPrice);
         var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
         var scaleX = stepX
         graph.position.set(- (currentIndexInteger-maxVisiblePoints+1)*scaleX, app.renderer.height*0.9-minPrice*scaleY);
         graph.scale.set(scaleX, scaleY);
-        //graph.shader.resources.graphUniforms.uniforms.uScale = [1.0, 1.0]
-        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,app.renderer.height*0.01/scaleY) 
-        graph.geometry.getBuffer('aColor').data = createThickLineColors(graphPoints)
-   
+        graph.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
+        graph.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
+        
+      
         const price = parsedData[currentIndexInteger].price
         const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+1)) * stepX;
         const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;

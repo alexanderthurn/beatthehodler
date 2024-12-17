@@ -7,88 +7,61 @@ async function loadShader(url) {
 }
 
 
+function createStockRectangles(dataPoints, rectWidth) {
+    const vertices = []
+    const indices = []
+    const colors = []
+    const pointIndices = []
 
-function createThickLine(points, lineWidth) {
-    const vertices = [];
-    for (let i = 0; i < points.length - 2; i += 2) {
-        const x1 = points[i];
-        const y1 = points[i + 1];
-        const x2 = points[i + 2];
-        const y2 = points[i + 3];
-
-        // Vektor für die Linie
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.sqrt(dx * dx + dy * dy);
-
-        // Normalisierte Orthogonalrichtung für die Breite
-        const nx = -dy / length;
-        const ny = dx / length;
-
-        // Oberer und unterer Punkt für die Breite der Linie
+    for (let i = 1; i < dataPoints.length; i++) {
+        const prevY = dataPoints[i - 1].price;
+        const currentY = dataPoints[i].price;
+        const x = (i - 1) * rectWidth;
+        const halfWidth = rectWidth * 0.2
+        // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
-            x1 + nx * lineWidth, y1 + ny * lineWidth, // Oberer Punkt 1
-            x1 - nx * lineWidth, y1 - ny * lineWidth, // Unterer Punkt 1
-            x2 + nx * lineWidth, y2 + ny * lineWidth, // Oberer Punkt 2
-            x2 - nx * lineWidth, y2 - ny * lineWidth  // Unterer Punkt 2
+            x-halfWidth, prevY,                  // P1: Unten links
+            x-halfWidth, currentY,               // P2: Oben links
+            x+halfWidth, prevY,      // P3: Unten rechts
+            x+halfWidth, currentY    // P4: Oben rechts
         );
-    }
-    return new Float32Array(vertices);
-}
+        for (let h = 0; h < 4; h++) {
+            pointIndices.push(i-1)
+        }
+        indices.push(4*(i - 1)+0); 
+        indices.push(4*(i - 1)+1); 
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+1); 
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+3); 
+        
 
+        // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
+        const color = currentY < prevY 
+            ? [1.0, 0.0, 0.0, 1.0] // Rot (RGBA: 1, 0, 0, 1)
+            : [0.0, 1.0, 0.0, 1.0]; // Grün (RGBA: 0, 1, 0, 1)
 
-function createThickLine(points, lineWidth) {
-    const vertices = [];
-    const halfWidth = lineWidth * 0.5;
-
-    for (let i = 0; i < points.length - 2; i += 2) {
-        const x1 = points[i];
-        const y1 = points[i + 1];
-        const x2 = points[i + 2];
-        const y2 = points[i + 3];
-
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.sqrt(dx * dx + dy * dy);
-
-        // Nur Y-Komponente der Verschiebung
-        const ny = halfWidth;
-
-        vertices.push(
-            x1, y1 - ny, // Oberer Punkt 1
-            x1, y1 + ny, // Unterer Punkt 1
-            x2, y2 - ny, // Oberer Punkt 2
-            x2, y2 + ny  // Unterer Punkt 2
-        );
+        for (let j = 0; j < 4; j++) {
+            colors.push(...color);
+        }
     }
 
-    return new Float32Array(vertices);
+    return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
+
 }
 
+function createGraph(parsedData, graphVertexShader, graphFragmentShader) {
 
 
-function createThickLineColors(points) {
-    const colors = [];
-    for (let i = 0; i < points.length - 2; i += 2) {
-        const y1 = points[i + 1]; // Aktueller Y-Wert
-        const y2 = points[i + 3]; // Nächster Y-Wert
+    let rects = createStockRectangles(parsedData,1)
 
-        // Farbe abhängig von Y-Wert-Differenz
-        const color = y1 < y2 ? [0, 1, 0, 1] : [1, 0, 0, 1]; // Rot oder Grün
-
-        // Für jedes Segment (4 Punkte: 2 oben, 2 unten) dieselbe Farbe
-        colors.push(...color, ...color, ...color, ...color);
-    }
-    return new Float32Array(colors);
-}
-
-function createGraph(graphPoints, graphVertexShader, graphFragmentShader) {
     const geometry = new PIXI.Geometry({
         attributes: {
-            aPosition: createThickLine(graphPoints,50),
-            aColor: createThickLineColors(graphPoints),
+            aPosition: rects.vertices,
+            aColor: rects.colors,
+            aIndex: rects.pointIndices
         },
-        topology: 'triangle-strip'
+        indexBuffer: rects.indices
     });
 
     const shader = new PIXI.Shader({
@@ -98,6 +71,8 @@ function createGraph(graphPoints, graphVertexShader, graphFragmentShader) {
             }),
         resources: {
             graphUniforms: {
+                uCurrentIndex: {type: 'i32', value: 0},
+                uMaxVisiblePoints: {type: 'i32', value: 3},
                 uScale: { value: [1.0, 1.0], type: 'vec2<f32>' },
             }
         }
@@ -108,6 +83,10 @@ function createGraph(graphPoints, graphVertexShader, graphFragmentShader) {
         geometry,
         shader
     });
+
+   // graph.state = new PIXI.State();
+    graph.state.culling = false;
+
     return graph
 }
 
