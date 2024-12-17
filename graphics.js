@@ -137,7 +137,9 @@ function createBackground(vertexShader, fragmentShader)  {
             }),
         resources: {
             backgroundUniforms: {
-                uMode: {type: 'i32', value: 1} // Startwert als Integer
+                uMode: {type: 'i32', value: 1},
+                uThreshold: {type: 'f32', value: 0.05},
+                uCurveStrength: {type: 'f32', value: 1.5},
             }
         }
     });
