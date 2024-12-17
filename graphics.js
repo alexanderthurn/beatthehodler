@@ -89,6 +89,7 @@ function createGraph(graphPoints, graphVertexShader, graphFragmentShader) {
     const shader = PIXI.Shader.from({
        gl: { vertex: graphVertexShader, fragment: graphFragmentShader }
     });
+
     const graph = new PIXI.Mesh({
         geometry,
         shader
@@ -119,16 +120,6 @@ function createBackground(vertexShader, fragmentShader)  {
         },
         topology: 'triangle-strip'
     });
-    /*const shader = PIXI.Shader.from({
-        gl: { 
-        vertex: vertexShader, 
-        fragment: fragmentShader, 
-        }, resources: {
-            uThreshold: 0.5,
-            uMode: 1
-        }
-        
-    });*/
 
     const shader = new PIXI.Shader({
         glProgram: new PIXI.GlProgram({ 
@@ -150,35 +141,4 @@ function createBackground(vertexShader, fragmentShader)  {
     });
     return graph
 }
-
-/*
-
-    let gradientWidth = app.renderer.width; 
-    let gradientHeight = app.renderer.height * 0.5; 
-    let gradientFill = new PIXI.FillGradient(0, gradientHeight, 0, app.renderer.height);
-    gradientFill.addColorStop(0, 0x000000);
-    gradientFill.addColorStop(0.7, 0x000000);
-    gradientFill.addColorStop(1, 0xffa500);
-
-
-    */
-
-    
-/*
-        let gradientWidth = app.renderer.width; 
-        let gradientHeight = app.renderer.height; 
-        let gradientFill = new PIXI.FillGradient(0, 0, 0, gradientHeight);
- 
-        if (yourCoins > 0) {       
-         gradientFill.addColorStop(0, 0x000000);
-         gradientFill.addColorStop(0.9 + Math.sin(currentIndexFloat*0.1)*0.05, 0x333333);
-         gradientFill.addColorStop(1, 0xffa500);
-        } else {
-         gradientFill.addColorStop(0, 0x1E90FF);
-         gradientFill.addColorStop(0.9 + Math.sin(currentIndexFloat*0.1)*0.05, 0x1E90FF);
-         gradientFill.addColorStop(1, 0x32CD32);
-        }
-         graphic1.clear();
-         graphic1.drawRect(0, app.renderer.height - gradientHeight,gradientWidth, gradientHeight).fill(gradientFill);
- */
          

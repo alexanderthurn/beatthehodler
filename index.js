@@ -190,24 +190,29 @@ async function drawGraph(filePath) {
        
         for (let i = currentIndexInteger-maxVisiblePoints; i <= currentIndexInteger; i++) {
             const price = parsedData[i].price
-            const x = (i - (currentIndexInteger-maxVisiblePoints)) * stepX;
-            const y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+            const x = (i - (currentIndexInteger-maxVisiblePoints));
+            const y = -(price-minPrice)/(maxPrice-minPrice);
             var pi = (i-(currentIndexInteger-maxVisiblePoints))
             graphPoints[2*pi] = x
             graphPoints[1+2*pi] = y
-        
-            if (i === currentIndexInteger) {
-                priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
-                priceLabel.x = 0.9*priceLabel.x + 0.1*x
-                priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
-                bitcoinLogo.x = x
-                bitcoinLogo.y = y 
-                bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
-            }
         }
+
+        graph.position.set(0, app.renderer.height*0.9);
+        graph.scale.set(stepX, app.renderer.height*0.8);
         graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,Math.max(app.renderer.height,app.renderer.width)*0.005) 
         graph.geometry.getBuffer('aColor').data = createThickLineColors(graphPoints)
    
+        const price = parsedData[currentIndexInteger].price
+        const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints)) * stepX;
+        const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+        priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
+        priceLabel.x = 0.9*priceLabel.x + 0.1*x
+        priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
+        bitcoinLogo.x = x
+        bitcoinLogo.y = y 
+        bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
+    
+        
         trades.forEach((trade) => {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
@@ -220,9 +225,6 @@ async function drawGraph(filePath) {
         }
 
         stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
-    
-    
-    
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
     });
 }
