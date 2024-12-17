@@ -215,7 +215,7 @@ async function drawGraph(filePath) {
         graph.position.set(- (currentIndexInteger-maxVisiblePoints+1)*scaleX, app.renderer.height*0.9-minPrice*scaleY);
         graph.scale.set(scaleX, scaleY);
         //graph.shader.resources.graphUniforms.uniforms.uScale = [1.0, 1.0]
-        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,Math.min(app.renderer.width,app.renderer.height)*0.001/scaleY) 
+        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,app.renderer.height*0.01/scaleY) 
         graph.geometry.getBuffer('aColor').data = createThickLineColors(graphPoints)
    
         const price = parsedData[currentIndexInteger].price

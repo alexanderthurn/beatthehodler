@@ -1,5 +1,5 @@
 {
-    "maxVisiblePoints": 200,
+    "maxVisiblePoints": 100,
     "levels": [{
         "name":"all",
         "dateStart": "2009-01-01 00:00:00 UTC",

@@ -39,31 +39,33 @@ function createThickLine(points, lineWidth) {
 
 function createThickLine(points, lineWidth) {
     const vertices = [];
+    const halfWidth = lineWidth * 0.5;
+
     for (let i = 0; i < points.length - 2; i += 2) {
         const x1 = points[i];
         const y1 = points[i + 1];
         const x2 = points[i + 2];
         const y2 = points[i + 3];
 
-        // Vektor für die Linie
         const dx = x2 - x1;
         const dy = y2 - y1;
         const length = Math.sqrt(dx * dx + dy * dy);
 
-        // Normalisierte Orthogonalrichtung für die Breite
-        const nx = -dy / length;
-        const ny = dx / length;
+        // Nur Y-Komponente der Verschiebung
+        const ny = halfWidth;
 
-        // Oberer und unterer Punkt für die Breite der Linie
         vertices.push(
-            x1 + nx * lineWidth, y1 + ny * lineWidth, // Oberer Punkt 1
-            x1 - nx * lineWidth, y1 - ny * lineWidth, // Unterer Punkt 1
-            x2 + nx * lineWidth, y2 + ny * lineWidth, // Oberer Punkt 2
-            x2 - nx * lineWidth, y2 - ny * lineWidth  // Unterer Punkt 2
+            x1, y1 - ny, // Oberer Punkt 1
+            x1, y1 + ny, // Unterer Punkt 1
+            x2, y2 - ny, // Oberer Punkt 2
+            x2, y2 + ny  // Unterer Punkt 2
         );
     }
+
     return new Float32Array(vertices);
 }
+
+
 
 function createThickLineColors(points) {
     const colors = [];
