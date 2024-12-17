@@ -72,7 +72,7 @@ function createThickLineColors(points) {
         const y2 = points[i + 3]; // Nächster Y-Wert
 
         // Farbe abhängig von Y-Wert-Differenz
-        const color = y2 < y1 ? [0, 1, 0, 1] : [1, 0, 0, 1]; // Rot oder Grün
+        const color = y1 < y2 ? [0, 1, 0, 1] : [1, 0, 0, 1]; // Rot oder Grün
 
         // Für jedes Segment (4 Punkte: 2 oben, 2 unten) dieselbe Farbe
         colors.push(...color, ...color, ...color, ...color);

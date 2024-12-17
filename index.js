@@ -49,7 +49,7 @@ async function drawGraph(filePath) {
     const textStyle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 36,
+        fontSize: 32,
         stroke: { color: '#fff', width: 5, join: 'round' },
         dropShadow: {
             color: '#000',
@@ -79,6 +79,19 @@ async function drawGraph(filePath) {
     stackLabel.anchor.set(0.5,1.0)
     app.stage.addChild(stackLabel);
 
+    const backgroundTextStyle = new PIXI.TextStyle({
+        fontFamily: 'Xolonium',
+        fontStyle: 'Bold',
+        fontSize: 1536,
+        fill: '#fff'
+    });
+
+
+    const backgroundLabel = new PIXI.Text('Bitcoin', backgroundTextStyle)
+    backgroundLabel.anchor.set(0.5); // Zentrieren um den Mittelpunkt
+    app.stage.addChild(backgroundLabel);
+    backgroundLabel.rotation =  0.1;
+    backgroundLabel.alpha = 0.1;
 
     const buyPaused = 2000
    
@@ -150,7 +163,7 @@ async function drawGraph(filePath) {
     app.stage.addChildAt(graph,1);
 
     const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
-    background.position.set(0, 0);
+    background.position.set(0, 0);       
     app.stage.addChildAt(background,0);
 
 
@@ -180,33 +193,33 @@ async function drawGraph(filePath) {
         stackLabel.x = 0.5*app.renderer.width
 
 
-        const stepX = app.renderer.width / maxVisiblePoints * 0.85;
+        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.85;
         let maxPrice = 0
         let minPrice = Number.MAX_VALUE
-        for (let i = currentIndexInteger-maxVisiblePoints; i <= currentIndexInteger; i++) {
+        for (let i = currentIndexInteger-maxVisiblePoints+1; i <= currentIndexInteger; i++) {
             maxPrice = Math.max(maxPrice, parsedData[i].price)
             minPrice = Math.min(minPrice, parsedData[i].price)
         }
        
-        for (let i = currentIndexInteger-maxVisiblePoints; i <= currentIndexInteger; i++) {
+        for (let i = currentIndexInteger-maxVisiblePoints+1; i <= currentIndexInteger; i++) {
             const price = parsedData[i].price
             const x = i;
             const y = price;
-            var pi = (i-(currentIndexInteger-maxVisiblePoints))
+            var pi = (i-(currentIndexInteger-maxVisiblePoints+1))
             graphPoints[2*pi] = x
             graphPoints[1+2*pi] = y
         }
 //-(price-minPrice)/(maxPrice-minPrice);
         var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
         var scaleX = stepX
-        graph.position.set(- (currentIndexInteger-maxVisiblePoints)*scaleX, app.renderer.height*0.9-minPrice*scaleY);
+        graph.position.set(- (currentIndexInteger-maxVisiblePoints+1)*scaleX, app.renderer.height*0.9-minPrice*scaleY);
         graph.scale.set(scaleX, scaleY);
         //graph.shader.resources.graphUniforms.uniforms.uScale = [1.0, 1.0]
-        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,0.001 * (app.renderer.height*0.8)) 
+        graph.geometry.getBuffer('aPosition').data = createThickLine(graphPoints,Math.min(app.renderer.width,app.renderer.height)*0.001/scaleY) 
         graph.geometry.getBuffer('aColor').data = createThickLineColors(graphPoints)
    
         const price = parsedData[currentIndexInteger].price
-        const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints)) * stepX;
+        const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+1)) * stepX;
         const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
         priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
         priceLabel.x = 0.9*priceLabel.x + 0.1*x
@@ -217,7 +230,7 @@ async function drawGraph(filePath) {
     
         
         trades.forEach((trade) => {
-            trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints)) * stepX;
+            trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+1)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, trade.coins / 10.0)))
          })
@@ -229,6 +242,11 @@ async function drawGraph(filePath) {
 
         stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
+
+        backgroundLabel.text = yourCoins > 0 ? "\u20BF" : '$'
+        backgroundLabel.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
+        backgroundLabel.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+
     });
 }
 

@@ -1,6 +1,10 @@
 {
-    "maxVisiblePoints": 100,
+    "maxVisiblePoints": 200,
     "levels": [{
+        "name":"all",
+        "dateStart": "2009-01-01 00:00:00 UTC",
+        "dateEnd": "2142-12-31 00:00:00 UTC"
+    },{
         "name":"2017",
         "dateStart": "2017-01-01 00:00:00 UTC",
         "dateEnd": "2017-12-31 00:00:00 UTC"
