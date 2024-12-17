@@ -216,7 +216,14 @@ async function drawGraph(filePath) {
         const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
         priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
         priceLabel.x = 0.9*priceLabel.x + 0.1*x
-        priceLabel.text = formatCurrency(price, 'USD', (price < 100) ? 2 : (((price >= 100 && price < 1000) || (price >= 100000 && price < 1000000)|| (price >= 10000000 && price < 100000000)) ? 0 : 1), true)
+        priceLabel.text = formatCurrency(price, 'USD',null, true) 
+
+        /* DO NOOT DELETE !!!!!
+        priceLabel.x = app.renderer.width*1
+        priceLabel.y = app.renderer.height*0.8
+        priceLabel.text = formatCurrency(0.00021, 'USD',null, true) + '\n' + formatCurrency(0.0021, 'USD',null, true) + '\n' + formatCurrency(0.021, 'USD',null, true) + '\n' +  formatCurrency(0.21, 'USD',null, true) + '\n' + formatCurrency(2.21, 'USD',null, true) + '\n' + formatCurrency(21.21, 'USD',null, true) + '\n' + formatCurrency(212.21, 'USD',null, true) + '\n' + formatCurrency(2121.21, 'USD',null, true) + '\n' + formatCurrency(21212.21, 'USD',null, true) + '\n' + formatCurrency(221212.21, 'USD',null, true) + '\n' + formatCurrency(2212121.21, 'USD',null, true) + '\n' + formatCurrency(22121212.21, 'USD',null, true)  + '\n' + formatCurrency(221212121.21, 'USD',null, true) + '\n' + formatCurrency(2212121221.21, 'USD',null, true) 
+        */
+        
         bitcoinLogo.x = x
         bitcoinLogo.y = y 
         bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))

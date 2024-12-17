@@ -1,18 +1,39 @@
-function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
+function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
+    const locale = 'de-DE' // navigator.language;
 
-    const locale = navigator.language;
+    if (!fractionDigits) {
+        if (price < 0.001) {
+            fractionDigits = 8
+        } else if (price < 0.01) {
+            fractionDigits = 6
+        } else if (price < 0.1) {
+            fractionDigits = 4
+        } else if (price < 1) {
+            fractionDigits = 2
+        } else if (price < 100) {
+            fractionDigits = 2
+        } else if (price < 1000) {
+            fractionDigits = 0
+        } else {
+            fractionDigits = 1
+        }
+      }
+
+
+   
 
     let formatted;
 
     if (abbreviate) {
         const suffixes = ['', 'K', 'M', 'B', 'T']; // Tausend, Million, Milliarde, Billion
-        let tier = Math.floor(Math.log10(Math.abs(amount)) / 3); // Bestimmen des Tiers
+        let tier = Math.floor(Math.log10(Math.abs(price)) / 3); // Bestimmen des Tiers
         tier = Math.min(tier, suffixes.length - 1); // Begrenzen auf verfügbare Suffixe
+       
 
         // Abkürzung erst ab zwei Stellen verwenden
         if (tier >= 1) { // Abkürzen ab Tausender (1 oder mehr Stellen im Tier)
             const scale = Math.pow(10, tier * 3); // Skalieren der Zahl
-            const scaledValue = amount / scale;
+            const scaledValue = price / scale;
 
             formatted = new Intl.NumberFormat(locale, {
                 style: 'currency',
@@ -21,8 +42,20 @@ function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
                 maximumFractionDigits: fractionDigits,
             }).format(scaledValue);
 
+            const parts = new Intl.NumberFormat(locale, { style: 'currency', currency }).formatToParts(1);
+            const symbolIndex = parts.findIndex(part => part.type === 'currency');
+            console.log(parts, symbolIndex)
             // Suffix hinzufügen
-            formatted += suffixes[tier];
+            if (symbolIndex < 1) {
+                formatted += suffixes[tier];
+            } else {
+                if (parts[symbolIndex-1].type === 'literal') {
+                    formatted = formatted.replace(parts[symbolIndex].value, suffixes[tier] + parts[symbolIndex].value).replace(parts[symbolIndex-1].value + suffixes[tier], suffixes[tier] + parts[symbolIndex-1].value)
+                } else {
+                    formatted = formatted.replace(parts[symbolIndex].value, suffixes[tier] + parts[symbolIndex].value)
+                }
+             }
+            
         } else {
             // Keine Abkürzung, normale Formatierung
             formatted = new Intl.NumberFormat(locale, {
@@ -30,7 +63,7 @@ function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
                 currency: currency,
                 minimumFractionDigits: fractionDigits,
                 maximumFractionDigits: fractionDigits,
-            }).format(amount);
+            }).format(price);
         }
     } else {
         formatted = new Intl.NumberFormat(locale, {
@@ -38,7 +71,7 @@ function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
             currency: currency,
             minimumFractionDigits: fractionDigits,
             maximumFractionDigits: fractionDigits,
-        }).format(amount);
+        }).format(price);
     }
 
     // Bitcoin-Symbol hinzufügen, falls die Währung BTC ist
