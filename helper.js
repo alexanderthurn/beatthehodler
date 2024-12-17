@@ -1,97 +1,124 @@
-function createThickLine(points, lineWidth) {
-    const vertices = [];
-    for (let i = 0; i < points.length - 2; i += 2) {
-        const x1 = points[i];
-        const y1 = points[i + 1];
-        const x2 = points[i + 2];
-        const y2 = points[i + 3];
+function formatCurrency(amount, currency, fractionDigits, abbreviate = false) {
 
-        // Vektor für die Linie
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.sqrt(dx * dx + dy * dy);
+    const locale = navigator.language;
 
-        // Normalisierte Orthogonalrichtung für die Breite
-        const nx = -dy / length;
-        const ny = dx / length;
+    let formatted;
 
-        // Oberer und unterer Punkt für die Breite der Linie
-        vertices.push(
-            x1 + nx * lineWidth, y1 + ny * lineWidth, // Oberer Punkt 1
-            x1 - nx * lineWidth, y1 - ny * lineWidth, // Unterer Punkt 1
-            x2 + nx * lineWidth, y2 + ny * lineWidth, // Oberer Punkt 2
-            x2 - nx * lineWidth, y2 - ny * lineWidth  // Unterer Punkt 2
-        );
+    if (abbreviate) {
+        const suffixes = ['', 'K', 'M', 'B', 'T']; // Tausend, Million, Milliarde, Billion
+        let tier = Math.floor(Math.log10(Math.abs(amount)) / 3); // Bestimmen des Tiers
+        tier = Math.min(tier, suffixes.length - 1); // Begrenzen auf verfügbare Suffixe
+
+        // Abkürzung erst ab zwei Stellen verwenden
+        if (tier >= 1) { // Abkürzen ab Tausender (1 oder mehr Stellen im Tier)
+            const scale = Math.pow(10, tier * 3); // Skalieren der Zahl
+            const scaledValue = amount / scale;
+
+            formatted = new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: fractionDigits,
+                maximumFractionDigits: fractionDigits,
+            }).format(scaledValue);
+
+            // Suffix hinzufügen
+            formatted += suffixes[tier];
+        } else {
+            // Keine Abkürzung, normale Formatierung
+            formatted = new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: fractionDigits,
+                maximumFractionDigits: fractionDigits,
+            }).format(amount);
+        }
+    } else {
+        formatted = new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits,
+        }).format(amount);
     }
-    return new Float32Array(vertices);
-}
 
-
-function createThickLine(points, lineWidth) {
-    const vertices = [];
-    for (let i = 0; i < points.length - 2; i += 2) {
-        const x1 = points[i];
-        const y1 = points[i + 1];
-        const x2 = points[i + 2];
-        const y2 = points[i + 3];
-
-        // Vektor für die Linie
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.sqrt(dx * dx + dy * dy);
-
-        // Normalisierte Orthogonalrichtung für die Breite
-        const nx = -dy / length;
-        const ny = dx / length;
-
-        // Oberer und unterer Punkt für die Breite der Linie
-        vertices.push(
-            x1 + nx * lineWidth, y1 + ny * lineWidth, // Oberer Punkt 1
-            x1 - nx * lineWidth, y1 - ny * lineWidth, // Unterer Punkt 1
-            x2 + nx * lineWidth, y2 + ny * lineWidth, // Oberer Punkt 2
-            x2 - nx * lineWidth, y2 - ny * lineWidth  // Unterer Punkt 2
-        );
+    // Bitcoin-Symbol hinzufügen, falls die Währung BTC ist
+    if (currency === 'BTC') {
+        formatted = formatted.replace(currency, "\u20BF"); // Symbol manuell ersetzen
     }
-    return new Float32Array(vertices);
+
+    return formatted;
+}
+function findClosestDateIndex(array, targetDate) {
+    const targetTime = targetDate.getTime(); // Zielzeit in Millisekunden
+
+    return array.reduce((closestIndex, current, currentIndex, arr) => {
+        const currentTime = current.snapped_at.getTime(); // Zeit des aktuellen Eintrags
+        const closestTime = arr[closestIndex].snapped_at.getTime(); // Zeit des nächstgelegenen Eintrags
+
+        // Prüfen, ob das aktuelle Datum näher am Ziel ist als das bisherige
+        return Math.abs(currentTime - targetTime) < Math.abs(closestTime - targetTime)
+            ? currentIndex
+            : closestIndex;
+    }, 0); // Start mit dem ersten Index (0)
 }
 
-function createThickLineColors(points) {
-    const colors = [];
-    for (let i = 0; i < points.length - 2; i += 2) {
-        const y1 = points[i + 1]; // Aktueller Y-Wert
-        const y2 = points[i + 3]; // Nächster Y-Wert
 
-        // Farbe abhängig von Y-Wert-Differenz
-        const color = y2 < y1 ? [0, 1, 0, 1] : [1, 0, 0, 1]; // Rot oder Grün
-
-        // Für jedes Segment (4 Punkte: 2 oben, 2 unten) dieselbe Farbe
-        colors.push(...color, ...color, ...color, ...color);
+function generateDatesBetween(startDate, endDate, n) {
+    if (n < 2) {
+        throw new Error('Die Anzahl der Einträge (n) muss mindestens 2 sein.');
     }
-    return new Float32Array(colors);
+
+    const start = new Date(startDate).getTime(); // Startdatum als Timestamp
+    const end = new Date(endDate).getTime(); // Enddatum als Timestamp
+
+    const interval = (end - start) / (n - 1); // Zeitintervall zwischen den Datumswerten
+
+    const dates = [];
+    for (let i = 0; i < n; i++) {
+        const currentTimestamp = start + i * interval;
+        dates.push(new Date(currentTimestamp));
+    }
+
+    return dates;
 }
 
-function createGraph(graphPoints, graphVertexShader, graphFragmentShader) {
-    const geometry = new PIXI.Geometry({
-        attributes: {
-            aPosition: createThickLine(graphPoints,50),
-            aColor: createThickLineColors(graphPoints),
-        },
-        topology: 'triangle-strip'
+
+// Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
+function parseCSV(csvString) {
+    const lines = csvString.split('\n'); // Aufteilen nach Zeilen
+    const headers = lines[0].split(',').map(h => h.trim()); // Erste Zeile als Header verwenden
+    function parseDate(dateString) {
+        // ISO-Format sicherstellen
+        return new Date(dateString.replace(" ", "T").replace(" UTC", "Z"));
+    }
+    // Restliche Zeilen in Objekte umwandeln
+    const data = lines.slice(1).filter(line => line?.length > 0).map(line => {
+        const values = line.split(',');
+        return headers.reduce((obj, header, index) => {
+            obj[header] = values[index] ? values[index].trim() : null;
+            if (header === 'snapped_at') {
+                obj[header] = parseDate(obj[header])
+            } else  if (header === 'price') {
+                obj[header] = parseFloat(obj[header])
+            } 
+            return obj;
+        }, {});
     });
-    const shader = PIXI.Shader.from({
-       gl: { vertex: graphVertexShader, fragment: graphFragmentShader }
-    });
-    const graph = new PIXI.Mesh({
-        geometry,
-        shader
-    });
-    return graph
+
+    return data;
 }
 
-const test = new Float32Array([
-    0,0,
-    100, 400,
-    200, 500, 
-    300, 100,  
-    400, 250 
-])
+// Funktion, um die CSV-Datei zu laden und zu parsen
+async function fetchCSV(filePath) {
+    try {
+        const response = await fetch(filePath);
+        if (!response.ok) {
+            throw new Error(`Fehler beim Laden der Datei: ${response.statusText}`);
+        }
+        const csvString = await response.text();
+        return parseCSV(csvString);
+    } catch (error) {
+        console.error("Fehler beim Laden der CSV-Datei:", error);
+        return [];
+    }
+}

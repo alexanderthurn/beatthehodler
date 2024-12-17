@@ -1,8 +1,8 @@
 precision mediump float;
 
-in vec2 aPosition;
-in vec4 aColor;
-out vec4 vColor;
+attribute vec2 aPosition;
+attribute vec4 aColor;
+varying vec4 vColor;
 
 uniform mat3 uProjectionMatrix;
 uniform mat3 uWorldTransformMatrix;
