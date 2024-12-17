@@ -6,6 +6,8 @@ async function loadShader(url) {
     return response.text(); // Shader als Text zurückgeben
 }
 
+
+
 function createThickLine(points, lineWidth) {
     const vertices = [];
     for (let i = 0; i < points.length - 2; i += 2) {

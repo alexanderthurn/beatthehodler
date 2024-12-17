@@ -11,6 +11,7 @@ function playBuySound(key) {
 
 }
 
+
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function drawGraph(filePath) {
     const graphVertexShader = await loadShader('./graph.vert')
@@ -80,25 +81,10 @@ async function drawGraph(filePath) {
 
 
     const buyPaused = 2000
-    const maxVisiblePoints = 100; // Anzahl der sichtbaren Punkte im Graph
-
-    let options = {
-        fiatStart: 1000,
-        dateStart: new Date(2011,0,1), // new Date(year, monthIndex, day, hours, minutes, seconds, milliseconds);
-        dateEnd: new Date(2030,0,1),
-        stops: 7
-    }
-
-    options.dateStart = parsedData[findClosestDateIndex(parsedData, options.dateStart)].snapped_at
-    options.dateEnd = parsedData[findClosestDateIndex(parsedData, options.dateEnd)].snapped_at
-    options.indexStart = Math.max(maxVisiblePoints, findClosestDateIndex(parsedData, options.dateStart))
-    options.indexEnd = Math.max(maxVisiblePoints, findClosestDateIndex(parsedData, options.dateEnd))
-    if (typeof options.stops === 'number' && !isNaN(options.stops)) {
-        options.stops = generateDatesBetween(options.dateStart, options.dateEnd, options.stops)
-    } else if (Array.isArray(options.stops)) {
-        options.stops = options.stops.map(d => typeof d === 'string' && parseDate(d))
-    }
-    options.stopIndizes = options.stops.map(d => findClosestDateIndex(parsedData, d))
+   
+    const gameData = await fetchGameData(parsedData)
+    let options = gameData.levels[0]
+    const maxVisiblePoints = gameData.maxVisiblePoints; // Anzahl der sichtbaren Punkte im Graph
 
    console.log(options, parsedData)
 

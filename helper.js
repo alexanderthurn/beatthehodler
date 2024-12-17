@@ -82,15 +82,15 @@ function generateDatesBetween(startDate, endDate, n) {
     return dates;
 }
 
-
+function parseDate(dateString) {
+    // ISO-Format sicherstellen
+    return new Date(dateString.replace(" ", "T").replace(" UTC", "Z"));
+}
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseCSV(csvString) {
     const lines = csvString.split('\n'); // Aufteilen nach Zeilen
     const headers = lines[0].split(',').map(h => h.trim()); // Erste Zeile als Header verwenden
-    function parseDate(dateString) {
-        // ISO-Format sicherstellen
-        return new Date(dateString.replace(" ", "T").replace(" UTC", "Z"));
-    }
+
     // Restliche Zeilen in Objekte umwandeln
     const data = lines.slice(1).filter(line => line?.length > 0).map(line => {
         const values = line.split(',');
@@ -120,5 +120,43 @@ async function fetchCSV(filePath) {
     } catch (error) {
         console.error("Fehler beim Laden der CSV-Datei:", error);
         return [];
+    }
+}
+
+// Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
+function parseGameData(jsonString, pricesData) {
+    var gameData = JSON.parse(jsonString)
+
+    gameData.levels.forEach(level => {
+        level.fiatStart = level.fiatStart || 1000
+        level.dateStart = new Date(2011,0,1)
+        level.dateEnd = new Date(2030,0,1)
+        level.stops = level.stops || 7
+        level.dateStart = pricesData[findClosestDateIndex(pricesData, level.dateStart)].snapped_at
+        level.dateEnd = pricesData[findClosestDateIndex(pricesData, level.dateEnd)].snapped_at
+        level.indexStart = Math.max(gameData.maxVisiblePoints, findClosestDateIndex(pricesData, level.dateStart))
+        level.indexEnd = Math.max(gameData.maxVisiblePoints, findClosestDateIndex(pricesData, level.dateEnd))
+        if (typeof level.stops === 'number' && !isNaN(level.stops)) {
+            level.stops = generateDatesBetween(level.dateStart, level.dateEnd, level.stops)
+        } else if (Array.isArray(level.stops)) {
+            level.stops = level.stops.map(d => typeof d === 'string' && parseDate(d))
+        }
+        level.stopIndizes = level.stops.map(d => findClosestDateIndex(pricesData, d))
+    })
+   
+    return gameData;
+}
+
+async function fetchGameData(pricesData) {
+    try {
+        const response = await fetch('./game.json');
+        if (!response.ok) {
+            throw new Error(`Fehler beim Laden der Datei: ${response.statusText}`);
+        }
+        const jsonString = await response.text();
+        return parseGameData(jsonString,pricesData);
+    } catch (error) {
+        console.error("Fehler beim Laden der JSON Game-Datei:", error);
+        return {};
     }
 }
