@@ -74,6 +74,7 @@ async function drawGraph(filePath) {
     const bitcoinLogo = new PIXI.Sprite(bitcoinSvg);
     app.stage.addChild(bitcoinLogo);
     bitcoinLogo.anchor.set(0.5,0.5)
+    bitcoinLogo.scale.set(0.001,0.001)
 
     const stackLabel = new PIXI.Text("", textStyle);
     stackLabel.anchor.set(0.5,1.0)
