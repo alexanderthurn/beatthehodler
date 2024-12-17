@@ -1,3 +1,16 @@
+const buySounds = {
+    BTC: new Audio('btc.wav'),
+    USD: new Audio('usd.wav')
+}
+
+function playBuySound(key) {
+    if (buySounds[key]) {
+        buySounds[key].currentTime = 0
+        buySounds[key].play()
+    }
+
+}
+
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function drawGraph(filePath) {
     const graphVertexShader = await loadShader('./graph.vert')
@@ -132,6 +145,7 @@ async function drawGraph(filePath) {
 
         }
 
+        playBuySound(trade.bought)
 
         trades.push(trade)
         app.stage.addChild(trade.container)
