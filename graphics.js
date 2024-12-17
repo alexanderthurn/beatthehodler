@@ -17,7 +17,7 @@ function createStockRectangles(dataPoints, rectWidth) {
         const prevY = dataPoints[i - 1].price;
         const currentY = dataPoints[i].price;
         const x = (i - 1) * rectWidth;
-        const halfWidth = rectWidth * 0.2
+        const halfWidth = rectWidth * 0.5
         // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
             x-halfWidth, prevY,                  // P1: Unten links

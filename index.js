@@ -97,7 +97,7 @@ async function drawGraph(filePath) {
     const buyPaused = 2000
    
     const gameData = await fetchGameData(parsedData)
-    let options = gameData.levels[0]
+    let options = gameData.levels[1]
     const maxVisiblePoints = gameData.maxVisiblePoints; // Anzahl der sichtbaren Punkte im Graph
 
 
