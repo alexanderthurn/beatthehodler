@@ -62,10 +62,11 @@ async function drawGraph(filePath) {
     });
     const dateLabel = new PIXI.Text("", textStyle);
     dateLabel.anchor.set(0.0,0.0)
+    dateLabel.alpha = 0.0
     app.stage.addChild(dateLabel);
 
     const priceLabel = new PIXI.Text("", textStyle);
-    priceLabel.anchor.set(1.5,1.0)
+    priceLabel.anchor.set(0.5,1.0)
     app.stage.addChild(priceLabel);
 
     const bitcoinSvg = await PIXI.Assets.load({
@@ -113,7 +114,7 @@ async function drawGraph(filePath) {
     let paused = Number.MAX_VALUE
     const trades = []
     
-    addEventListener('pointerup', () => {
+    const doTrade = () => {
         let price = parsedData[currentIndexInteger].price
         let trade =  {
             index: currentIndexInteger, 
@@ -160,7 +161,8 @@ async function drawGraph(filePath) {
         trades.push(trade)
         app.stage.addChild(trade.container)
         paused = buyPaused
-    })
+    }
+    addEventListener('pointerup', doTrade)
 
     const gameDurationMilliseconds = 90000
     const factorMilliSeconds =  parsedData.length / gameDurationMilliseconds; // Intervall in Sekunden
@@ -197,7 +199,12 @@ async function drawGraph(filePath) {
         let trade = trades.find(t => t.index === currentIndexInteger)
 
         if (stopIndex > -1) {
-            if (!trade && stopIndex < options.stopIndizes.length-1) {
+            
+            if (!trade && stopIndex === options.stopIndizes.length-1) {
+                doTrade()
+            }
+            
+            if (!trade) {
                 paused = Number.MAX_VALUE
                 bitcoinLogoSprite.alpha = deltaTime.lastTime % 1000 > 500 ? 1 : 0 
                 bitcoinLogoQuestion.alpha = 1.0 - bitcoinLogoSprite.alpha
@@ -206,6 +213,7 @@ async function drawGraph(filePath) {
                     maxVisiblePoints = options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex]+7
                 } else {
                     maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0] +7
+                
                 }
                
             }
@@ -214,7 +222,7 @@ async function drawGraph(filePath) {
 
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
-        textStyle.fontSize = Math.max(32, (Math.max(app.renderer.height, app.renderer.width) / 1080)*36)
+        textStyle.fontSize = Math.max(24, (Math.max(app.renderer.height, app.renderer.width) / 1080)*24)
         textStyle.stroke.width = textStyle.fontSize*0.2
 
         stackLabel.y = app.renderer.height;
@@ -237,13 +245,17 @@ async function drawGraph(filePath) {
         graph.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
         graph.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
         
-      
+        const currentDate = parsedData[currentIndexInteger]?.snapped_at;
+        if (currentDate) {
+            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
+        }
+
         const price = parsedData[currentIndexInteger].price
         const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-        priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
-        priceLabel.x = 0.9*priceLabel.x + 0.1*x
-        priceLabel.text = formatCurrency(price, 'USD',null, true) 
+        priceLabel.y = Math.min(app.renderer.height*0.8, Math.max(textStyle.fontSize*3, 0.8*priceLabel.y + 0.1*y))
+        priceLabel.x = 0.9*priceLabel.x + 0.1*(x - 100)
+        priceLabel.text = `${new Date(currentDate).toLocaleDateString()}` + "\n" + formatCurrency(price, 'USD',null, true) 
 
         /* DO NOOT DELETE !!!!!
         priceLabel.x = app.renderer.width*1
@@ -262,10 +274,7 @@ async function drawGraph(filePath) {
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, trade.coins / 10.0)))
          })
 
-        const currentDate = parsedData[currentIndexInteger]?.snapped_at;
-        if (currentDate) {
-            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
-        }
+      
 
         stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
