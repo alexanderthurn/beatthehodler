@@ -126,7 +126,7 @@ async function drawGraph(filePath) {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(parsedData)
-    let options = gameData.levels[2]
+    let options = gameData.levels[0]
     var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
 
     let yourCoins = 0
@@ -307,15 +307,19 @@ async function drawGraph(filePath) {
 
 
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
-        let maxPrice = 0
-        let minPrice = Number.MAX_VALUE
-        for (let i = currentIndexInteger-maxVisiblePoints+1; i <= currentIndexInteger; i++) {
+        let maxPrice = parsedData[currentIndexInteger].price
+        let minPrice = parsedData[currentIndexInteger].price
+        for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
             if (i > 0) {
                 maxPrice = Math.max(maxPrice, parsedData[i].price)
                 minPrice = Math.min(minPrice, parsedData[i].price)
             }
         }
        
+        if (maxPrice === minPrice) {
+            maxPrice=Math.max(100, parsedData[currentIndexInteger].price*2)
+            minPrice=0
+        }
         
         var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
         var scaleX = stepX
