@@ -155,6 +155,26 @@ async function fetchCSV(filePath) {
     }
 }
 
+function calculateLevelStatistics(level, pricesData) {
+    let fiatBest = level.fiatStart
+    let fiatWorst = level.fiatStart
+    for (let i=1;i<level.stopIndizes.length;i++) {
+        let price1 = pricesData[level.stopIndizes[i]].price 
+        let price2 = pricesData[level.stopIndizes[i-1]].price
+        let factor = price1/ price2
+        if (factor > 1.0) {
+            fiatBest*=factor  
+        } else {
+            fiatWorst*=factor
+        }
+    }
+
+    level.fiatBest = fiatBest
+    level.fiatWorst = fiatWorst
+    console.log(level)
+}
+
+
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseGameData(jsonString, pricesData) {
     var gameData = JSON.parse(jsonString)
@@ -174,6 +194,7 @@ function parseGameData(jsonString, pricesData) {
             level.stops = level.stops.map(d => typeof d === 'string' && parseDate(d))
         }
         level.stopIndizes = level.stops.map(d => findClosestDateIndex(pricesData, d))
+        calculateLevelStatistics(level, pricesData)
     })
    
     return gameData;

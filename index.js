@@ -332,7 +332,8 @@ async function drawGraph(filePath) {
             let txt = "Congratulations\n\n" 
             txt += `You went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
             txt += `within\n${options.dateStart.toLocaleDateString()} to ${options.dateEnd.toLocaleDateString()}\n\n`
-            txt += "Maximum would have been:\n4.000.000$\n\n"
+            txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
+            txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += "Try again?"
             priceLabel.text = txt
             priceLabel.x = 0.05*app.renderer.width
