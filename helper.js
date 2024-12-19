@@ -1,7 +1,7 @@
 function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
     const locale = 'de-DE' // navigator.language;
 
-    if (!fractionDigits) {
+    if (abbreviate) {
         if (price < 0.001) {
             fractionDigits = 8
         } else if (price < 0.01) {
@@ -172,7 +172,6 @@ function calculateLevelStatistics(level, pricesData) {
 
     level.fiatBest = fiatBest
     level.fiatWorst = fiatWorst
-    console.log(level)
 }
 
 

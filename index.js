@@ -126,15 +126,15 @@ async function drawGraph(filePath) {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(parsedData)
-    let options = gameData.levels[1]
-    var maxVisiblePoints = maxVisiblePoints = options.stopIndizes[1] - options.stopIndizes[0]+7
+    let options = gameData.levels[2]
+    var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
 
     let yourCoins = 0
     let yourFiat = options.fiatStart
     let paused = Number.MAX_VALUE
 
-    const gameDurationMilliseconds = 90000
-    const factorMilliSeconds =  parsedData.length / gameDurationMilliseconds; // Intervall in Sekunden
+    const gameDurationMilliseconds = 10000
+    const factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
     let currentIndexFloat = options.indexStart; // Zeitverfolgung
     let currentIndexInteger = Math.floor(currentIndexFloat)
 
@@ -150,18 +150,18 @@ async function drawGraph(filePath) {
             coins: yourCoins, 
             fiat: yourFiat,
             sprite: null,
-            container: new PIXI.Container()
+            container: new PIXI.Container(),
+            labelPrice: new PIXI.Text(formatCurrency(price, 'USD',null, true) , textStyle)
         }
         
         trade.sold = from
         trade.bought = to
-        const labelPrice = new PIXI.Text(formatCurrency(price, 'USD',null, true) , textStyle);
-        labelPrice.anchor.set(0.5,1.5)
-        trade.container.addChild(labelPrice)
+        trade.labelPrice.anchor.set(0.5,1.5)
+        trade.container.addChild(trade.labelPrice)
 
 
         if (from === to) {
-            labelPrice.scale.set(1.0)
+            trade.labelPrice.scale.set(1.0)
             //playBuySound('NOTHING')
         } else if (from  === 'BTC') {
             trade.coins = yourCoins
@@ -256,12 +256,22 @@ async function drawGraph(filePath) {
             currentIndexFloat = options.indexEnd
         }
         currentIndexInteger = Math.floor(currentIndexFloat)
+
+        let missedStopIndex = options.stopIndizes.findIndex(stop => stop < currentIndexInteger && !trades.find(t => t.index === stop))
+        if (missedStopIndex > -1) {
+            currentIndexFloat = options.stopIndizes[missedStopIndex]
+            currentIndexInteger = Math.floor(currentIndexFloat)
+        }
+        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+        let trade = trades.find(t => t.index === currentIndexInteger)
+
+
+        
+        
         bitcoinLogoSprite.alpha = 1.0
         bitcoinLogoQuestion.alpha = 0.0
         bitcoinLogoSprite.texture = coinTextures['BTC']
 
-        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
-        let trade = trades.find(t => t.index === currentIndexInteger)
 
         if (stopIndex > -1) {
             
@@ -271,14 +281,14 @@ async function drawGraph(filePath) {
             
             if (!trade) {
                 paused = Number.MAX_VALUE
-                bitcoinLogoSprite.alpha = deltaTime.lastTime % 1500 > 500 ? 1 : 0 
-                bitcoinLogoSprite.texture = deltaTime.lastTime % 1500 > 1000 ? coinTextures['BTC'] : coinTextures['USD']
-                bitcoinLogoQuestion.alpha = 1.0 - bitcoinLogoSprite.alpha
+                //bitcoinLogoSprite.alpha = deltaTime.lastTime % 1500 > 500 ? 1 : 0 
+                //bitcoinLogoSprite.texture = deltaTime.lastTime % 1500 > 1000 ? coinTextures['BTC'] : coinTextures['USD']
+                //bitcoinLogoQuestion.alpha = 1.0 - bitcoinLogoSprite.alpha
             } else {
                 if (stopIndex < options.stopIndizes.length-1) {
-                    maxVisiblePoints = options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex]+7
+                    maxVisiblePoints = Math.max(7, Math.floor((options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex])*1.1))
                 } else {
-                    maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0] +7
+                    maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0]
                 
                 }
                
@@ -300,8 +310,10 @@ async function drawGraph(filePath) {
         let maxPrice = 0
         let minPrice = Number.MAX_VALUE
         for (let i = currentIndexInteger-maxVisiblePoints+1; i <= currentIndexInteger; i++) {
-            maxPrice = Math.max(maxPrice, parsedData[i].price)
-            minPrice = Math.min(minPrice, parsedData[i].price)
+            if (i > 0) {
+                maxPrice = Math.max(maxPrice, parsedData[i].price)
+                minPrice = Math.min(minPrice, parsedData[i].price)
+            }
         }
        
         
@@ -313,8 +325,6 @@ async function drawGraph(filePath) {
         graph.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
         
         const currentDate = parsedData[currentIndexInteger]?.snapped_at;
-   
-
         const price = parsedData[currentIndexInteger].price
         const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
@@ -329,7 +339,7 @@ async function drawGraph(filePath) {
         } else {
             let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
             let txt = "Congratulations\n\n" 
-            txt += `You went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
+            txt += `You traded ${trades.filter(t => t.bought !== t.sold).length} times\n\nand went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
             txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
             txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
@@ -341,7 +351,7 @@ async function drawGraph(filePath) {
         dateLabel.x = 0.05*app.renderer.width
         dateLabel.y = 0.05*app.renderer.width
         if (stopIndex === 0) {
-            dateLabel.text = `You will trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
+            dateLabel.text = `You can trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
             dateLabel.alpha = 1
         }
 
@@ -362,9 +372,17 @@ async function drawGraph(filePath) {
         trades.forEach((trade) => {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            if ( trade.sprite) {
+            if (trade.sprite) {
                 trade.sprite.height = trade.sprite.width = app.renderer.width*0.05
             }
+            //if (trade.index > currentIndexInteger - maxVisiblePoints && app.stage.toGlobal(trade.container.position).x - trade.labelPrice.width*0.5 < 0) {  
+            if (trade.index > currentIndexInteger - maxVisiblePoints) {  
+                trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
+            } else {
+                trade.labelPrice.position.set(0,0)
+
+            }
+            
          })
 
       
