@@ -72,7 +72,6 @@ async function drawGraph(filePath) {
     textStyleCentered.wordWrap = true
     const dateLabel = new PIXI.Text("", textStyle);
     dateLabel.anchor.set(0.0,0.0)
-    dateLabel.alpha = 0.0
     containerForeground.addChild(dateLabel);
 
     const priceLabel = new PIXI.Text("", textStyle);
@@ -314,9 +313,7 @@ async function drawGraph(filePath) {
         graph.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
         
         const currentDate = parsedData[currentIndexInteger]?.snapped_at;
-        if (currentDate) {
-            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}`;
-        }
+   
 
         const price = parsedData[currentIndexInteger].price
         const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
@@ -327,17 +324,25 @@ async function drawGraph(filePath) {
             priceLabel.y = Math.min(app.renderer.height-priceLabel.height, Math.max(priceLabel.y, 0))
             priceLabel.x = 0.9*priceLabel.x + 0.1*(x - priceLabel.width*1.1)
             priceLabel.x = Math.min(app.renderer.width-priceLabel.width, Math.max(priceLabel.x, 0))
+            priceLabel.alpha = 1
+            dateLabel.alpha = 0
         } else {
             let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
             let txt = "Congratulations\n\n" 
             txt += `You went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
-            txt += `within\n${options.dateStart.toLocaleDateString()} to ${options.dateEnd.toLocaleDateString()}\n\n`
+            txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
             txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += "Try again?"
-            priceLabel.text = txt
-            priceLabel.x = 0.05*app.renderer.width
-            priceLabel.y = 0.05*app.renderer.width//0.1*app.renderer.height
+            dateLabel.text = txt
+            priceLabel.alpha = 0
+            dateLabel.alpha = 1
+        }
+        dateLabel.x = 0.05*app.renderer.width
+        dateLabel.y = 0.05*app.renderer.width
+        if (stopIndex === 0) {
+            dateLabel.text = `You will trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
+            dateLabel.alpha = 1
         }
 
 
@@ -373,6 +378,11 @@ async function drawGraph(filePath) {
         backgroundLabel.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
 
 
+        if (stopIndex === 0) {
+            coinButtonContainerTitle.text = 'What do you want?'
+        } else {
+            coinButtonContainerTitle.text = 'Want to trade?'
+        }
        
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
             coinButtonContainerTitle.x =app.renderer.width*0.5 

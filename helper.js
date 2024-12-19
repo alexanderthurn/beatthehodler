@@ -80,6 +80,7 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
 
     return formatted;
 }
+
 function findClosestDateIndex(array, targetDate) {
     const targetTime = targetDate.getTime(); // Zielzeit in Millisekunden
 
