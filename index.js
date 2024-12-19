@@ -106,7 +106,7 @@ async function drawGraph(filePath) {
    
     const gameData = await fetchGameData(parsedData)
     let options = gameData.levels[1]
-    var maxVisiblePoints = maxVisiblePoints = options.stopIndizes[1] - options.stopIndizes[0]+10
+    var maxVisiblePoints = maxVisiblePoints = options.stopIndizes[1] - options.stopIndizes[0]+7
 
     let yourCoins = 0
     let yourFiat = options.fiatStart
@@ -150,6 +150,10 @@ async function drawGraph(filePath) {
             trade.container.addChild(trade.sprite)
 
         }
+        const labelPrice = new PIXI.Text(formatCurrency(price, 'USD',null, true) , textStyle);
+        labelPrice.anchor.set(0.5,0.5)
+        trade.container.addChild(labelPrice)
+
 
         playBuySound(trade.bought)
 
@@ -190,18 +194,18 @@ async function drawGraph(filePath) {
         bitcoinLogoSprite.alpha = 1.0
         bitcoinLogoQuestion.alpha = 0.0
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+        let trade = trades.find(t => t.index === currentIndexInteger)
+
         if (stopIndex > -1) {
-            let trade = trades.find(t => t.index === currentIndexInteger)
             if (!trade && stopIndex < options.stopIndizes.length-1) {
                 paused = Number.MAX_VALUE
-
                 bitcoinLogoSprite.alpha = deltaTime.lastTime % 1000 > 500 ? 1 : 0 
                 bitcoinLogoQuestion.alpha = 1.0 - bitcoinLogoSprite.alpha
             } else {
                 if (stopIndex < options.stopIndizes.length-1) {
-                    maxVisiblePoints = options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex]+10
+                    maxVisiblePoints = options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex]+7
                 } else {
-                    maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0] +10
+                    maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0] +7
                 }
                
             }
