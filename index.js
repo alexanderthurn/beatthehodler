@@ -60,13 +60,16 @@ async function drawGraph(filePath) {
         wordWrap: false,
         wordWrapWidth: 440,
     });
+
+    const textStyleCentered = textStyle.clone()
+    textStyleCentered.align = 'center'
     const dateLabel = new PIXI.Text("", textStyle);
     dateLabel.anchor.set(0.0,0.0)
     dateLabel.alpha = 0.0
     app.stage.addChild(dateLabel);
 
     const priceLabel = new PIXI.Text("", textStyle);
-    priceLabel.anchor.set(0.5,1.0)
+    priceLabel.anchor.set(0.0,0.0)
     app.stage.addChild(priceLabel);
 
     const bitcoinSvg = await PIXI.Assets.load({
@@ -85,7 +88,7 @@ async function drawGraph(filePath) {
     bitcoinLogo.addChild(bitcoinLogoQuestion);
 
 
-    const stackLabel = new PIXI.Text("", textStyle);
+    const stackLabel = new PIXI.Text("", textStyleCentered);
     stackLabel.anchor.set(0.5,1.0)
     app.stage.addChild(stackLabel);
 
@@ -103,7 +106,7 @@ async function drawGraph(filePath) {
     backgroundLabel.rotation =  0.1;
     backgroundLabel.alpha = 0.1;
 
-    const buyPaused = 2000
+    const buyPaused = 1000
    
     const gameData = await fetchGameData(parsedData)
     let options = gameData.levels[1]
@@ -222,8 +225,9 @@ async function drawGraph(filePath) {
 
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
-        textStyle.fontSize = Math.max(24, (Math.max(app.renderer.height, app.renderer.width) / 1080)*24)
-        textStyle.stroke.width = textStyle.fontSize*0.2
+        textStyleCentered.fontSize =  textStyle.fontSize = Math.max(24, (Math.max(app.renderer.height, app.renderer.width) / 1080)*24)
+        textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
+        
 
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
@@ -253,10 +257,24 @@ async function drawGraph(filePath) {
         const price = parsedData[currentIndexInteger].price
         const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-        priceLabel.y = Math.min(app.renderer.height*0.8, Math.max(textStyle.fontSize*3, 0.8*priceLabel.y + 0.1*y))
-        priceLabel.x = 0.9*priceLabel.x + 0.1*(x - 100)
-        priceLabel.text = `${new Date(currentDate).toLocaleDateString()}` + "\n" + formatCurrency(price, 'USD',null, true) 
-
+        if (currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1]) {
+            priceLabel.text = (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n\n` : '\n\n\n') + `${new Date(currentDate).toLocaleDateString()}` + "\n1\u20BF = " + formatCurrency(price, 'USD',null, true) 
+            priceLabel.y = 0.9*priceLabel.y + 0.1*(y -priceLabel.height*0.5)
+            priceLabel.y = Math.min(app.renderer.height-priceLabel.height, Math.max(priceLabel.y, 0))
+            priceLabel.x = 0.9*priceLabel.x + 0.1*(x - priceLabel.width*1.1)
+            priceLabel.x = Math.min(app.renderer.width-priceLabel.width, Math.max(priceLabel.x, 0))
+        } else {
+            let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
+            let txt = "Congratulations\n\n" 
+            txt += `You went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
+            txt += `within\n${options.dateStart.toLocaleDateString()} to ${options.dateEnd.toLocaleDateString()}\n\n`
+            txt += "Maximum would have been:\n4.000.000$\n\n"
+            txt += "Try again?"
+            priceLabel.text = txt
+            priceLabel.x = 0.1*app.renderer.width
+            priceLabel.y = 0.1*app.renderer.height
+        }
+        
         /* DO NOOT DELETE !!!!!
         priceLabel.x = app.renderer.width*1
         priceLabel.y = app.renderer.height*0.8
@@ -276,8 +294,9 @@ async function drawGraph(filePath) {
 
       
 
-        stackLabel.text = (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
+        stackLabel.text = "You have\n" + (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
+        background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
 
         backgroundLabel.text = yourCoins > 0 ? "\u20BF" : '$'
         backgroundLabel.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;

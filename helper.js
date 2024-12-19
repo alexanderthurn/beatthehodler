@@ -163,7 +163,7 @@ function parseGameData(jsonString, pricesData) {
         level.fiatStart = level.fiatStart || 1000
         level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].snapped_at
         level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].snapped_at
-        level.stops = level.stops || 7
+        level.stops = level.stops || 8
         level.dateStart = pricesData[findClosestDateIndex(pricesData, level.dateStart)].snapped_at
         level.dateEnd = pricesData[findClosestDateIndex(pricesData, level.dateEnd)].snapped_at
         level.indexStart = Math.max(0, findClosestDateIndex(pricesData, level.dateStart))
