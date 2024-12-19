@@ -4,6 +4,7 @@ const buySounds = {
     NOTHING: new Audio('nothing.wav'),
 }
 
+
 function playBuySound(key) {
     if (buySounds[key]) {
         buySounds[key].currentTime = 0
@@ -78,19 +79,24 @@ async function drawGraph(filePath) {
     priceLabel.anchor.set(0.0,0.0)
     containerForeground.addChild(priceLabel);
 
-    const btcTexture = await PIXI.Assets.load({
+
+    const coinTextures = {}
+    
+    coinTextures['BTC'] = await PIXI.Assets.load({
         src: './btc.png',
     });
 
-    const usdTexture = await PIXI.Assets.load({
+    coinTextures['USD'] = await PIXI.Assets.load({
         src: './usd.png',
     });
+
+
 
     
 
 
     const bitcoinLogo = new PIXI.Container()
-    const bitcoinLogoSprite = new PIXI.Sprite(btcTexture);
+    const bitcoinLogoSprite = new PIXI.Sprite(coinTextures['BTC']);
     bitcoinLogo.addChild(bitcoinLogoSprite)
     containerForeground.addChild(bitcoinLogo);
     bitcoinLogoSprite.anchor.set(0.5,0.5)
@@ -162,7 +168,7 @@ async function drawGraph(filePath) {
             trade.coins = yourCoins
             yourFiat = yourCoins * price
             yourCoins = 0
-            trade.sprite = new PIXI.Sprite(usdTexture)
+            trade.sprite = new PIXI.Sprite(coinTextures[to] )
             trade.sprite.anchor.set(0.5,0.5)
             trade.container.addChildAt(trade.sprite, 0)
             playBuySound(trade.bought)
@@ -170,7 +176,7 @@ async function drawGraph(filePath) {
             trade.fiat = yourFiat
             yourCoins = yourFiat / price
             yourFiat = 0
-            trade.sprite = new PIXI.Sprite(btcTexture)
+            trade.sprite = new PIXI.Sprite(coinTextures[to] )
             trade.sprite.anchor.set(0.5,0.5)
             trade.container.addChildAt(trade.sprite, 0)
             playBuySound(trade.bought)
@@ -181,14 +187,47 @@ async function drawGraph(filePath) {
         containerBackground.addChild(trade.container)
         paused = buyPaused
     }
+
+
+    const coinButtons = ['USD', 'BTC'].map((c,i) => {
+        let container = new PIXI.Container()
+        let sprite = new PIXI.Sprite(coinTextures[c]);
+        sprite.anchor.set(0.5,0.5)
+        container.addChild(sprite)
+        return {
+            to: c,
+            index: i,
+            container: container,
+            sprite: sprite
+        }
+    })
+
+    const coinButtonContainer = new PIXI.Container()
+    let coinButtonContainerTitle = new PIXI.Text('What do you want?', textStyleCentered)
+    coinButtonContainerTitle.anchor.set(0.5,0.)
+    coinButtonContainer.addChild(coinButtonContainerTitle)
+    coinButtons.forEach(b => {
+        coinButtonContainer.addChild(b.container)
+    })
+    containerForeground.addChild(coinButtonContainer)
+
     addEventListener('pointerup', (event) => {
 
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
 
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1) {
-            var to = event.x > app.renderer.width*0.5 ? 'BTC' : 'USD'
+            
+            let xR = event.x - coinButtonContainer.x
+            let yR = event.y - coinButtonContainer.y
+            if (yR > 0) {
+                let i = Math.floor(xR/app.renderer.width *coinButtons.length)
 
-            doTrade(yourCoins > 0 ? 'BTC' : 'USD',to )
+                if (i >= 0 && i < coinButtons.length) {
+                    doTrade(yourCoins > 0 ? 'BTC' : 'USD',coinButtons[i].to )
+                }
+               
+            }
+           
         }
 
     })
@@ -220,7 +259,7 @@ async function drawGraph(filePath) {
         currentIndexInteger = Math.floor(currentIndexFloat)
         bitcoinLogoSprite.alpha = 1.0
         bitcoinLogoQuestion.alpha = 0.0
-        bitcoinLogoSprite.texture = btcTexture
+        bitcoinLogoSprite.texture = coinTextures['BTC']
 
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
         let trade = trades.find(t => t.index === currentIndexInteger)
@@ -234,7 +273,7 @@ async function drawGraph(filePath) {
             if (!trade) {
                 paused = Number.MAX_VALUE
                 bitcoinLogoSprite.alpha = deltaTime.lastTime % 1500 > 500 ? 1 : 0 
-                bitcoinLogoSprite.texture = deltaTime.lastTime % 1500 > 1000 ? btcTexture : usdTexture
+                bitcoinLogoSprite.texture = deltaTime.lastTime % 1500 > 1000 ? coinTextures['BTC'] : coinTextures['USD']
                 bitcoinLogoQuestion.alpha = 1.0 - bitcoinLogoSprite.alpha
             } else {
                 if (stopIndex < options.stopIndizes.length-1) {
@@ -332,6 +371,25 @@ async function drawGraph(filePath) {
         backgroundLabel.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundLabel.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
 
+
+       
+        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
+            coinButtonContainerTitle.x =app.renderer.width*0.5 
+            coinButtons.forEach(b => {
+                b.sprite.height = b.sprite.width = Math.min(app.renderer.height*0.1, app.renderer.width*0.9 / coinButtons.length)
+                b.container.x = (app.renderer.width / coinButtons.length)*(b.index+0.5)
+                b.container.y = b.sprite.height
+                b.sprite.rotation = Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1
+                b.sprite.alpha = (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
+            })
+            coinButtonContainer.y = app.renderer.height - coinButtons[0].sprite.height*2
+
+            coinButtonContainer.alpha = 1
+           //stackLabel.alpha = 0
+        } else {
+            coinButtonContainer.alpha = 0
+           // stackLabel.alpha = 1
+        }
     });
 }
 
