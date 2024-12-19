@@ -71,10 +71,18 @@ async function drawGraph(filePath) {
     const bitcoinSvg = await PIXI.Assets.load({
         src: './bitcoin.png',
     });
-    const bitcoinLogo = new PIXI.Sprite(bitcoinSvg);
+
+
+    const bitcoinLogo = new PIXI.Container()
+    const bitcoinLogoSprite = new PIXI.Sprite(bitcoinSvg);
+    bitcoinLogo.addChild(bitcoinLogoSprite)
     app.stage.addChild(bitcoinLogo);
-    bitcoinLogo.anchor.set(0.5,0.5)
-    bitcoinLogo.scale.set(0.001,0.001)
+    bitcoinLogoSprite.anchor.set(0.5,0.5)
+    bitcoinLogoSprite.scale.set(0.001,0.001)
+    const bitcoinLogoQuestion = new PIXI.Text("?", textStyle)
+    bitcoinLogoQuestion.anchor.set(0.5,0.5)
+    bitcoinLogo.addChild(bitcoinLogoQuestion);
+
 
     const stackLabel = new PIXI.Text("", textStyle);
     stackLabel.anchor.set(0.5,1.0)
@@ -98,8 +106,7 @@ async function drawGraph(filePath) {
    
     const gameData = await fetchGameData(parsedData)
     let options = gameData.levels[1]
-    const maxVisiblePoints = gameData.maxVisiblePoints; // Anzahl der sichtbaren Punkte im Graph
-
+    var maxVisiblePoints = maxVisiblePoints = options.stopIndizes[1] - options.stopIndizes[0]+10
 
     let yourCoins = 0
     let yourFiat = options.fiatStart
@@ -179,8 +186,27 @@ async function drawGraph(filePath) {
         if (currentIndexFloat > options.indexEnd) {
             currentIndexFloat = options.indexEnd
         }
-
         currentIndexInteger = Math.floor(currentIndexFloat)
+        bitcoinLogoSprite.alpha = 1.0
+        bitcoinLogoQuestion.alpha = 0.0
+        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+        if (stopIndex > -1) {
+            let trade = trades.find(t => t.index === currentIndexInteger)
+            if (!trade && stopIndex < options.stopIndizes.length-1) {
+                paused = Number.MAX_VALUE
+
+                bitcoinLogoSprite.alpha = deltaTime.lastTime % 1000 > 500 ? 1 : 0 
+                bitcoinLogoQuestion.alpha = 1.0 - bitcoinLogoSprite.alpha
+            } else {
+                if (stopIndex < options.stopIndizes.length-1) {
+                    maxVisiblePoints = options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex]+10
+                } else {
+                    maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0] +10
+                }
+               
+            }
+        }
+
 
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
@@ -191,7 +217,7 @@ async function drawGraph(filePath) {
         stackLabel.x = 0.5*app.renderer.width
 
 
-        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.85;
+        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         let maxPrice = 0
         let minPrice = Number.MAX_VALUE
         for (let i = currentIndexInteger-maxVisiblePoints+1; i <= currentIndexInteger; i++) {
@@ -200,9 +226,6 @@ async function drawGraph(filePath) {
         }
        
         
-
-
-//-(price-minPrice)/(maxPrice-minPrice);
         var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
         var scaleX = stepX
         graph.position.set(- (currentIndexInteger-maxVisiblePoints+1)*scaleX, app.renderer.height*0.9-minPrice*scaleY);
@@ -212,7 +235,7 @@ async function drawGraph(filePath) {
         
       
         const price = parsedData[currentIndexInteger].price
-        const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+1)) * stepX;
+        const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
         priceLabel.y = Math.min(app.renderer.height*0.9, Math.max(textStyle.fontSize*2, 0.9*priceLabel.y + 0.1*y))
         priceLabel.x = 0.9*priceLabel.x + 0.1*x
@@ -226,11 +249,11 @@ async function drawGraph(filePath) {
         
         bitcoinLogo.x = x
         bitcoinLogo.y = y 
-        bitcoinLogo.height = bitcoinLogo.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
+        bitcoinLogoSprite.height = bitcoinLogoSprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
     
         
         trades.forEach((trade) => {
-            trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+1)) * stepX;
+            trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, trade.coins / 10.0)))
          })

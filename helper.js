@@ -44,7 +44,6 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
 
             const parts = new Intl.NumberFormat(locale, { style: 'currency', currency }).formatToParts(1);
             const symbolIndex = parts.findIndex(part => part.type === 'currency');
-            console.log(parts, symbolIndex)
             // Suffix hinzufügen
             if (symbolIndex < 1) {
                 formatted += suffixes[tier];
@@ -167,8 +166,8 @@ function parseGameData(jsonString, pricesData) {
         level.stops = level.stops || 7
         level.dateStart = pricesData[findClosestDateIndex(pricesData, level.dateStart)].snapped_at
         level.dateEnd = pricesData[findClosestDateIndex(pricesData, level.dateEnd)].snapped_at
-        level.indexStart = Math.max(gameData.maxVisiblePoints-1, findClosestDateIndex(pricesData, level.dateStart))
-        level.indexEnd = Math.max(gameData.maxVisiblePoints-1, findClosestDateIndex(pricesData, level.dateEnd))
+        level.indexStart = Math.max(0, findClosestDateIndex(pricesData, level.dateStart))
+        level.indexEnd = Math.max(0, findClosestDateIndex(pricesData, level.dateEnd))
         if (typeof level.stops === 'number' && !isNaN(level.stops)) {
             level.stops = generateDatesBetween(level.dateStart, level.dateEnd, level.stops)
         } else if (Array.isArray(level.stops)) {
