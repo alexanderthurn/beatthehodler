@@ -1,16 +1,18 @@
-const buySounds = {
-    BTC: new Audio('sfx/btc.wav'),
-    USD: new Audio('sfx/usd.wav'),
-    NOTHING: new Audio('sfx/nothing.wav'),
+const coins = {
+    USD: { image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', audio: null, texture: null, digits: 2},
+    BTC: { image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', digits: 8},
+    ADA: { image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', digits: 2},
+    DOGE: { image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', digits: 2},
+    ETH: { image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', digits: 2},
+    SOL: { image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', digits: 2},
 }
 
 
 function playBuySound(key) {
-    if (buySounds[key]) {
-        buySounds[key].currentTime = 0
-        buySounds[key].play()
+    if (coins[key].audio) {
+        coins[key].audio.currentTime = 0
+        coins[key].audio.play()
     }
-
 }
 
 
@@ -74,31 +76,19 @@ async function drawGraph(filePath) {
     dateLabel.anchor.set(0.0,0.0)
     containerForeground.addChild(dateLabel);
 
+    await Promise.all(Object.keys(coins).map(async (key) => {
+        coins[key].texture = await PIXI.Assets.load({
+            src: coins[key].image,
+        });
 
-
-
-    const coinTextures = {}
-    
-    coinTextures['BTC'] = await PIXI.Assets.load({
-        src: './gfx/btc.png',
-    });
-
-    coinTextures['USD'] = await PIXI.Assets.load({
-        src: './gfx/usd.png',
-    });
-
-
-
-    
-
-
-    
+        coins[key].audio = new Audio(coins[key].sound)
+    }))
 
     const stackLabel = new PIXI.Text("", textStyleCentered);
     stackLabel.anchor.set(0.5,1.1)
     containerForeground.addChild(stackLabel);
 
-    const backgroundImage = new PIXI.Sprite(coinTextures['BTC']);
+    const backgroundImage = new PIXI.Sprite(coins['BTC'].texture);
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
@@ -106,11 +96,13 @@ async function drawGraph(filePath) {
 
     const buyPaused = 1000
    
-    const gameData = await fetchGameData(parsedData)
+    const gameData = await fetchGameData(parsedData, coins)
     let options = gameData.levels[1]
     var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
 
     let yourCoins = 0
+    let yourCoinName = Object.keys(coins)[0]
+    let fiatName = Object.keys(coins)[0]
     let yourFiat = options.fiatStart
     let paused = Number.MAX_VALUE
 
@@ -132,7 +124,7 @@ async function drawGraph(filePath) {
             fiat: yourFiat,
             sprite: null,
             container: new PIXI.Container(),
-            labelPrice: new PIXI.Text(formatCurrency(price, 'USD',null, true) , textStyle)
+            labelPrice: new PIXI.Text(formatCurrency(price, fiatName,null, true) , textStyle)
         }
         
         trade.sold = from
@@ -144,19 +136,21 @@ async function drawGraph(filePath) {
         if (from === to) {
             trade.labelPrice.scale.set(1.0)
             //playBuySound('NOTHING')
-        } else if (from  === 'BTC') {
+        } else if (from !== fiatName) {
             trade.coins = yourCoins
             yourFiat = yourCoins * price
             yourCoins = 0
-            trade.sprite = new PIXI.Sprite(coinTextures[to] )
+            yourCoinName = fiatName
+            trade.sprite = new PIXI.Sprite(coins[to].texture )
             trade.sprite.anchor.set(0.5,0.5)
             trade.container.addChildAt(trade.sprite, 0)
             playBuySound(trade.bought)
         } else {
             trade.fiat = yourFiat
             yourCoins = yourFiat / price
+            yourCoinName = to
             yourFiat = 0
-            trade.sprite = new PIXI.Sprite(coinTextures[to] )
+            trade.sprite = new PIXI.Sprite(coins[to].texture)
             trade.sprite.anchor.set(0.5,0.5)
             trade.container.addChildAt(trade.sprite, 0)
             playBuySound(trade.bought)
@@ -169,9 +163,9 @@ async function drawGraph(filePath) {
     }
 
 
-    const coinButtons = ['USD', 'BTC'].map((c,i) => {
+    const coinButtons = options.coinNames.map((c,i) => {
         let container = new PIXI.Container()
-        let sprite = new PIXI.Sprite(coinTextures[c]);
+        let sprite = new PIXI.Sprite(coins[c].texture);
         sprite.anchor.set(0.5,0.5)
         container.addChild(sprite)
         return {
@@ -203,7 +197,7 @@ async function drawGraph(filePath) {
                 let i = Math.floor(xR/app.renderer.width *coinButtons.length)
 
                 if (i >= 0 && i < coinButtons.length) {
-                    doTrade(yourCoins > 0 ? 'BTC' : 'USD',coinButtons[i].to )
+                    doTrade(yourCoins > 0 ? yourCoinName : fiatName,coinButtons[i].to )
                 }
                
             }
@@ -213,7 +207,7 @@ async function drawGraph(filePath) {
     })
 
 
-    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader, 'BTC', coinTextures, textStyle)
+    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader, 'BTC', coins, textStyle)
     graph.position.set(0, 0);
     containerBackground.addChildAt(graph,1);
 
@@ -249,7 +243,7 @@ async function drawGraph(filePath) {
         if (stopIndex > -1) {
             
             if (!trade && stopIndex === options.stopIndizes.length-1) {
-                doTrade(yourCoins > 0 ? 'BTC' : 'USD', 'USD')
+                doTrade(yourCoins > 0 ? yourCoinName : fiatName, fiatName)
             }
             
             if (!trade) {
@@ -274,19 +268,19 @@ async function drawGraph(filePath) {
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
 
-        updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen)
+        updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName)
 
        
         if (!isFinalScreen) {
             dateLabel.alpha = 1
-            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, 'USD',null, true) : '\n')     
+            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, fiatName,null, true) : '\n')     
         } else {
             let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
             let txt = "Congratulations\n\n" 
-            txt += `You traded ${trades.filter(t => t.bought !== t.sold).length} times\n\nand went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
+            txt += `You traded ${trades.filter(t => t.bought !== t.sold).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
             txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
-            txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
-            txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
+            txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
+            txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += "Try again?"
             dateLabel.text = txt
             dateLabel.alpha = 1
@@ -300,7 +294,7 @@ async function drawGraph(filePath) {
      /* DO NOOT DELETE !!!!!
         priceLabel.x = app.renderer.width*1
         priceLabel.y = app.renderer.height*0.8
-        priceLabel.text = formatCurrency(0.00021, 'USD',null, true) + '\n' + formatCurrency(0.0021, 'USD',null, true) + '\n' + formatCurrency(0.021, 'USD',null, true) + '\n' +  formatCurrency(0.21, 'USD',null, true) + '\n' + formatCurrency(2.21, 'USD',null, true) + '\n' + formatCurrency(21.21, 'USD',null, true) + '\n' + formatCurrency(212.21, 'USD',null, true) + '\n' + formatCurrency(2121.21, 'USD',null, true) + '\n' + formatCurrency(21212.21, 'USD',null, true) + '\n' + formatCurrency(221212.21, 'USD',null, true) + '\n' + formatCurrency(2212121.21, 'USD',null, true) + '\n' + formatCurrency(22121212.21, 'USD',null, true)  + '\n' + formatCurrency(221212121.21, 'USD',null, true) + '\n' + formatCurrency(2212121221.21, 'USD',null, true) 
+        priceLabel.text = formatCurrency(0.00021, fiatName,null, true) + '\n' + formatCurrency(0.0021, fiatName,null, true) + '\n' + formatCurrency(0.021, fiatName,null, true) + '\n' +  formatCurrency(0.21, fiatName,null, true) + '\n' + formatCurrency(2.21, fiatName,null, true) + '\n' + formatCurrency(21.21, fiatName,null, true) + '\n' + formatCurrency(212.21, fiatName,null, true) + '\n' + formatCurrency(2121.21, fiatName,null, true) + '\n' + formatCurrency(21212.21, fiatName,null, true) + '\n' + formatCurrency(221212.21, fiatName,null, true) + '\n' + formatCurrency(2212121.21, fiatName,null, true) + '\n' + formatCurrency(22121212.21, fiatName,null, true)  + '\n' + formatCurrency(221212121.21, fiatName,null, true) + '\n' + formatCurrency(2212121221.21, fiatName,null, true) 
         */
 
 
@@ -329,10 +323,10 @@ async function drawGraph(filePath) {
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
-        stackLabel.text = "You have\n" + (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
+        stackLabel.text = "You have\n" + (yourCoins > 0 && formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || '') + (yourFiat > 0 && formatCurrency(yourFiat, fiatName, yourFiat >= 1000 ? 0 : 2) || '')
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
-        backgroundImage.texture = yourCoins > 0 ? coinTextures['BTC'] : coinTextures['USD']
+        backgroundImage.texture = yourCoins > 0 ? coins[yourCoinName].texture : coins[fiatName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
 

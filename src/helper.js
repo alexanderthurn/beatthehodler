@@ -1,3 +1,46 @@
+function formatCurrencyInner(value, currency, locale, fractionDigits) {
+    try {
+        // Versuche direkt, mit der angegebenen Währung zu formatieren
+        return new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency,
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits,
+        }).format(value);
+    } catch {
+        // Fallback: Ersetze durch USD und tausche später das Symbol aus
+        const formatted = new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits,
+        }).format(value);
+        // Tausche das USD-Symbol durch den Währungscode
+        return formatted.replace('$', currency);
+    }
+}
+
+function formatCurrencyInnerToParts(value, currency, locale) {
+    try {
+        // Versuche direkt, die Formatteile mit der gewünschten Währung zu erzeugen
+        return new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency,
+        }).formatToParts(value);
+    } catch {
+        // Fallback: Erzeuge die Teile mit USD und ersetze das Symbol
+        const parts = new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'USD',
+        }).formatToParts(value);
+
+        // Ersetze das Symbol durch den Währungscode
+        return parts.map(part =>
+            part.type === 'currency' ? { ...part, value: currency } : part
+        );
+    }
+}
+
 function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
     const locale = 'de-DE' // navigator.language;
 
@@ -32,17 +75,10 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
 
         // Abkürzung erst ab zwei Stellen verwenden
         if (tier >= 1) { // Abkürzen ab Tausender (1 oder mehr Stellen im Tier)
-            const scale = Math.pow(10, tier * 3); // Skalieren der Zahl
-            const scaledValue = price / scale;
+            formatted = formatCurrencyInner(price / Math.pow(10, tier * 3), currency, locale, fractionDigits)
+        
+            const parts = formatCurrencyInnerToParts(1, currency, locale)
 
-            formatted = new Intl.NumberFormat(locale, {
-                style: 'currency',
-                currency: currency,
-                minimumFractionDigits: fractionDigits,
-                maximumFractionDigits: fractionDigits,
-            }).format(scaledValue);
-
-            const parts = new Intl.NumberFormat(locale, { style: 'currency', currency }).formatToParts(1);
             const symbolIndex = parts.findIndex(part => part.type === 'currency');
             // Suffix hinzufügen
             if (symbolIndex < 1) {
@@ -56,21 +92,10 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
              }
             
         } else {
-            // Keine Abkürzung, normale Formatierung
-            formatted = new Intl.NumberFormat(locale, {
-                style: 'currency',
-                currency: currency,
-                minimumFractionDigits: fractionDigits,
-                maximumFractionDigits: fractionDigits,
-            }).format(price);
+            formatted = formatCurrencyInner(price, currency, locale, fractionDigits)
         }
     } else {
-        formatted = new Intl.NumberFormat(locale, {
-            style: 'currency',
-            currency: currency,
-            minimumFractionDigits: fractionDigits,
-            maximumFractionDigits: fractionDigits,
-        }).format(price);
+        formatted = formatCurrencyInner(price, currency, locale, fractionDigits)
     }
 
     // Bitcoin-Symbol hinzufügen, falls die Währung BTC ist
@@ -176,10 +201,11 @@ function calculateLevelStatistics(level, pricesData) {
 
 
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
-function parseGameData(jsonString, pricesData) {
+function parseGameData(jsonString, pricesData, coins) {
     var gameData = JSON.parse(jsonString)
 
     gameData.levels.forEach(level => {
+        level.coinNames = Object.keys(coins)
         level.fiatStart = level.fiatStart || 1000
         level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].snapped_at
         level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].snapped_at
@@ -200,14 +226,14 @@ function parseGameData(jsonString, pricesData) {
     return gameData;
 }
 
-async function fetchGameData(pricesData) {
+async function fetchGameData(pricesData, coins) {
     try {
         const response = await fetch('./data/game.json');
         if (!response.ok) {
             throw new Error(`Fehler beim Laden der Datei: ${response.statusText}`);
         }
         const jsonString = await response.text();
-        return parseGameData(jsonString,pricesData);
+        return parseGameData(jsonString,pricesData, coins);
     } catch (error) {
         console.error("Fehler beim Laden der JSON Game-Datei:", error);
         return {};

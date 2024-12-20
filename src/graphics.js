@@ -49,7 +49,7 @@ function createStockRectangles(dataPoints, rectWidth) {
     return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
 
 }
-function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen) {
+function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName) {
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
     const price = parsedData[currentIndexInteger].price
@@ -77,7 +77,7 @@ function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoin
     if (!isFinalScreen) {
         graph.priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         graph.priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-        graph.priceLabel.text = formatCurrency(price, 'USD',null, true) 
+        graph.priceLabel.text = formatCurrency(price, fiatName,null, true) 
         graph.priceLabel.alpha = 1
         graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
@@ -87,7 +87,7 @@ function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoin
 
 }
 
-function createGraph(parsedData, graphVertexShader, graphFragmentShader, currencyName, coinTextures, textStyle) {
+function createGraph(parsedData, graphVertexShader, graphFragmentShader, coinName, coins, textStyle) {
 
 
     let rects = createStockRectangles(parsedData,1)
@@ -124,7 +124,7 @@ function createGraph(parsedData, graphVertexShader, graphFragmentShader, currenc
 
 
     const logo = new PIXI.Container()
-    const logoSprite = new PIXI.Sprite(coinTextures['BTC']);
+    const logoSprite = new PIXI.Sprite(coins[coinName].texture);
     logo.addChild(logoSprite)
     logoSprite.anchor.set(0.5,0.5)
     logoSprite.scale.set(0.001,0.001)        
