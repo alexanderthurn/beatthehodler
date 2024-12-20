@@ -1,12 +1,11 @@
 const coins = {
-    USD: { image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', audio: null, texture: null, digits: 2},
-    BTC: { image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', digits: 8},
-    ADA: { image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', digits: 2},
-    DOGE: { image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', digits: 2},
-    ETH: { image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', digits: 2},
-    SOL: { image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', digits: 2},
+    USD: { image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
+    BTC: { image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
+    ADA: { image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
+    DOGE: { image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
+    ETH: { image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', csv: 'data/eth-usd-max.csv',  digits: 2},
+    SOL: { image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', csv: 'data/sol-usd-max.csv',  digits: 2},
 }
-
 
 function playBuySound(key) {
     if (coins[key].audio) {
@@ -17,14 +16,13 @@ function playBuySound(key) {
 
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
-async function drawGraph(filePath) {
+async function initGame() {
     const graphVertexShader = await loadShader('./gfx/graph.vert')
     const graphFragmentShader = await loadShader('./gfx/graph.frag')
     const backgroundVertexShader = await loadShader('./gfx/background.vert')
     const backgroundFragmentShader = await loadShader('./gfx/background.frag')
 
-    const parsedData = await fetchCSV(filePath);
-    if (!parsedData.length) return;
+    await fetchData(coins);
 
     const app = new PIXI.Application({
         width: window.innerWidth,
@@ -96,7 +94,7 @@ async function drawGraph(filePath) {
 
     const buyPaused = 1000
    
-    const gameData = await fetchGameData(parsedData, coins)
+    const gameData = await fetchGameData(coins)
     let options = gameData.levels[1]
     var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
 
@@ -119,11 +117,11 @@ async function drawGraph(filePath) {
         let trade =  {
             index: currentIndexInteger, 
 
-            fromPrice: from === fiatName ? 1 : parsedData[currentIndexInteger].price,
+            fromPrice: from === fiatName ? 1 : coins[from].data[currentIndexInteger].price,
             fromName: yourCoinName,
             fromCoins: yourCoins,
 
-            toPrice: to === fiatName ? 1 : parsedData[currentIndexInteger].price, 
+            toPrice: to === fiatName ? 1 : coins[to].data[currentIndexInteger].price, 
             toName: to, 
             
             toCoins: -1,
@@ -205,7 +203,7 @@ async function drawGraph(filePath) {
     })
 
 
-    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader, 'BTC', coins, textStyle)
+    var graph = createGraph(coins['BTC'].data, graphVertexShader, graphFragmentShader, 'BTC', coins, textStyle)
     graph.position.set(0, 0);
     containerBackground.addChildAt(graph,1);
 
@@ -260,15 +258,14 @@ async function drawGraph(filePath) {
 
      
 
-
-        const currentDate = parsedData[currentIndexInteger]?.snapped_at;
-        const price = parsedData[currentIndexInteger].price
+        let priceData = coins['BTC'].data
+        const currentDate = priceData[currentIndexInteger]?.date;
+        const price = priceData[currentIndexInteger].price
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
-
-        updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName)
-
-       
+        
+        
+        updateGraph(graph, app, priceData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName)
         if (!isFinalScreen) {
             dateLabel.alpha = 1
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, fiatName,null, true) : '\n')     
@@ -289,24 +286,16 @@ async function drawGraph(filePath) {
             dateLabel.text = `You can trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
             dateLabel.alpha = 1
         }
-     /* DO NOOT DELETE !!!!!
-        priceLabel.x = app.renderer.width*1
-        priceLabel.y = app.renderer.height*0.8
-        priceLabel.text = formatCurrency(0.00021, fiatName,null, true) + '\n' + formatCurrency(0.0021, fiatName,null, true) + '\n' + formatCurrency(0.021, fiatName,null, true) + '\n' +  formatCurrency(0.21, fiatName,null, true) + '\n' + formatCurrency(2.21, fiatName,null, true) + '\n' + formatCurrency(21.21, fiatName,null, true) + '\n' + formatCurrency(212.21, fiatName,null, true) + '\n' + formatCurrency(2121.21, fiatName,null, true) + '\n' + formatCurrency(21212.21, fiatName,null, true) + '\n' + formatCurrency(221212.21, fiatName,null, true) + '\n' + formatCurrency(2212121.21, fiatName,null, true) + '\n' + formatCurrency(22121212.21, fiatName,null, true)  + '\n' + formatCurrency(221212121.21, fiatName,null, true) + '\n' + formatCurrency(2212121221.21, fiatName,null, true) 
-        */
 
-
-    
-        let maxPrice = parsedData[currentIndexInteger].price
-        let minPrice = parsedData[currentIndexInteger].price
+        let maxPrice = priceData[currentIndexInteger].price
+        let minPrice = priceData[currentIndexInteger].price
         trades.forEach((trade) => {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             if (trade.sprite) {
                 trade.sprite.height = trade.sprite.width = app.renderer.width*0.04
             }
-            //if (trade.index > currentIndexInteger - maxVisiblePoints && app.stage.toGlobal(trade.container.position).x - trade.labelPrice.width*0.5 < 0) {  
-            if (trade.index > currentIndexInteger - maxVisiblePoints) {  
+             if (trade.index > currentIndexInteger - maxVisiblePoints) {  
                 trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
             } else {
                 trade.labelPrice.position.set(0,0)
@@ -356,5 +345,5 @@ async function drawGraph(filePath) {
 }
 
 window.addEventListener("load", (event) => {
-    drawGraph('data/btc-usd-max.csv');
+    initGame();
 })

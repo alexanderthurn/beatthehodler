@@ -110,8 +110,8 @@ function findClosestDateIndex(array, targetDate) {
     const targetTime = targetDate.getTime(); // Zielzeit in Millisekunden
 
     return array.reduce((closestIndex, current, currentIndex, arr) => {
-        const currentTime = current.snapped_at.getTime(); // Zeit des aktuellen Eintrags
-        const closestTime = arr[closestIndex].snapped_at.getTime(); // Zeit des nächstgelegenen Eintrags
+        const currentTime = current.date.getTime(); // Zeit des aktuellen Eintrags
+        const closestTime = arr[closestIndex].date.getTime(); // Zeit des nächstgelegenen Eintrags
 
         // Prüfen, ob das aktuelle Datum näher am Ziel ist als das bisherige
         return Math.abs(currentTime - targetTime) < Math.abs(closestTime - targetTime)
@@ -144,7 +144,6 @@ function parseDate(dateString) {
     // ISO-Format sicherstellen
     return new Date(dateString.replace(" ", "T").replace(" UTC", "Z"));
 }
-// Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseCSV(csvString) {
     const lines = csvString.split('\n'); // Aufteilen nach Zeilen
     const headers = lines[0].split(',').map(h => h.trim()); // Erste Zeile als Header verwenden
@@ -153,17 +152,31 @@ function parseCSV(csvString) {
     const data = lines.slice(1).filter(line => line?.length > 0).map(line => {
         const values = line.split(',');
         return headers.reduce((obj, header, index) => {
-            obj[header] = values[index] ? values[index].trim() : null;
+            const value = values[index] ? values[index].trim() : null;
+
+            // Mapping der Header zu gewünschten Schlüsseln
             if (header === 'snapped_at') {
-                obj[header] = parseDate(obj[header])
-            } else  if (header === 'price') {
-                obj[header] = parseFloat(obj[header])
-            } 
+                obj['date'] = parseDate(value);
+            } else if (header === 'price') {
+                obj['price'] = parseFloat(value);
+            }
+
             return obj;
         }, {});
     });
 
     return data;
+}
+
+
+
+async function fetchData(coins) {
+    coins['BTC'].data = await fetchCSV(coins['BTC'].csv)
+    Object.keys(coins).forEach(coin => {
+        if (coins[coin].csv) {
+            coins[coin].data = coins['BTC'].data
+        }
+    })
 }
 
 // Funktion, um die CSV-Datei zu laden und zu parsen
@@ -201,17 +214,18 @@ function calculateLevelStatistics(level, pricesData) {
 
 
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
-function parseGameData(jsonString, pricesData, coins) {
+function parseGameData(jsonString, coins) {
     var gameData = JSON.parse(jsonString)
+    let pricesData= coins['BTC'].data
 
     gameData.levels.forEach(level => {
         level.coinNames = Object.keys(coins)
         level.fiatStart = level.fiatStart || 1000
-        level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].snapped_at
-        level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].snapped_at
+        level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].date
+        level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].date
         level.stops = level.stops || 8
-        level.dateStart = pricesData[findClosestDateIndex(pricesData, level.dateStart)].snapped_at
-        level.dateEnd = pricesData[findClosestDateIndex(pricesData, level.dateEnd)].snapped_at
+        level.dateStart = pricesData[findClosestDateIndex(pricesData, level.dateStart)].date
+        level.dateEnd = pricesData[findClosestDateIndex(pricesData, level.dateEnd)].date
         level.indexStart = Math.max(0, findClosestDateIndex(pricesData, level.dateStart))
         level.indexEnd = Math.max(0, findClosestDateIndex(pricesData, level.dateEnd))
         if (typeof level.stops === 'number' && !isNaN(level.stops)) {
@@ -226,16 +240,21 @@ function parseGameData(jsonString, pricesData, coins) {
     return gameData;
 }
 
-async function fetchGameData(pricesData, coins) {
+async function fetchGameData(coins) {
     try {
         const response = await fetch('./data/game.json');
         if (!response.ok) {
             throw new Error(`Fehler beim Laden der Datei: ${response.statusText}`);
         }
         const jsonString = await response.text();
-        return parseGameData(jsonString,pricesData, coins);
+        return parseGameData(jsonString, coins);
     } catch (error) {
         console.error("Fehler beim Laden der JSON Game-Datei:", error);
         return {};
     }
 }
+     /* DO NOOT DELETE !!!!!
+        priceLabel.x = app.renderer.width*1
+        priceLabel.y = app.renderer.height*0.8
+        priceLabel.text = formatCurrency(0.00021, fiatName,null, true) + '\n' + formatCurrency(0.0021, fiatName,null, true) + '\n' + formatCurrency(0.021, fiatName,null, true) + '\n' +  formatCurrency(0.21, fiatName,null, true) + '\n' + formatCurrency(2.21, fiatName,null, true) + '\n' + formatCurrency(21.21, fiatName,null, true) + '\n' + formatCurrency(212.21, fiatName,null, true) + '\n' + formatCurrency(2121.21, fiatName,null, true) + '\n' + formatCurrency(21212.21, fiatName,null, true) + '\n' + formatCurrency(221212.21, fiatName,null, true) + '\n' + formatCurrency(2212121.21, fiatName,null, true) + '\n' + formatCurrency(22121212.21, fiatName,null, true)  + '\n' + formatCurrency(221212121.21, fiatName,null, true) + '\n' + formatCurrency(2212121221.21, fiatName,null, true) 
+        */
