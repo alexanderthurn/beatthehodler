@@ -109,19 +109,11 @@ async function drawGraph(filePath) {
     stackLabel.anchor.set(0.5,1.1)
     containerForeground.addChild(stackLabel);
 
-    const backgroundTextStyle = new PIXI.TextStyle({
-        fontFamily: 'Xolonium',
-        fontStyle: 'Bold',
-        fontSize: 1536,
-        fill: '#fff'
-    });
-
-
-    const backgroundLabel = new PIXI.Text('Bitcoin', backgroundTextStyle)
-    backgroundLabel.anchor.set(0.5); // Zentrieren um den Mittelpunkt
-    containerBackground.addChild(backgroundLabel);
-    backgroundLabel.rotation =  0.1;
-    backgroundLabel.alpha = 0.1;
+    const backgroundImage = new PIXI.Sprite(coinTextures['BTC']);
+    backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
+    containerBackground.addChild(backgroundImage);
+    backgroundImage.rotation =  0.1;
+    backgroundImage.alpha = 0.1;
 
     const buyPaused = 1000
    
@@ -395,9 +387,9 @@ async function drawGraph(filePath) {
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
 
-        backgroundLabel.text = yourCoins > 0 ? "\u20BF" : '$'
-        backgroundLabel.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
-        backgroundLabel.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+        backgroundImage.texture = yourCoins > 0 ? coinTextures['BTC'] : coinTextures['USD']
+        backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
+        backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
 
 
         if (stopIndex === 0) {
