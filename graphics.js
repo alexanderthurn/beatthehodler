@@ -50,7 +50,7 @@ function createStockRectangles(dataPoints, rectWidth) {
 
 }
 
-function createGraph(parsedData, graphVertexShader, graphFragmentShader, currencyName, coinTextures) {
+function createGraph(parsedData, graphVertexShader, graphFragmentShader, currencyName, coinTextures, textStyle) {
 
 
     let rects = createStockRectangles(parsedData,1)
@@ -98,6 +98,13 @@ function createGraph(parsedData, graphVertexShader, graphFragmentShader, currenc
     graph.curve = graphMesh
     graph.logo = logo
     graph.logoSprite = logoSprite
+
+
+    const priceLabel = new PIXI.Text("", textStyle);
+    graph.addChild(priceLabel);
+    graph.priceLabel = priceLabel
+    graph.priceLabel.anchor.set(0,1.5)
+
     return graph
 }
 

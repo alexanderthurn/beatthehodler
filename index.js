@@ -74,9 +74,7 @@ async function drawGraph(filePath) {
     dateLabel.anchor.set(0.0,0.0)
     containerForeground.addChild(dateLabel);
 
-    const priceLabel = new PIXI.Text("", textStyle);
-    priceLabel.anchor.set(0.0,0.0)
-    containerForeground.addChild(priceLabel);
+
 
 
     const coinTextures = {}
@@ -215,7 +213,7 @@ async function drawGraph(filePath) {
     })
 
 
-    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader, 'BTC', coinTextures)
+    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader, 'BTC', coinTextures, textStyle)
     graph.position.set(0, 0);
     containerBackground.addChildAt(graph,1);
 
@@ -303,23 +301,20 @@ async function drawGraph(filePath) {
         graph.logo.x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         graph.logo.y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
         graph.logo.alpha = stopIndex === options.stopIndizes.length-1 ? 1.0 : 1.0
-        graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.05
+        graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.04
 
 
         if (currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1]) {
-            priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-            priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            priceLabel.anchor.set(0,1.5)
-            priceLabel.text = formatCurrency(price, 'USD',null, true) 
-           // priceLabel.y = 0.9*priceLabel.y + 0.1*(graph.logo.y -priceLabel.height*0.5)
-            //priceLabel.y = Math.min(app.renderer.height-priceLabel.height, Math.max(priceLabel.y, 0))
-           // priceLabel.x = 0.9*priceLabel.x + 0.1*(graph.logo.x - priceLabel.width*1.1)
-           // priceLabel.x = Math.min(app.renderer.width-priceLabel.width, Math.max(priceLabel.x, 0))
-            priceLabel.alpha = 1
+            graph.priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
+            graph.priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+            graph.priceLabel.text = formatCurrency(price, 'USD',null, true) 
+            graph.priceLabel.alpha = 1
+            graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
+            graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
             dateLabel.alpha = 1
-            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, 'USD',null, true) : '\n') 
-            
+            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, 'USD',null, true) : '\n')     
         } else {
+            graph.priceLabel.alpha = 0
             let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
             let txt = "Congratulations\n\n" 
             txt += `You traded ${trades.filter(t => t.bought !== t.sold).length} times\n\nand went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
@@ -328,7 +323,6 @@ async function drawGraph(filePath) {
             txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, 'USD', options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += "Try again?"
             dateLabel.text = txt
-            priceLabel.alpha = 0
             dateLabel.alpha = 1
         }
         dateLabel.x = 0.025*app.renderer.width
@@ -350,7 +344,7 @@ async function drawGraph(filePath) {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             if (trade.sprite) {
-                trade.sprite.height = trade.sprite.width = app.renderer.width*0.05
+                trade.sprite.height = trade.sprite.width = app.renderer.width*0.04
             }
             //if (trade.index > currentIndexInteger - maxVisiblePoints && app.stage.toGlobal(trade.container.position).x - trade.labelPrice.width*0.5 < 0) {  
             if (trade.index > currentIndexInteger - maxVisiblePoints) {  
