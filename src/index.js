@@ -135,8 +135,16 @@ async function drawGraph(filePath) {
 
         if (from === to) {
             trade.labelPrice.scale.set(1.0)
-            //playBuySound('NOTHING')
-        } else if (from !== fiatName) {
+        } else if (from !== fiatName && to !== fiatName) {
+            trade.coins = yourCoins
+            yourFiat = 0
+            yourCoins = (yourCoins * price) / price
+            yourCoinName = to
+            trade.sprite = new PIXI.Sprite(coins[to].texture )
+            trade.sprite.anchor.set(0.5,0.5)
+            trade.container.addChildAt(trade.sprite, 0)
+            playBuySound(trade.bought)
+        } else if (to === fiatName) {
             trade.coins = yourCoins
             yourFiat = yourCoins * price
             yourCoins = 0
