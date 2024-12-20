@@ -100,10 +100,10 @@ async function drawGraph(filePath) {
     let options = gameData.levels[1]
     var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
 
-    let yourCoins = 0
-    let yourCoinName = Object.keys(coins)[0]
     let fiatName = Object.keys(coins)[0]
     let yourFiat = options.fiatStart
+    let yourCoins = yourFiat
+    let yourCoinName = fiatName
     let paused = Number.MAX_VALUE
 
     const gameDurationMilliseconds = 10000
@@ -116,55 +116,45 @@ async function drawGraph(filePath) {
     const trades = []
     
     const doTrade = (from, to) => {
-        let price = parsedData[currentIndexInteger].price
         let trade =  {
             index: currentIndexInteger, 
-            price: price, 
-            coins: yourCoins, 
-            fiat: yourFiat,
+
+            fromPrice: from === fiatName ? 1 : parsedData[currentIndexInteger].price,
+            fromName: yourCoinName,
+            fromCoins: yourCoins,
+
+            toPrice: to === fiatName ? 1 : parsedData[currentIndexInteger].price, 
+            toName: to, 
+            
+            toCoins: -1,
+            
             sprite: null,
             container: new PIXI.Container(),
-            labelPrice: new PIXI.Text(formatCurrency(price, fiatName,null, true) , textStyle)
         }
+
         
-        trade.sold = from
-        trade.bought = to
+        trade.toCoins = (trade.fromCoins * trade.fromPrice) / trade.toPrice
+
+      
+
+        trade.sprite = new PIXI.Sprite(coins[to].texture)
+        trade.sprite.anchor.set(0.5,0.5)
+        trade.container.addChildAt(trade.sprite, 0)
+        trade.labelPrice = new PIXI.Text(formatCurrency(trade.toPrice, fiatName,null, true) , textStyle)
         trade.labelPrice.anchor.set(0.5,1.5)
         trade.container.addChild(trade.labelPrice)
-
-
         if (from === to) {
             trade.labelPrice.scale.set(1.0)
-        } else if (from !== fiatName && to !== fiatName) {
-            trade.coins = yourCoins
-            yourFiat = 0
-            yourCoins = (yourCoins * price) / price
-            yourCoinName = to
-            trade.sprite = new PIXI.Sprite(coins[to].texture )
-            trade.sprite.anchor.set(0.5,0.5)
-            trade.container.addChildAt(trade.sprite, 0)
-            playBuySound(trade.bought)
-        } else if (to === fiatName) {
-            trade.coins = yourCoins
-            yourFiat = yourCoins * price
-            yourCoins = 0
-            yourCoinName = fiatName
-            trade.sprite = new PIXI.Sprite(coins[to].texture )
-            trade.sprite.anchor.set(0.5,0.5)
-            trade.container.addChildAt(trade.sprite, 0)
-            playBuySound(trade.bought)
         } else {
-            trade.fiat = yourFiat
-            yourCoins = yourFiat / price
-            yourCoinName = to
-            yourFiat = 0
-            trade.sprite = new PIXI.Sprite(coins[to].texture)
-            trade.sprite.anchor.set(0.5,0.5)
-            trade.container.addChildAt(trade.sprite, 0)
-            playBuySound(trade.bought)
+            playBuySound(trade.toName)
         }
-       
 
+
+        trade.fiat = trade.fromCoins *  trade.fromPrice,
+        yourFiat = trade.fiat
+        yourCoins = trade.toCoins
+        yourCoinName = trade.toName
+       
         trades.push(trade)
         containerBackground.addChild(trade.container)
         paused = buyPaused
@@ -205,7 +195,7 @@ async function drawGraph(filePath) {
                 let i = Math.floor(xR/app.renderer.width *coinButtons.length)
 
                 if (i >= 0 && i < coinButtons.length) {
-                    doTrade(yourCoins > 0 ? yourCoinName : fiatName,coinButtons[i].to )
+                    doTrade(yourCoinName,coinButtons[i].to )
                 }
                
             }
@@ -251,7 +241,7 @@ async function drawGraph(filePath) {
         if (stopIndex > -1) {
             
             if (!trade && stopIndex === options.stopIndizes.length-1) {
-                doTrade(yourCoins > 0 ? yourCoinName : fiatName, fiatName)
+                doTrade(yourCoinName, fiatName)
             }
             
             if (!trade) {
@@ -283,7 +273,7 @@ async function drawGraph(filePath) {
             dateLabel.alpha = 1
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, fiatName,null, true) : '\n')     
         } else {
-            let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
+            let fiat = yourFiat
             let txt = "Congratulations\n\n" 
             txt += `You traded ${trades.filter(t => t.bought !== t.sold).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
             txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
@@ -331,10 +321,10 @@ async function drawGraph(filePath) {
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
-        stackLabel.text = "You have\n" + (yourCoins > 0 && formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || '') + (yourFiat > 0 && formatCurrency(yourFiat, fiatName, yourFiat >= 1000 ? 0 : 2) || '')
+        stackLabel.text = "You have\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || ''
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
-        backgroundImage.texture = yourCoins > 0 ? coins[yourCoinName].texture : coins[fiatName].texture
+        backgroundImage.texture = coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
 
