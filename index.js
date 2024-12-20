@@ -94,16 +94,7 @@ async function drawGraph(filePath) {
     
 
 
-    const bitcoinLogo = new PIXI.Container()
-    const bitcoinLogoSprite = new PIXI.Sprite(coinTextures['BTC']);
-    bitcoinLogo.addChild(bitcoinLogoSprite)
-    containerForeground.addChild(bitcoinLogo);
-    bitcoinLogoSprite.anchor.set(0.5,0.5)
-    bitcoinLogoSprite.scale.set(0.001,0.001)
-    const bitcoinLogoQuestion = new PIXI.Text("?", textStyle)
-    bitcoinLogoQuestion.anchor.set(0.5,0.5)
-    bitcoinLogo.addChild(bitcoinLogoQuestion);
-
+    
 
     const stackLabel = new PIXI.Text("", textStyleCentered);
     stackLabel.anchor.set(0.5,1.1)
@@ -224,7 +215,7 @@ async function drawGraph(filePath) {
     })
 
 
-    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader)
+    var graph = createGraph(parsedData, graphVertexShader, graphFragmentShader, 'BTC', coinTextures)
     graph.position.set(0, 0);
     containerBackground.addChildAt(graph,1);
 
@@ -257,14 +248,6 @@ async function drawGraph(filePath) {
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
         let trade = trades.find(t => t.index === currentIndexInteger)
 
-
-        
-        
-        bitcoinLogoSprite.alpha = 1.0
-        bitcoinLogoQuestion.alpha = 0.0
-        bitcoinLogoSprite.texture = coinTextures['BTC']
-
-
         if (stopIndex > -1) {
             
             if (!trade && stopIndex === options.stopIndizes.length-1) {
@@ -273,9 +256,6 @@ async function drawGraph(filePath) {
             
             if (!trade) {
                 paused = Number.MAX_VALUE
-                //bitcoinLogoSprite.alpha = deltaTime.lastTime % 1500 > 500 ? 1 : 0 
-                //bitcoinLogoSprite.texture = deltaTime.lastTime % 1500 > 1000 ? coinTextures['BTC'] : coinTextures['USD']
-                //bitcoinLogoQuestion.alpha = 1.0 - bitcoinLogoSprite.alpha
             } else {
                 if (stopIndex < options.stopIndizes.length-1) {
                     maxVisiblePoints = Math.max(7, Math.floor((options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex])*1.1))
@@ -301,6 +281,8 @@ async function drawGraph(filePath) {
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         let maxPrice = parsedData[currentIndexInteger].price
         let minPrice = parsedData[currentIndexInteger].price
+        const currentDate = parsedData[currentIndexInteger]?.snapped_at;
+        const price = parsedData[currentIndexInteger].price
         for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
             if (i > 0) {
                 maxPrice = Math.max(maxPrice, parsedData[i].price)
@@ -314,24 +296,29 @@ async function drawGraph(filePath) {
         }
         
         var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
-        var scaleX = stepX
-        graph.position.set(- (currentIndexInteger-maxVisiblePoints+1)*scaleX, app.renderer.height*0.9-minPrice*scaleY);
-        graph.scale.set(scaleX, scaleY);
-        graph.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
-        graph.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
-        
-        const currentDate = parsedData[currentIndexInteger]?.snapped_at;
-        const price = parsedData[currentIndexInteger].price
-        const x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-        const y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+        graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*0.9-minPrice*scaleY);
+        graph.curve.scale.set(stepX, scaleY);
+        graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
+        graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
+        graph.logo.x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
+        graph.logo.y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+        graph.logo.alpha = stopIndex === options.stopIndizes.length-1 ? 1.0 : 1.0
+        graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.05
+
+
         if (currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1]) {
-            priceLabel.text = (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n\n` : '\n\n\n') + `${new Date(currentDate).toLocaleDateString()}` + "\n1\u20BF = " + formatCurrency(price, 'USD',null, true) 
-            priceLabel.y = 0.9*priceLabel.y + 0.1*(y -priceLabel.height*0.5)
-            priceLabel.y = Math.min(app.renderer.height-priceLabel.height, Math.max(priceLabel.y, 0))
-            priceLabel.x = 0.9*priceLabel.x + 0.1*(x - priceLabel.width*1.1)
-            priceLabel.x = Math.min(app.renderer.width-priceLabel.width, Math.max(priceLabel.x, 0))
+            priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
+            priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+            priceLabel.anchor.set(0,1.5)
+            priceLabel.text = formatCurrency(price, 'USD',null, true) 
+           // priceLabel.y = 0.9*priceLabel.y + 0.1*(graph.logo.y -priceLabel.height*0.5)
+            //priceLabel.y = Math.min(app.renderer.height-priceLabel.height, Math.max(priceLabel.y, 0))
+           // priceLabel.x = 0.9*priceLabel.x + 0.1*(graph.logo.x - priceLabel.width*1.1)
+           // priceLabel.x = Math.min(app.renderer.width-priceLabel.width, Math.max(priceLabel.x, 0))
             priceLabel.alpha = 1
-            dateLabel.alpha = 0
+            dateLabel.alpha = 1
+            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, 'USD',null, true) : '\n') 
+            
         } else {
             let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
             let txt = "Congratulations\n\n" 
@@ -344,25 +331,19 @@ async function drawGraph(filePath) {
             priceLabel.alpha = 0
             dateLabel.alpha = 1
         }
-        dateLabel.x = 0.05*app.renderer.width
-        dateLabel.y = 0.05*app.renderer.width
+        dateLabel.x = 0.025*app.renderer.width
+        dateLabel.y = 0.025*app.renderer.width
         if (stopIndex === 0) {
             dateLabel.text = `You can trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
             dateLabel.alpha = 1
         }
-
-
-        bitcoinLogo.alpha = stopIndex === options.stopIndizes.length-1? 0.0 : bitcoinLogo.alpha
-        
-        /* DO NOOT DELETE !!!!!
+     /* DO NOOT DELETE !!!!!
         priceLabel.x = app.renderer.width*1
         priceLabel.y = app.renderer.height*0.8
         priceLabel.text = formatCurrency(0.00021, 'USD',null, true) + '\n' + formatCurrency(0.0021, 'USD',null, true) + '\n' + formatCurrency(0.021, 'USD',null, true) + '\n' +  formatCurrency(0.21, 'USD',null, true) + '\n' + formatCurrency(2.21, 'USD',null, true) + '\n' + formatCurrency(21.21, 'USD',null, true) + '\n' + formatCurrency(212.21, 'USD',null, true) + '\n' + formatCurrency(2121.21, 'USD',null, true) + '\n' + formatCurrency(21212.21, 'USD',null, true) + '\n' + formatCurrency(221212.21, 'USD',null, true) + '\n' + formatCurrency(2212121.21, 'USD',null, true) + '\n' + formatCurrency(22121212.21, 'USD',null, true)  + '\n' + formatCurrency(221212121.21, 'USD',null, true) + '\n' + formatCurrency(2212121221.21, 'USD',null, true) 
         */
-        
-        bitcoinLogo.x = x
-        bitcoinLogo.y = y 
-        bitcoinLogoSprite.height = bitcoinLogoSprite.width = app.renderer.width*0.05//*(Math.max(0.1, Math.min(1, yourCoins / 10.0)))
+
+
     
         
         trades.forEach((trade) => {

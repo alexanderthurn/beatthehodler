@@ -50,7 +50,7 @@ function createStockRectangles(dataPoints, rectWidth) {
 
 }
 
-function createGraph(parsedData, graphVertexShader, graphFragmentShader) {
+function createGraph(parsedData, graphVertexShader, graphFragmentShader, currencyName, coinTextures) {
 
 
     let rects = createStockRectangles(parsedData,1)
@@ -78,15 +78,26 @@ function createGraph(parsedData, graphVertexShader, graphFragmentShader) {
         }
     });
 
+    const graph = new PIXI.Container()
 
-    const graph = new PIXI.Mesh({
+    const graphMesh = new PIXI.Mesh({
         geometry,
         shader
     });
 
-   // graph.state = new PIXI.State();
-    graph.state.culling = false;
 
+    const logo = new PIXI.Container()
+    const logoSprite = new PIXI.Sprite(coinTextures['BTC']);
+    logo.addChild(logoSprite)
+    logoSprite.anchor.set(0.5,0.5)
+    logoSprite.scale.set(0.001,0.001)        
+
+    graphMesh.state.culling = false;
+    graph.addChild(graphMesh)
+    graph.addChild(logo);
+    graph.curve = graphMesh
+    graph.logo = logo
+    graph.logoSprite = logoSprite
     return graph
 }
 
