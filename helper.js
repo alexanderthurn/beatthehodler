@@ -202,7 +202,7 @@ function parseGameData(jsonString, pricesData) {
 
 async function fetchGameData(pricesData) {
     try {
-        const response = await fetch('./game.json');
+        const response = await fetch('./data/game.json');
         if (!response.ok) {
             throw new Error(`Fehler beim Laden der Datei: ${response.statusText}`);
         }

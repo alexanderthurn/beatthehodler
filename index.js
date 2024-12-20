@@ -1,7 +1,7 @@
 const buySounds = {
-    BTC: new Audio('btc.wav'),
-    USD: new Audio('usd.wav'),
-    NOTHING: new Audio('nothing.wav'),
+    BTC: new Audio('sfx/btc.wav'),
+    USD: new Audio('sfx/usd.wav'),
+    NOTHING: new Audio('sfx/nothing.wav'),
 }
 
 
@@ -16,10 +16,10 @@ function playBuySound(key) {
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function drawGraph(filePath) {
-    const graphVertexShader = await loadShader('./graph.vert')
-    const graphFragmentShader = await loadShader('./graph.frag')
-    const backgroundVertexShader = await loadShader('./background.vert')
-    const backgroundFragmentShader = await loadShader('./background.frag')
+    const graphVertexShader = await loadShader('./gfx/graph.vert')
+    const graphFragmentShader = await loadShader('./gfx/graph.frag')
+    const backgroundVertexShader = await loadShader('./gfx/background.vert')
+    const backgroundFragmentShader = await loadShader('./gfx/background.frag')
 
     const parsedData = await fetchCSV(filePath);
     if (!parsedData.length) return;
@@ -82,11 +82,11 @@ async function drawGraph(filePath) {
     const coinTextures = {}
     
     coinTextures['BTC'] = await PIXI.Assets.load({
-        src: './btc.png',
+        src: './gfx/btc.png',
     });
 
     coinTextures['USD'] = await PIXI.Assets.load({
-        src: './usd.png',
+        src: './gfx/usd.png',
     });
 
 
@@ -126,7 +126,7 @@ async function drawGraph(filePath) {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(parsedData)
-    let options = gameData.levels[0]
+    let options = gameData.levels[1]
     var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
 
     let yourCoins = 0
@@ -427,5 +427,5 @@ async function drawGraph(filePath) {
 }
 
 window.addEventListener("load", (event) => {
-    drawGraph('btc-usd-max.csv');
+    drawGraph('data/btc-usd-max.csv');
 })
