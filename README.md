@@ -4,9 +4,18 @@
 https://alexanderthurn.github.io/coinswiper/
 
 
-## Bitcoin Logo
+## Crypto Logos
 
 https://cryptologos.cc/bitcoin
+https://cryptologos.cc/
+
+ADA: 0033AD FFFFFF
+SOL: B24AEE  FFFFFF
+BTC: F7931A FFFFFF
+USD: 3CB371
+DOGE: BA9F32  F7F0DE
+ETH: 383938 FFFFFF
+
 
 ## Data
 
