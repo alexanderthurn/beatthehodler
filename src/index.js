@@ -41,11 +41,11 @@ async function drawGraph(filePath) {
 
     PIXI.Assets.addBundle('fonts', {
         XoloniumBold: {
-            src: './XoloniumBold-xKZO.ttf',
+            src: './gfx/XoloniumBold-xKZO.ttf',
             data: { family: 'Xolonium Bold' },
         },
         Xolonium: {
-            src: './Xolonium-pn4D.ttf',
+            src: './gfx/Xolonium-pn4D.ttf',
             data: { family: 'Xolonium' },
         },
     });
@@ -266,55 +266,21 @@ async function drawGraph(filePath) {
         }
 
 
-        dateLabel.y = 0*textStyle.fontSize;
-        dateLabel.x = textStyle.fontSize*0.1
-        textStyleCentered.fontSize =  textStyle.fontSize = Math.max(24, (Math.max(app.renderer.height, app.renderer.width) / 1080)*24)
-        textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
-        
-
-        stackLabel.y = app.renderer.height;
-        stackLabel.x = 0.5*app.renderer.width
+     
 
 
-        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
-        let maxPrice = parsedData[currentIndexInteger].price
-        let minPrice = parsedData[currentIndexInteger].price
         const currentDate = parsedData[currentIndexInteger]?.snapped_at;
         const price = parsedData[currentIndexInteger].price
-        for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
-            if (i > 0) {
-                maxPrice = Math.max(maxPrice, parsedData[i].price)
-                minPrice = Math.min(minPrice, parsedData[i].price)
-            }
-        }
+        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
+        let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
+
+        updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen)
+
        
-        if (maxPrice === minPrice) {
-            maxPrice=Math.max(100, parsedData[currentIndexInteger].price*2)
-            minPrice=0
-        }
-        
-        var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
-        graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*0.9-minPrice*scaleY);
-        graph.curve.scale.set(stepX, scaleY);
-        graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
-        graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
-        graph.logo.x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-        graph.logo.y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-        graph.logo.alpha = stopIndex === options.stopIndizes.length-1 ? 1.0 : 1.0
-        graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.04
-
-
-        if (currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1]) {
-            graph.priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-            graph.priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            graph.priceLabel.text = formatCurrency(price, 'USD',null, true) 
-            graph.priceLabel.alpha = 1
-            graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
-            graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
+        if (!isFinalScreen) {
             dateLabel.alpha = 1
             dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, 'USD',null, true) : '\n')     
         } else {
-            graph.priceLabel.alpha = 0
             let fiat = yourCoins > 0 ? yourCoins * price : yourFiat
             let txt = "Congratulations\n\n" 
             txt += `You traded ${trades.filter(t => t.bought !== t.sold).length} times\n\nand went from\n${formatCurrency(options.fiatStart, 'USD', options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, 'USD', fiat >= 1000 ? 0 : 2)}\n\n`
@@ -339,7 +305,8 @@ async function drawGraph(filePath) {
 
 
     
-        
+        let maxPrice = parsedData[currentIndexInteger].price
+        let minPrice = parsedData[currentIndexInteger].price
         trades.forEach((trade) => {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
             trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
@@ -351,17 +318,20 @@ async function drawGraph(filePath) {
                 trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
             } else {
                 trade.labelPrice.position.set(0,0)
-
             }
-            
          })
 
       
 
+        dateLabel.y = 0*textStyle.fontSize;
+        dateLabel.x = textStyle.fontSize*0.1
+        textStyleCentered.fontSize =  textStyle.fontSize = Math.max(24, (Math.max(app.renderer.height, app.renderer.width) / 1080)*24)
+        textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
+        stackLabel.y = app.renderer.height;
+        stackLabel.x = 0.5*app.renderer.width
         stackLabel.text = "You have\n" + (yourCoins > 0 && formatCurrency(yourCoins, 'BTC', 8) || '') + (yourFiat > 0 && formatCurrency(yourFiat, 'USD', yourFiat >= 1000 ? 0 : 2) || '')
         background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
-
         backgroundImage.texture = yourCoins > 0 ? coinTextures['BTC'] : coinTextures['USD']
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;

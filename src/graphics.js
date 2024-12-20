@@ -49,6 +49,43 @@ function createStockRectangles(dataPoints, rectWidth) {
     return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
 
 }
+function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen) {
+    let maxPrice = parsedData[currentIndexInteger].price
+    let minPrice = parsedData[currentIndexInteger].price
+    const price = parsedData[currentIndexInteger].price
+    for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
+        if (i > 0) {
+            maxPrice = Math.max(maxPrice, parsedData[i].price)
+            minPrice = Math.min(minPrice, parsedData[i].price)
+        }
+    }
+
+    if (maxPrice === minPrice) {
+        maxPrice=Math.max(100, parsedData[currentIndexInteger].price*2)
+        minPrice=0
+    }
+    var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
+    graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*0.9-minPrice*scaleY);
+    graph.curve.scale.set(stepX, scaleY);
+    graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
+    graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
+    graph.logo.x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
+    graph.logo.y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+    graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.04
+
+
+    if (!isFinalScreen) {
+        graph.priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
+        graph.priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+        graph.priceLabel.text = formatCurrency(price, 'USD',null, true) 
+        graph.priceLabel.alpha = 1
+        graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
+        graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
+    } else {
+        graph.priceLabel.alpha = 0
+    }
+
+}
 
 function createGraph(parsedData, graphVertexShader, graphFragmentShader, currencyName, coinTextures, textStyle) {
 
