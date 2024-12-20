@@ -95,7 +95,7 @@ async function initGame() {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
-    let options = gameData.levels[1]
+    let options = gameData.levels[gameData.levels.length-1]
     var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
 
     let fiatName = Object.keys(coins)[0]
@@ -114,6 +114,15 @@ async function initGame() {
     const trades = []
     
     const doTrade = (from, to) => {
+
+        
+
+
+        if ((coins[to].csv && !coins[to].data[currentIndexInteger].price) || (coins[from].csv && !coins[from].data[currentIndexInteger].price)) {
+            console.log('trade not possible null data', from, to, currentIndexInteger)
+            return
+        }
+
         let trade =  {
             index: currentIndexInteger, 
 
@@ -332,6 +341,8 @@ async function initGame() {
                 b.container.y = b.sprite.height
                 b.sprite.rotation = Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1
                 b.sprite.alpha = (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
+                b.sprite.alpha = (!coins[b.to].csv || coins[b.to].data[currentIndexInteger].price) ? b.sprite.alpha : 0.0
+            
             })
             coinButtonContainer.y = app.renderer.height - coinButtons[0].sprite.height*2
 

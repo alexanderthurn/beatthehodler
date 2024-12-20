@@ -169,15 +169,61 @@ function parseCSV(csvString) {
 }
 
 
-
 async function fetchData(coins) {
-    coins['BTC'].data = await fetchCSV(coins['BTC'].csv)
-    Object.keys(coins).forEach(coin => {
-        if (coins[coin].csv) {
-            coins[coin].data = coins['BTC'].data
+    const results = await Promise.all(Object.keys(coins).map(async (name) => {
+        if (coins[name].csv) {
+            coins[name].data = await fetchCSV(coins[name].csv);
         }
-    })
+    }));
+
+    await alignData(coins)
 }
+async function alignData(coins) {
+    // Schritt 1: Finde alle Coins mit Daten
+    let dataCoinNames = Object.keys(coins).filter(name => coins[name].data);
+
+    // Schritt 2: Bestimme das früheste und späteste Datum
+    let minDate = coins[dataCoinNames[0]].data[0].date; // .date ist bereits ein Date-Objekt
+    let maxDate = coins[dataCoinNames[0]].data[coins[dataCoinNames[0]].data.length - 1].date;
+
+    dataCoinNames.forEach(name => {
+        let c = coins[name];
+        let coinMinDate = c.data[0].date; // .date ist ein Date-Objekt
+        let coinMaxDate = c.data[c.data.length - 1].date;
+
+        if (coinMinDate < minDate) {
+            minDate = coinMinDate;
+        }
+
+        if (coinMaxDate > maxDate) {
+            maxDate = coinMaxDate;
+        }
+    });
+
+    // Schritt 3: Generiere den kompletten Datumsbereich (tagesweise)
+    let dateRange = [];
+    let currentDate = new Date(minDate); // Kopiere minDate
+    while (currentDate <= maxDate) {
+        dateRange.push(new Date(currentDate)); // Speichere das Date-Objekt
+        currentDate.setDate(currentDate.getDate() + 1); // Nächster Tag
+    }
+
+    // Schritt 4: Daten für jeden Coin anpassen
+    dataCoinNames.forEach(name => {
+        let c = coins[name];
+        let dataMap = new Map(c.data.map(entry => [entry.date.toISOString().split('T')[0], entry.price])); // Nutze .date direkt
+        let alignedData = dateRange.map(date => ({
+            date: date, // Behalte das Date-Objekt
+            price: dataMap.get(date.toISOString().split('T')[0]) || null, // Fehlende Daten auffüllen mit null
+        }));
+        c.data = alignedData; // Ersetze die Daten mit den ausgerichteten Daten
+    });
+
+    return coins; // Optional: aktualisierte Coins zurückgeben
+}
+
+
+
 
 // Funktion, um die CSV-Datei zu laden und zu parsen
 async function fetchCSV(filePath) {
