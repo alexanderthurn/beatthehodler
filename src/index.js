@@ -111,7 +111,7 @@ async function initGame() {
 
 
     
-    const trades = []
+    let trades = []
     
     const doTrade = (from, to) => {
 
@@ -144,15 +144,17 @@ async function initGame() {
 
       
 
-        trade.sprite = new PIXI.Sprite(coins[to].texture)
-        trade.sprite.anchor.set(0.5,0.5)
-        trade.container.addChildAt(trade.sprite, 0)
+     
         trade.labelPrice = new PIXI.Text(formatCurrency(trade.toPrice, fiatName,null, true) , textStyle)
         trade.labelPrice.anchor.set(0.5,1.5)
         trade.container.addChild(trade.labelPrice)
         if (from === to) {
             trade.labelPrice.scale.set(1.0)
         } else {
+            trade.sprite = new PIXI.Sprite(coins[to].texture)
+            trade.sprite.anchor.set(0.5,0.5)
+            trade.container.addChildAt(trade.sprite, 0)
+
             playBuySound(trade.toName)
         }
 
@@ -258,26 +260,25 @@ async function initGame() {
                     maxVisiblePoints = Math.max(7, Math.floor((options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex])*1.1))
                 } else {
                     maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0]
-                
+                    trades.filter(t => t.index !== options.stopIndizes[0] && t.index !== options.stopIndizes[options.stopIndizes.length-1] && t.to === t.from).forEach(trade => {
+                        trade.container.alpha = 0
+                    })
                 }
                
             }
         }
 
 
-     
-
-        let priceData = coins['BTC'].data
-        const currentDate = priceData[currentIndexInteger]?.date;
-        const price = priceData[currentIndexInteger].price
+        const currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
         
         
-        updateGraph(graph, app, priceData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName)
+        let graphResult = updateGraph(graph, app, coins['BTC'].data, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName)
+
         if (!isFinalScreen) {
             dateLabel.alpha = 1
-            let label = `${new Date(currentDate).toLocaleDateString()}\n\n`
+            let label = `${currentDate.toLocaleDateString()}\n\n`
             if (stopIndex > -1) {
                 label += `Trade ${stopIndex+1}/${options.stops.length-1}\n` 
                 label += ("\nYou have:\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || '') + "\n"
@@ -309,11 +310,11 @@ async function initGame() {
             dateLabel.alpha = 1
         }
 
-        let maxPrice = priceData[currentIndexInteger].price
-        let minPrice = priceData[currentIndexInteger].price
+        let maxPrice = graphResult.maxPrice
+        let minPrice = graphResult.minPrice
         trades.forEach((trade) => {
             trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-            trade.container.y = app.renderer.height*0.9-  (trade.price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+            trade.container.y = app.renderer.height*0.9-  ((trade.fromName === 'BTC' ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
             if (trade.sprite) {
                 trade.sprite.height = trade.sprite.width = app.renderer.width*0.04
             }

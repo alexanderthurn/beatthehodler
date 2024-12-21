@@ -49,6 +49,7 @@ function createStockRectangles(dataPoints, rectWidth) {
     return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
 
 }
+
 function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName) {
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
@@ -74,6 +75,9 @@ function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoin
     graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.04
 
 
+
+
+
     if (!isFinalScreen) {
         graph.priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         graph.priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
@@ -83,6 +87,11 @@ function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoin
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
     } else {
         graph.priceLabel.alpha = 0
+    }
+
+    return {
+        maxPrice: maxPrice,
+        minPrice: minPrice
     }
 
 }
