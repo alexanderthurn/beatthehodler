@@ -214,11 +214,24 @@ async function initGame() {
 
     })
 
-    var graphs = []
-    coins.
-    var graph = createGraph('BTC', graphVertexShader, graphFragmentShader, coins, textStyle)
-    graph.position.set(0, 0);
-    containerBackground.addChildAt(graph,1);
+    const graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
+        let container = new PIXI.Container()
+        let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle)
+        graph.position.set(0, 0);
+        container.addChild(graph)
+        return {
+            coinName: c,
+            index: i,
+            container: container,
+            graph: graph
+        }
+    })
+
+    graphs.forEach(g => {
+        containerBackground.addChildAt(g.graph,1); 
+    })
+
+   
 
     const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
     background.position.set(0, 0);       
@@ -275,9 +288,10 @@ async function initGame() {
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
         
+        graphs.forEach(g => {
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades)
+        })
         
-        updateGraph(graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades)
-
         if (!isFinalScreen) {
             dateLabel.alpha = 1
             let label = `${currentDate.toLocaleDateString()}\n\n`
