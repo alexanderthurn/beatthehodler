@@ -94,6 +94,10 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
         } else {
             formatted = formatCurrencyInner(price, currency, locale, fractionDigits)
         }
+    } else if (price === null) {
+        const parts = formatCurrencyInnerToParts(1, currency, locale)
+        const symbolIndex = parts.findIndex(part => part.type === 'currency');
+        formatted = parts[symbolIndex].value
     } else {
         formatted = formatCurrencyInner(price, currency, locale, fractionDigits)
     }

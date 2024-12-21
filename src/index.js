@@ -277,7 +277,20 @@ async function initGame() {
         updateGraph(graph, app, priceData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName)
         if (!isFinalScreen) {
             dateLabel.alpha = 1
-            dateLabel.text = `${new Date(currentDate).toLocaleDateString()}\n\n` + (stopIndex > -1 ? `Trade ${stopIndex+1}/${options.stops.length-1}\n` + "1 \u20BF = " + formatCurrency(price, fiatName,null, true) : '\n')     
+            let label = `${new Date(currentDate).toLocaleDateString()}\n\n`
+            if (stopIndex > -1) {
+                label += `Trade ${stopIndex+1}/${options.stops.length-1}\n` 
+                label += ("\nYou have:\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || '') + "\n"
+                coinButtons.filter(cb => cb.to !== fiatName).forEach(cb => {
+                    let p = coins[cb.to].data[currentIndexInteger].price
+                    if (p) {
+                        label += `\n${formatCurrency(1, cb.to,0, false)} = ` + formatCurrency(p, fiatName,null, true)
+                    }
+                })  
+            }
+            
+        
+            dateLabel.text = label
         } else {
             let fiat = yourFiat
             let txt = "Congratulations\n\n" 
@@ -330,7 +343,7 @@ async function initGame() {
         if (stopIndex === 0) {
             coinButtonContainerTitle.text = 'What do you want?'
         } else {
-            coinButtonContainerTitle.text = 'Want to trade?'
+            coinButtonContainerTitle.text =  'Want to trade?'
         }
        
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
@@ -339,18 +352,19 @@ async function initGame() {
                 b.sprite.height = b.sprite.width = Math.min(app.renderer.height*0.1, app.renderer.width*0.9 / coinButtons.length)
                 b.container.x = (app.renderer.width / coinButtons.length)*(b.index+0.5)
                 b.container.y = b.sprite.height
+                b.sprite.y = b.sprite.height*0.5
                 b.sprite.rotation = Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1
                 b.sprite.alpha = (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
                 b.sprite.alpha = (!coins[b.to].csv || coins[b.to].data[currentIndexInteger].price) ? b.sprite.alpha : 0.0
             
             })
-            coinButtonContainer.y = app.renderer.height - coinButtons[0].sprite.height*2
+            coinButtonContainer.y = app.renderer.height - coinButtons[0].sprite.height*2.2
 
             coinButtonContainer.alpha = 1
-           //stackLabel.alpha = 0
+            stackLabel.alpha = 0
         } else {
             coinButtonContainer.alpha = 0
-           // stackLabel.alpha = 1
+            stackLabel.alpha = 1
         }
     });
 }
