@@ -50,7 +50,8 @@ function createStockRectangles(dataPoints, rectWidth) {
 
 }
 
-function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName) {
+function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades) {
+    let parsedData = coins[graph.coinName].data
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
     const price = parsedData[currentIndexInteger].price
@@ -89,6 +90,23 @@ function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoin
         graph.priceLabel.alpha = 0
     }
 
+
+    trades.filter(trade => (trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
+        trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
+        trade.container.y = app.renderer.height*0.9-  ((trade.fromName === graph.coinName ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+        if (trade.sprite) {
+            trade.sprite.height = trade.sprite.width = app.renderer.width*0.04
+        }
+            if (trade.index > currentIndexInteger - maxVisiblePoints) {  
+            trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
+        } else {
+            trade.labelPrice.position.set(0,0)
+        }
+     })
+
+
+
+
     return {
         maxPrice: maxPrice,
         minPrice: minPrice
@@ -96,8 +114,9 @@ function updateGraph(graph, app, parsedData, currentIndexInteger, maxVisiblePoin
 
 }
 
-function createGraph(parsedData, graphVertexShader, graphFragmentShader, coinName, coins, textStyle) {
-
+function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, textStyle) {
+    
+    let parsedData = coins[coinName].data
 
     let rects = createStockRectangles(parsedData,1)
 
@@ -151,6 +170,7 @@ function createGraph(parsedData, graphVertexShader, graphFragmentShader, coinNam
     graph.priceLabel = priceLabel
     graph.priceLabel.anchor.set(0,1.5)
 
+    graph.coinName = coinName
     return graph
 }
 

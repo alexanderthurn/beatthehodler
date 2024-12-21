@@ -86,7 +86,7 @@ async function initGame() {
     stackLabel.anchor.set(0.5,1.1)
     containerForeground.addChild(stackLabel);
 
-    const backgroundImage = new PIXI.Sprite(coins['BTC'].texture);
+    const backgroundImage = new PIXI.Sprite();
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
@@ -153,6 +153,7 @@ async function initGame() {
         } else {
             trade.sprite = new PIXI.Sprite(coins[to].texture)
             trade.sprite.anchor.set(0.5,0.5)
+            trade.sprite.height = trade.sprite.width = 0
             trade.container.addChildAt(trade.sprite, 0)
 
             playBuySound(trade.toName)
@@ -214,7 +215,7 @@ async function initGame() {
     })
 
 
-    var graph = createGraph(coins['BTC'].data, graphVertexShader, graphFragmentShader, 'BTC', coins, textStyle)
+    var graph = createGraph('BTC', graphVertexShader, graphFragmentShader, coins, textStyle)
     graph.position.set(0, 0);
     containerBackground.addChildAt(graph,1);
 
@@ -250,7 +251,7 @@ async function initGame() {
         if (stopIndex > -1) {
             
             if (!trade && stopIndex === options.stopIndizes.length-1) {
-                doTrade(yourCoinName, fiatName)
+                doTrade(yourCoinName, yourCoinName)
             }
             
             if (!trade) {
@@ -260,7 +261,7 @@ async function initGame() {
                     maxVisiblePoints = Math.max(7, Math.floor((options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex])*1.1))
                 } else {
                     maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0]
-                    trades.filter(t => t.index !== options.stopIndizes[0] && t.index !== options.stopIndizes[options.stopIndizes.length-1] && t.to === t.from).forEach(trade => {
+                    trades.filter(t => t.index !== options.stopIndizes[0] && (t.index === options.stopIndizes[options.stopIndizes.length-1] || t.toName === t.fromName)).forEach(trade => {
                         trade.container.alpha = 0
                     })
                 }
@@ -274,7 +275,7 @@ async function initGame() {
         let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
         
         
-        let graphResult = updateGraph(graph, app, coins['BTC'].data, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName)
+        updateGraph(graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades)
 
         if (!isFinalScreen) {
             dateLabel.alpha = 1
@@ -295,7 +296,7 @@ async function initGame() {
         } else {
             let fiat = yourFiat
             let txt = "Congratulations\n\n" 
-            txt += `You traded ${trades.filter(t => t.bought !== t.sold).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
+            txt += `You traded ${trades.filter(t => t.toName !== t.fromName).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
             txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
             txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
@@ -310,23 +311,7 @@ async function initGame() {
             dateLabel.alpha = 1
         }
 
-        let maxPrice = graphResult.maxPrice
-        let minPrice = graphResult.minPrice
-        trades.forEach((trade) => {
-            trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-            trade.container.y = app.renderer.height*0.9-  ((trade.fromName === 'BTC' ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
-            if (trade.sprite) {
-                trade.sprite.height = trade.sprite.width = app.renderer.width*0.04
-            }
-             if (trade.index > currentIndexInteger - maxVisiblePoints) {  
-                trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
-            } else {
-                trade.labelPrice.position.set(0,0)
-            }
-         })
-
-      
-
+       
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
         textStyleCentered.fontSize =  textStyle.fontSize = Math.max(24, (Math.max(app.renderer.height, app.renderer.width) / 1080)*24)
