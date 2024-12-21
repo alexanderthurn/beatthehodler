@@ -244,17 +244,45 @@ async function fetchCSV(filePath) {
     }
 }
 
-function calculateLevelStatistics(level, pricesData) {
+function calculateLevelStatistics(level, coins) {
+
+    let dataCoinNames = level.coinNames.filter(name => coins[name].data);
+    
     let fiatBest = level.fiatStart
     let fiatWorst = level.fiatStart
     for (let i=1;i<level.stopIndizes.length;i++) {
-        let price1 = pricesData[level.stopIndizes[i]].price 
-        let price2 = pricesData[level.stopIndizes[i-1]].price
-        let factor = price1/ price2
-        if (factor > 1.0) {
-            fiatBest*=factor  
-        } else {
-            fiatWorst*=factor
+
+        let bestFactor = 1
+        let worstFactor = 1
+        dataCoinNames.forEach(name => {
+            let pricesData = coins[dataCoinNames[0]].data
+            
+            let price1 = pricesData[level.stopIndizes[i]].price 
+            let price2 = pricesData[level.stopIndizes[i-1]].price
+
+            if (price1 === null || price2 === null) {
+                return
+            }
+
+            let factor = price1/ price2
+            if (factor > bestFactor) {
+                bestFactor = factor
+            }
+
+            if (factor < worstFactor) {
+                worstFactor = factor
+            }
+
+
+        })
+
+      
+        if (bestFactor > 1.0) {
+            fiatBest*=bestFactor  
+        }
+        
+        if (worstFactor < 1.0) {
+            fiatWorst*=worstFactor
         }
     }
 
@@ -265,11 +293,14 @@ function calculateLevelStatistics(level, pricesData) {
 
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseGameData(jsonString, coins) {
-    var gameData = JSON.parse(jsonString)
-    let pricesData= coins['BTC'].data
-
+    var gameData = JSON.parse(jsonString) 
+    
+    
     gameData.levels.forEach(level => {
         level.coinNames = Object.keys(coins)
+        let dataCoinNames = level.coinNames.filter(name => coins[name].data);
+        let pricesData = coins[dataCoinNames[0]].data
+
         level.fiatStart = level.fiatStart || 1000
         level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].date
         level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].date
@@ -284,7 +315,7 @@ function parseGameData(jsonString, coins) {
             level.stops = level.stops.map(d => typeof d === 'string' && parseDate(d))
         }
         level.stopIndizes = level.stops.map(d => findClosestDateIndex(pricesData, d))
-        calculateLevelStatistics(level, pricesData)
+        calculateLevelStatistics(level, coins)
     })
    
     return gameData;

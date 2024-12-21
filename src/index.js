@@ -214,7 +214,8 @@ async function initGame() {
 
     })
 
-
+    var graphs = []
+    coins.
     var graph = createGraph('BTC', graphVertexShader, graphFragmentShader, coins, textStyle)
     graph.position.set(0, 0);
     containerBackground.addChildAt(graph,1);
