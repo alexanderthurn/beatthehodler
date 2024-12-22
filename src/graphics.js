@@ -8,6 +8,56 @@ async function loadShader(url) {
 
 
 function createStockLines(dataPoints, lineWidth) {
+    const vertices = []
+    const indices = []
+    const colors = []
+    const pointIndices = []
+
+    for (let i = 1; i < dataPoints.length; i++) {
+        const prevY = dataPoints[i - 1].price;
+        const currentY = dataPoints[i].price;
+        const x = (i - 1) * lineWidth;
+        const halfWidth = lineWidth * 0.5
+        // Punkte für Triangle Strip: P1, P2, P3, P4
+        vertices.push(
+            x-halfWidth, prevY,                  // P1: Unten links
+            x-halfWidth, currentY,               // P2: Oben links
+            x+halfWidth, prevY,      // P3: Unten rechts
+            x+halfWidth, currentY    // P4: Oben rechts
+        );
+        for (let h = 0; h < 4; h++) {
+            pointIndices.push(i-1)
+        }
+
+        if (currentY < prevY) {
+            indices.push(4*(i - 1)+0); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+3); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+1); 
+        } else {
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+0); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+3);      
+        }
+       
+        
+
+        // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
+        const color = currentY < prevY 
+            ? [1.0, 1.0, 0.0, 1.0] // Rot (RGBA: 1, 0, 0, 1)
+            : [0.0, 1.0, 1.0, 1.0]; // Grün (RGBA: 0, 1, 0, 1)
+
+        for (let j = 0; j < 4; j++) {
+            colors.push(...color);
+        }
+    }
+
+    return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
 
 }
 
@@ -83,6 +133,18 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         minPrice=0
     }
     var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
+    
+    if (graph.coinName === 'BTC') {
+        graph.curve = graph.meshRects
+        graph.meshLines.visible = false
+        graph.curve.visible = true
+    } else {
+        graph.curve = graph.meshLines
+        graph.meshRects.visible = false
+        graph.curve.visible = true
+    }
+  
+
     graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*0.9-minPrice*scaleY);
     graph.curve.scale.set(stepX, scaleY);
     graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
@@ -135,8 +197,9 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     let parsedData = coins[coinName].data
 
     let rects = createStockRectangles(parsedData,1)
+    let lines = createStockLines(parsedData,1)
 
-    const geometry = new PIXI.Geometry({
+    const geometryRects = new PIXI.Geometry({
         attributes: {
             aPosition: rects.vertices,
             aColor: rects.colors,
@@ -144,6 +207,16 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         },
         indexBuffer: rects.indices
     });
+
+    const geometryLines = new PIXI.Geometry({
+        attributes: {
+            aPosition: lines.vertices,
+            aColor: lines.colors,
+            aIndex: lines.pointIndices
+        },
+        indexBuffer: lines.indices
+    });
+
 
     const shader = new PIXI.Shader({
         glProgram: new PIXI.GlProgram({ 
@@ -161,8 +234,13 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
 
     const graph = new PIXI.Container()
 
-    const graphMesh = new PIXI.Mesh({
-        geometry,
+    const graphRectsMesh = new PIXI.Mesh({
+        geometry: geometryRects,
+        shader
+    });
+
+    const graphLinesMesh = new PIXI.Mesh({
+        geometry: geometryLines,
         shader
     });
 
@@ -173,10 +251,14 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     logoSprite.anchor.set(0.5,0.5)
     logoSprite.scale.set(0.001,0.001)        
 
-    graphMesh.state.culling = true;
-    graph.addChild(graphMesh)
+    graphRectsMesh.state.culling = true;
+    graphLinesMesh.state.culling = true;
+    graph.addChild(graphRectsMesh)
+    graph.addChild(graphLinesMesh)
     graph.addChild(logo);
-    graph.curve = graphMesh
+    graph.curve = graphLinesMesh
+    graph.meshRects = graphRectsMesh
+    graph.meshLines = graphLinesMesh
     graph.logo = logo
     graph.logoSprite = logoSprite
 
