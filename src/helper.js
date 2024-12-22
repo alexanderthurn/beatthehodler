@@ -1,3 +1,16 @@
+function hexToRGB(hex, a) {
+    // Entfernt das # falls vorhanden
+    hex = hex.replace(/^#/, '');
+    
+    // Konvertiert die Hex-Werte zu Dezimal
+    let r = parseInt(hex.substring(0, 2), 16) / 255;
+    let g = parseInt(hex.substring(2, 4), 16) / 255;
+    let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    return [r, g, b, a];
+}
+
+
 function formatCurrencyInner(value, currency, locale, fractionDigits) {
     try {
         // Versuche direkt, mit der angegebenen Währung zu formatieren
@@ -297,7 +310,8 @@ function parseGameData(jsonString, coins) {
     
     
     gameData.levels.forEach(level => {
-        level.coinNames = Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
+        //level.coinNames = Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
+        level.coinNames = Object.keys(coins)
         let dataCoinNames = level.coinNames.filter(name => coins[name].data);
         let pricesData = coins[dataCoinNames[0]].data
 

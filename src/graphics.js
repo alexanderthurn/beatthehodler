@@ -7,50 +7,44 @@ async function loadShader(url) {
 }
 
 
-function createStockLines(dataPoints, lineWidth) {
+function createStockLines(dataPoints, lineWidth, coin) {
     const vertices = []
     const indices = []
     const colors = []
     const pointIndices = []
 
     for (let i = 1; i < dataPoints.length; i++) {
-        const prevY = dataPoints[i - 1].price;
-        const currentY = dataPoints[i].price;
+        const prevY = dataPoints[i - 1].price || 0;
+        const currentY = dataPoints[i].price || 0;
         const x = (i - 1) * lineWidth;
-        const halfWidth = lineWidth * 0.5
+        const prevX = (i - 2) * lineWidth;
+        const halfWidth = lineWidth * 0.25
+
         // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
-            x-halfWidth, prevY,                  // P1: Unten links
+            prevX-halfWidth, prevY,                  // P1: Unten links
             x-halfWidth, currentY,               // P2: Oben links
-            x+halfWidth, prevY,      // P3: Unten rechts
+            prevX+halfWidth, prevY,      // P3: Unten rechts
             x+halfWidth, currentY    // P4: Oben rechts
         );
         for (let h = 0; h < 4; h++) {
             pointIndices.push(i-1)
         }
 
-        if (currentY < prevY) {
-            indices.push(4*(i - 1)+0); 
-            indices.push(4*(i - 1)+1); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+3); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+1); 
-        } else {
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+1); 
-            indices.push(4*(i - 1)+0); 
-            indices.push(4*(i - 1)+1); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+3);      
-        }
+        indices.push(4*(i - 1)+0); 
+        indices.push(4*(i - 1)+1); 
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+3); 
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+1); 
+    
        
         
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
         const color = currentY < prevY 
-            ? [1.0, 1.0, 0.0, 1.0] // Rot (RGBA: 1, 0, 0, 1)
-            : [0.0, 1.0, 1.0, 1.0]; // Grün (RGBA: 0, 1, 0, 1)
+            ? hexToRGB(coin.color, 1.0).map((e,i) => e*0.5) // Rot (RGBA: 1, 0, 0, 1)
+            : hexToRGB(coin.color, 1.0); // Grün (RGBA: 0, 1, 0, 1)
 
         for (let j = 0; j < 4; j++) {
             colors.push(...color);
@@ -134,7 +128,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     }
     var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
     
-    if (graph.coinName === 'BTC') {
+    if (graph.coinName === 'BTC2') {
         graph.curve = graph.meshRects
         graph.meshLines.visible = false
         graph.curve.visible = true
@@ -197,7 +191,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     let parsedData = coins[coinName].data
 
     let rects = createStockRectangles(parsedData,1)
-    let lines = createStockLines(parsedData,1)
+    let lines = createStockLines(parsedData,1, coins[coinName])
 
     const geometryRects = new PIXI.Geometry({
         attributes: {
@@ -252,7 +246,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     logoSprite.scale.set(0.001,0.001)        
 
     graphRectsMesh.state.culling = true;
-    graphLinesMesh.state.culling = true;
+    graphLinesMesh.state.culling = false;
     graph.addChild(graphRectsMesh)
     graph.addChild(graphLinesMesh)
     graph.addChild(logo);
