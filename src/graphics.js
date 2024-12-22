@@ -7,6 +7,11 @@ async function loadShader(url) {
 }
 
 
+function createStockLines(dataPoints, lineWidth) {
+
+}
+
+
 function createStockRectangles(dataPoints, rectWidth) {
     const vertices = []
     const indices = []
@@ -28,12 +33,23 @@ function createStockRectangles(dataPoints, rectWidth) {
         for (let h = 0; h < 4; h++) {
             pointIndices.push(i-1)
         }
-        indices.push(4*(i - 1)+0); 
-        indices.push(4*(i - 1)+1); 
-        indices.push(4*(i - 1)+2); 
-        indices.push(4*(i - 1)+1); 
-        indices.push(4*(i - 1)+2); 
-        indices.push(4*(i - 1)+3); 
+
+        if (currentY < prevY) {
+            indices.push(4*(i - 1)+0); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+3); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+1); 
+        } else {
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+0); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+3);      
+        }
+       
         
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
@@ -157,7 +173,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     logoSprite.anchor.set(0.5,0.5)
     logoSprite.scale.set(0.001,0.001)        
 
-    graphMesh.state.culling = false;
+    graphMesh.state.culling = true;
     graph.addChild(graphMesh)
     graph.addChild(logo);
     graph.curve = graphMesh
