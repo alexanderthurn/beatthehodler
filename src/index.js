@@ -276,7 +276,7 @@ async function initGame() {
                 } else {
                     maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0]
                     trades.filter(t => t.index !== options.stopIndizes[0] && (t.index === options.stopIndizes[options.stopIndizes.length-1] || t.toName === t.fromName)).forEach(trade => {
-                        trade.container.alpha = 0
+                        trade.container.visible = false
                     })
                 }
                
@@ -293,7 +293,7 @@ async function initGame() {
         })
         
         if (!isFinalScreen) {
-            dateLabel.alpha = 1
+            dateLabel.visible = true
             let label = `${currentDate.toLocaleDateString()}\n\n`
             if (stopIndex > -1) {
                 label += `Trade ${stopIndex+1}/${options.stops.length-1}\n` 
@@ -317,13 +317,13 @@ async function initGame() {
             txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             txt += "Try again?"
             dateLabel.text = txt
-            dateLabel.alpha = 1
+            dateLabel.visible = true
         }
         dateLabel.x = 0.025*app.renderer.width
         dateLabel.y = 0.025*app.renderer.width
         if (stopIndex === 0) {
             dateLabel.text = `You can trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
-            dateLabel.alpha = 1
+            dateLabel.visible = true
         }
 
        
@@ -361,11 +361,11 @@ async function initGame() {
             })
             coinButtonContainer.y = app.renderer.height - coinButtons[0].sprite.height*2.2
 
-            coinButtonContainer.alpha = 1
-            stackLabel.alpha = 0
+            coinButtonContainer.visible = true
+            stackLabel.visible = false
         } else {
-            coinButtonContainer.alpha = 0
-            stackLabel.alpha = 1
+            coinButtonContainer.visible = false
+            stackLabel.visible = true
         }
     });
 }

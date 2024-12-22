@@ -83,11 +83,11 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         graph.priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
         graph.priceLabel.text = formatCurrency(price, fiatName,null, true) 
-        graph.priceLabel.alpha = 1
+        graph.priceLabel.visible = true
         graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
     } else {
-        graph.priceLabel.alpha = 0
+        graph.priceLabel.visible = false
     }
 
 
