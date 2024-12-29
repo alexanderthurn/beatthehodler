@@ -182,7 +182,6 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
         graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = focusedCoinName === graph.coinName
 
-        focusedCoinName === graph.coinName && console.log(maxPriceIndex)
         graph.maxPriceLabel.x = 0.9*graph.maxPriceLabel.x +0.1*((maxPriceIndex - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
         graph.maxPriceLabel.y = 0.9*graph.maxPriceLabel.y +0.1*(app.renderer.height*0.9-  (parsedData[maxPriceIndex].price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
         graph.maxPriceLabel.text = formatCurrency(parsedData[maxPriceIndex].price, fiatName,null, true) 
@@ -346,7 +345,7 @@ function createBackground(vertexShader, fragmentShader)  {
             }),
         resources: {
             backgroundUniforms: {
-                uMode: {type: 'i32', value: 1},
+                uColor: {type: 'vec4<f32>', value: new Float32Array([1.0,0.0,0.0,1.0])},
                 uThreshold: {type: 'f32', value: 0.05},
                 uTime: {type: 'f32', value: 0.0},
                 uCurveStrength: {type: 'f32', value: 1.5},

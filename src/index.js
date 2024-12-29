@@ -1,5 +1,5 @@
 const coins = {
-    USD: { image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
+    USD: { color: '#000', image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
     BTC: { color: '#F7931B', image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
     ADA: { color: '#0133AD', image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
     DOGE: { color: '#BA9F32', image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
@@ -115,7 +115,7 @@ async function initGame() {
     let currentIndexFloat = options.indexStart; // Zeitverfolgung
     let currentIndexInteger = Math.floor(currentIndexFloat)
     let focusedCoinName = null
-
+    let isMultiCoin = options.coinNames.length > 2
     
     let trades = []
     
@@ -214,17 +214,18 @@ async function initGame() {
 
     app.stage.addEventListener('pointermove', (event) => {
         let i = getCoinButtonIndex(event)
-        if (i >= 0 && i < coinButtons.length) {
+        if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
            focusedCoinName = coinButtons[i].to
         } else {
             focusedCoinName = null
         }
 
+        console.log(i, focusedCoinName, coinButtons[0].active)
+
     });
 
 
      app.stage.addEventListener('pointerup', (event) => {
-        console.log('pointerup', event)
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1) {
             let i = getCoinButtonIndex(event)
@@ -332,8 +333,9 @@ async function initGame() {
                 })  
             }*/
             
-        
-            dateLabel.text = label
+            dateLabel.text = `Today: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                
+           // dateLabel.text = label
         } else {
             let fiat = yourFiat
             let txt = "Congratulations\n\n" 
@@ -348,39 +350,51 @@ async function initGame() {
         dateLabel.x = 0.025*app.renderer.width
         dateLabel.y = 0.025*app.renderer.width
         if (stopIndex === 0) {
-            dateLabel.text = `You can trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
-            dateLabel.visible = true
+            if (focusedCoinName) {
+                  dateLabel.visible = false
+            } else {
+                //dateLabel.text = `You can trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
+                dateLabel.text = `Today: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                dateLabel.visible = true
+            }
+
         }
 
        
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
-        textStyleCentered.fontSize =  textStyle.fontSize = Math.max(24, (Math.max(app.renderer.height, app.renderer.width) / 1080)*24)
+        textStyleCentered.fontSize =  textStyle.fontSize = Math.max(18, (Math.max(app.renderer.height, app.renderer.width) / 1080)*18)
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
         stackLabel.text = "You have\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || ''
-        background.shader.resources.backgroundUniforms.uniforms.uMode = yourCoins > 0 ? 1 : 0
+        //background.shader.resources.backgroundUniforms.uniforms.uColor = hexToRGB(coins[yourCoinName].color, 1.0)
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         backgroundImage.texture = coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
         coinButtonContainerTitle.text = 'What do you want?'
         
-       
+        coinButtons.forEach(b => {
+            b.active = !coins[b.to].data || coins[b.to].data[currentIndexInteger]?.price ? true : false
+        })
+
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
             coinButtonContainerTitle.x =app.renderer.width*0.5 
+            coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
+            let maxButtonHeight = 0
             coinButtons.forEach(b => {
                 b.sprite.height = b.sprite.width = Math.min(app.renderer.height*0.1, app.renderer.width*0.9 / coinButtons.length)
+                maxButtonHeight = Math.max(maxButtonHeight, b.sprite.height)
                 b.container.x = (app.renderer.width / coinButtons.length)*(b.index+0.5)
                 b.container.y = b.sprite.height
                 b.sprite.y = b.sprite.height*0.5
                 b.sprite.rotation = Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1
-                b.sprite.alpha = focusedCoinName ? (b.to === focusedCoinName && 1.0 || 0.1) : (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
-                b.sprite.alpha = (!coins[b.to].csv || coins[b.to].data[currentIndexInteger].price) ? b.sprite.alpha : 0.0
-            
+                b.sprite.alpha = focusedCoinName ? (b.to === focusedCoinName && b.active && 1.0 || 0.1) : (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
+                b.sprite.alpha = (!coins[b.to].csv || b.active) ? b.sprite.alpha : 0.0
+               
             })
-            coinButtonContainer.y = app.renderer.height - coinButtons[0].sprite.height*2.2
+            coinButtonContainer.y = app.renderer.height - maxButtonHeight*2.2
 
             coinButtonContainer.visible = true
             stackLabel.visible = false
