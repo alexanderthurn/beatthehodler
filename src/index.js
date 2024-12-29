@@ -213,15 +213,15 @@ async function initGame() {
    
 
     app.stage.addEventListener('pointermove', (event) => {
-        let i = getCoinButtonIndex(event)
-        if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
-           focusedCoinName = coinButtons[i].to
-        } else {
-            focusedCoinName = null
+        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1) {
+            let i = getCoinButtonIndex(event)
+            if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
+                focusedCoinName = coinButtons[i].to
+             } else {
+                 focusedCoinName = null
+             }
         }
-
-        console.log(i, focusedCoinName, coinButtons[0].active)
-
     });
 
 
@@ -401,6 +401,7 @@ async function initGame() {
         } else {
             coinButtonContainer.visible = false
             stackLabel.visible = true
+            focusedCoinName = yourCoinName
         }
     });
 }
