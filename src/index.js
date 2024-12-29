@@ -29,13 +29,19 @@ async function initGame() {
         height: window.innerHeight,
         backgroundColor: 0x000000,
         resolution: window.devicePixelRatio || 1,
-        autoDensity: true
+        autoDensity: true,
+       
     });
     await app.init({ background: '#000', resizeTo: window });
     document.body.appendChild(app.canvas);
 
+    app.stage.eventMode = 'static'
+    app.stage.hitArea = app.screen
+
    const containerForeground = new PIXI.Container()
    const containerBackground = new PIXI.Container()
+   let containerGraphs = new PIXI.Container()
+
    app.stage.addChild(containerBackground)
    app.stage.addChild(containerForeground)
 
@@ -108,7 +114,7 @@ async function initGame() {
     const factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
     let currentIndexFloat = options.indexStart; // Zeitverfolgung
     let currentIndexInteger = Math.floor(currentIndexFloat)
-
+    let focusedCoinName = null
 
     
     let trades = []
@@ -166,7 +172,7 @@ async function initGame() {
         yourCoinName = trade.toName
        
         trades.push(trade)
-        containerBackground.addChild(trade.container)
+        containerGraphs.addChild(trade.container)
         paused = buyPaused
     }
 
@@ -193,25 +199,42 @@ async function initGame() {
     })
     containerForeground.addChild(coinButtonContainer)
 
-    addEventListener('pointerup', (event) => {
-
-        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
-
-        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1) {
-            
-            let xR = event.x - coinButtonContainer.x
-            let yR = event.y - coinButtonContainer.y
-            if (yR > 0) {
-                let i = Math.floor(xR/app.renderer.width *coinButtons.length)
-
-                if (i >= 0 && i < coinButtons.length) {
-                    doTrade(yourCoinName,coinButtons[i].to )
-                }
-               
+    function getCoinButtonIndex(event) {
+        let xR = event.x - coinButtonContainer.x
+        let yR = event.y - coinButtonContainer.y
+        if (yR > 0) {
+            let i = Math.floor(xR/app.renderer.width *coinButtons.length)
+            if (i >= 0 && i < coinButtons.length) {
+                return i
             }
-           
+        }
+        return -1
+    }
+   
+
+    app.stage.addEventListener('pointermove', (event) => {
+        console.log('move', event)
+        let i = getCoinButtonIndex(event)
+        if (i >= 0 && i < coinButtons.length) {
+           focusedCoinName = coinButtons[i].to
+        } else {
+            focusedCoinName = null
         }
 
+    });
+
+
+     app.stage.addEventListener('pointerup', (event) => {
+        console.log('pointerup', event)
+        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1) {
+            let i = getCoinButtonIndex(event)
+            if (i >= 0 && i < coinButtons.length) {
+                doTrade(yourCoinName,coinButtons[i].to )
+            }
+        }
+
+       
     })
 
     const graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
@@ -228,8 +251,9 @@ async function initGame() {
     })
 
     graphs.forEach(g => {
-        containerBackground.addChildAt(g.graph,1); 
+        containerGraphs.addChildAt(g.graph); 
     })
+    containerBackground.addChildAt(containerGraphs,1)
 
    
 
@@ -253,7 +277,6 @@ async function initGame() {
             currentIndexFloat = options.indexEnd
         }
         currentIndexInteger = Math.floor(currentIndexFloat)
-
         let missedStopIndex = options.stopIndizes.findIndex(stop => stop < currentIndexInteger && !trades.find(t => t.index === stop))
         if (missedStopIndex > -1) {
             currentIndexFloat = options.stopIndizes[missedStopIndex]
@@ -288,8 +311,12 @@ async function initGame() {
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
         
+        let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
+        containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0)
+
+
         graphs.forEach(g => {
-            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades)
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat)
         })
         
         if (!isFinalScreen) {
@@ -355,7 +382,7 @@ async function initGame() {
                 b.container.y = b.sprite.height
                 b.sprite.y = b.sprite.height*0.5
                 b.sprite.rotation = Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1
-                b.sprite.alpha = (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
+                b.sprite.alpha = focusedCoinName ? (b.to === focusedCoinName && 1.0 || 0.1) : (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
                 b.sprite.alpha = (!coins[b.to].csv || coins[b.to].data[currentIndexInteger].price) ? b.sprite.alpha : 0.0
             
             })

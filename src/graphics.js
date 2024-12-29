@@ -31,13 +31,23 @@ function createStockLines(dataPoints, lineWidth, coin) {
             pointIndices.push(i-1)
         }
 
-        indices.push(4*(i - 1)+0); 
-        indices.push(4*(i - 1)+1); 
-        indices.push(4*(i - 1)+2); 
-        indices.push(4*(i - 1)+3); 
-        indices.push(4*(i - 1)+2); 
-        indices.push(4*(i - 1)+1); 
-    
+
+       
+        if (currentY < prevY) {
+            indices.push(4*(i - 1)+0); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+3); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+1); 
+        } else {
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+0); 
+            indices.push(4*(i - 1)+1); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+3); 
+        }
        
         
 
@@ -110,11 +120,13 @@ function createStockRectangles(dataPoints, rectWidth) {
 
 }
 
-function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades) {
+function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat) {
     let parsedData = coins[graph.coinName].data
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
     const price = parsedData[currentIndexInteger].price
+    const pricePriorIndex = currentIndexInteger > 0 ? parsedData[currentIndexInteger-1].price : price
+    const priceNextIndex = currentIndexInteger < parsedData.length ? parsedData[currentIndexInteger+1].price : price
     for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
         if (i > 0) {
             maxPrice = Math.max(maxPrice, parsedData[i].price)
@@ -143,21 +155,22 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.curve.scale.set(stepX, scaleY);
     graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
     graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
-    graph.logo.x = (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-    graph.logo.y = app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+    graph.logo.x = (1.0-diffCurrentIndexIntToFloat)*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX) + (diffCurrentIndexIntToFloat)*(((currentIndexInteger+1) - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
+    graph.logo.y = (1.0-diffCurrentIndexIntToFloat)*(app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8) + (diffCurrentIndexIntToFloat)*(app.renderer.height*0.9-(pricePriorIndex-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
     graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.04
-
+    graph.alpha = !focusedCoinName || focusedCoinName === graph.coinName ? 1.0 : 0.0
+    graph.curve.shader.resources.graphUniforms.uniforms.uAlpha = graph.alpha
 
 
 
 
     if (!isFinalScreen) {
-        graph.priceLabel.x =  (currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-        graph.priceLabel.y = app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
+        graph.priceLabel.x = 0.9*graph.priceLabel.x +0.1*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
+        graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
         graph.priceLabel.text = formatCurrency(price, fiatName,null, true) 
-        graph.priceLabel.visible = true
         graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
+        graph.priceLabel.visible = focusedCoinName === graph.coinName
     } else {
         graph.priceLabel.visible = false
     }
@@ -175,8 +188,6 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
             trade.labelPrice.position.set(0,0)
         }
      })
-
-
 
 
     return {
@@ -220,6 +231,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         resources: {
             graphUniforms: {
                 uCurrentIndex: {type: 'i32', value: 0},
+                uAlpha: {type: 'f32', value: 1.0},
                 uMaxVisiblePoints: {type: 'i32', value: 3},
                 uScale: { value: [1.0, 1.0], type: 'vec2<f32>' },
             }
@@ -246,7 +258,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     logoSprite.scale.set(0.001,0.001)        
 
     graphRectsMesh.state.culling = true;
-    graphLinesMesh.state.culling = false;
+    graphLinesMesh.state.culling = true;
     graph.addChild(graphRectsMesh)
     graph.addChild(graphLinesMesh)
     graph.addChild(logo);
@@ -260,6 +272,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     const priceLabel = new PIXI.Text("", textStyle);
     graph.addChild(priceLabel);
     graph.priceLabel = priceLabel
+    graph.priceLabel.visible = false
     graph.priceLabel.anchor.set(0,1.5)
 
     graph.coinName = coinName
