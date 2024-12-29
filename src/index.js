@@ -110,7 +110,7 @@ async function initGame() {
     let yourCoinName = fiatName
     let paused = Number.MAX_VALUE
 
-    const gameDurationMilliseconds = 100000
+    const gameDurationMilliseconds = 7*2000
     const factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
     let currentIndexFloat = options.indexStart; // Zeitverfolgung
     let currentIndexInteger = Math.floor(currentIndexFloat)
@@ -213,7 +213,6 @@ async function initGame() {
    
 
     app.stage.addEventListener('pointermove', (event) => {
-        console.log('move', event)
         let i = getCoinButtonIndex(event)
         if (i >= 0 && i < coinButtons.length) {
            focusedCoinName = coinButtons[i].to
@@ -322,7 +321,7 @@ async function initGame() {
         if (!isFinalScreen) {
             dateLabel.visible = true
             let label = `${currentDate.toLocaleDateString()}\n\n`
-            if (stopIndex > -1) {
+          /*  if (stopIndex > -1) {
                 label += `Trade ${stopIndex+1}/${options.stops.length-1}\n` 
                 label += ("\nYou have:\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || '') + "\n"
                 coinButtons.filter(cb => cb.to !== fiatName).forEach(cb => {
@@ -331,7 +330,7 @@ async function initGame() {
                         label += `\n${formatCurrency(1, cb.to,0, false)} = ` + formatCurrency(p, fiatName,null, true)
                     }
                 })  
-            }
+            }*/
             
         
             dateLabel.text = label
@@ -366,13 +365,8 @@ async function initGame() {
         backgroundImage.texture = coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-
-
-        if (stopIndex === 0) {
-            coinButtonContainerTitle.text = 'What do you want?'
-        } else {
-            coinButtonContainerTitle.text =  'Want to trade?'
-        }
+        coinButtonContainerTitle.text = 'What do you want?'
+        
        
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
             coinButtonContainerTitle.x =app.renderer.width*0.5 

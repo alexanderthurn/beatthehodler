@@ -124,13 +124,22 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     let parsedData = coins[graph.coinName].data
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
+    let maxPriceIndex = currentIndexInteger-maxVisiblePoints+1
+    let minPriceIndex = currentIndexInteger-maxVisiblePoints+1
     const price = parsedData[currentIndexInteger].price
     const pricePriorIndex = currentIndexInteger > 0 ? parsedData[currentIndexInteger-1].price : price
     const priceNextIndex = currentIndexInteger < parsedData.length ? parsedData[currentIndexInteger+1].price : price
     for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
-        if (i > 0) {
-            maxPrice = Math.max(maxPrice, parsedData[i].price)
-            minPrice = Math.min(minPrice, parsedData[i].price)
+        if (i >= 0) {
+            if (parsedData[i].price > maxPrice) {
+                maxPrice = parsedData[i].price
+                maxPriceIndex = i
+            }
+
+            if (parsedData[i].price < minPrice) {
+                minPrice = parsedData[i].price
+                minPriceIndex = i
+            }
         }
     }
 
@@ -138,6 +147,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         maxPrice=Math.max(100, parsedData[currentIndexInteger].price*2)
         minPrice=0
     }
+
     var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
     
     if (graph.coinName === 'BTC2') {
@@ -170,9 +180,23 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.priceLabel.text = formatCurrency(price, fiatName,null, true) 
         graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
-        graph.priceLabel.visible = focusedCoinName === graph.coinName
+        graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = focusedCoinName === graph.coinName
+
+        focusedCoinName === graph.coinName && console.log(maxPriceIndex)
+        graph.maxPriceLabel.x = 0.9*graph.maxPriceLabel.x +0.1*((maxPriceIndex - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
+        graph.maxPriceLabel.y = 0.9*graph.maxPriceLabel.y +0.1*(app.renderer.height*0.9-  (parsedData[maxPriceIndex].price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
+        graph.maxPriceLabel.text = formatCurrency(parsedData[maxPriceIndex].price, fiatName,null, true) 
+        graph.maxPriceLabel.y = Math.min(app.renderer.height-graph.maxPriceLabel.height*(1-graph.maxPriceLabel.anchor.y), Math.max(graph.maxPriceLabel.y, graph.maxPriceLabel.height*graph.maxPriceLabel.anchor.y))
+        graph.maxPriceLabel.x = Math.min(app.renderer.width-graph.maxPriceLabel.width*(1-graph.maxPriceLabel.anchor.x), Math.max(graph.maxPriceLabel.x, -graph.maxPriceLabel.width*(graph.maxPriceLabel.anchor.x)))
+        
+        graph.minPriceLabel.x = 0.9*graph.minPriceLabel.x +0.1*((minPriceIndex - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
+        graph.minPriceLabel.y = 0.9*graph.minPriceLabel.y +0.1*(app.renderer.height*0.9-  (parsedData[minPriceIndex].price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
+        graph.minPriceLabel.text = formatCurrency(parsedData[minPriceIndex].price, fiatName,null, true) 
+        graph.minPriceLabel.y = Math.min(app.renderer.height-graph.minPriceLabel.height*(1-graph.minPriceLabel.anchor.y), Math.max(graph.minPriceLabel.y, graph.minPriceLabel.height*graph.minPriceLabel.anchor.y))
+        graph.minPriceLabel.x = Math.min(app.renderer.width-graph.minPriceLabel.width*(1-graph.minPriceLabel.anchor.x), Math.max(graph.minPriceLabel.x, -graph.minPriceLabel.width*(graph.minPriceLabel.anchor.x)))
+        
     } else {
-        graph.priceLabel.visible = false
+        graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = false
     }
 
 
@@ -182,11 +206,14 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         if (trade.sprite) {
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.04
         }
-            if (trade.index > currentIndexInteger - maxVisiblePoints) {  
+        
+        if (trade.index > currentIndexInteger - maxVisiblePoints) {  
             trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
         } else {
             trade.labelPrice.position.set(0,0)
         }
+
+        trade.container.visible = !focusedCoinName || focusedCoinName === graph.coinName
      })
 
 
@@ -269,11 +296,20 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graph.logoSprite = logoSprite
 
 
-    const priceLabel = new PIXI.Text("", textStyle);
-    graph.addChild(priceLabel);
-    graph.priceLabel = priceLabel
+    graph.priceLabel = new PIXI.Text("", textStyle);
+    graph.addChild(graph.priceLabel);
     graph.priceLabel.visible = false
     graph.priceLabel.anchor.set(0,1.5)
+
+    graph.maxPriceLabel = new PIXI.Text("", textStyle);
+    graph.addChild(graph.maxPriceLabel);
+    graph.maxPriceLabel.visible = false
+    graph.maxPriceLabel.anchor.set(0,1.5)
+
+    graph.minPriceLabel = new PIXI.Text("", textStyle);
+    graph.addChild(graph.minPriceLabel);
+    graph.minPriceLabel.visible = false
+    graph.minPriceLabel.anchor.set(0,1.5)
 
     graph.coinName = coinName
     return graph
