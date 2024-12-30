@@ -47,10 +47,12 @@ async function initGame() {
 
    const containerForeground = new PIXI.Container()
    const containerBackground = new PIXI.Container()
+   const containerMenu = new PIXI.Container()
    let containerGraphs = new PIXI.Container()
 
    app.stage.addChild(containerBackground)
    app.stage.addChild(containerForeground)
+   app.stage.addChild(containerMenu)
 
     PIXI.Assets.addBundle('fonts', {
         XoloniumBold: {
@@ -117,6 +119,13 @@ async function initGame() {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
+    const menu = createMenu(gameData, app, textStyle, textStyleCentered)
+    containerMenu.addChild(menu)
+
+    function isMenuVisible() {
+        return menu.visible
+    }
+
     let options
     var maxVisiblePoints
     let fiatName
@@ -320,6 +329,7 @@ async function initGame() {
 
 
     app.ticker.add((deltaTime) => {
+        updateMenu(menu, app, deltaTime)
 
         if (paused <= 0) {
             currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds;
