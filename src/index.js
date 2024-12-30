@@ -130,7 +130,11 @@ async function initGame() {
     let currentIndexInteger
     let focusedCoinName
     let isMultiCoin 
-    let trades
+    let trades = []
+    let coinButtons = []
+    let graphs = []
+    let isFinalScreen = false
+
 
     const startNewGame = (level) => {
         options = level
@@ -140,13 +144,63 @@ async function initGame() {
         yourCoins = yourFiat
         yourCoinName = fiatName
         paused = Number.MAX_VALUE
-        gameDurationMilliseconds = 7*2000
+        gameDurationMilliseconds = options.stopIndizes.length*2000
         factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
         currentIndexFloat = options.indexStart; // Zeitverfolgung
         currentIndexInteger = Math.floor(currentIndexFloat)
         focusedCoinName = null
         isMultiCoin = options.coinNames.length > 2
+        
+
+        coinButtons.forEach(b => {
+            coinButtonContainer.removeChild(b.container)
+        })
+
+        graphs.forEach(g => {
+            containerGraphs.removeChild(g.graph); 
+        })
+
+        trades.forEach(trade => {
+            containerGraphs.removeChild(trade.container); 
+        })
+
+        coinButtons = options.coinNames.map((c,i) => {
+            let container = new PIXI.Container()
+            let sprite = new PIXI.Sprite(coins[c].texture);
+            sprite.anchor.set(0.5,0.5)
+            container.addChild(sprite)
+            return {
+                to: c,
+                index: i,
+                container: container,
+                sprite: sprite
+            }
+        })
+    
+    
+        coinButtons.forEach(b => {
+            coinButtonContainer.addChild(b.container)
+        })
+
+        graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
+            let container = new PIXI.Container()
+            let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle)
+            graph.position.set(0, 0);
+            container.addChild(graph)
+            return {
+                coinName: c,
+                index: i,
+                container: container,
+                graph: graph
+            }
+        })
+    
+        graphs.forEach(g => {
+            containerGraphs.addChild(g.graph); 
+        })
+
         trades = []
+
     }
 
     startNewGame(gameData.levels[gameData.levels.length-1])
@@ -207,23 +261,7 @@ async function initGame() {
     }
 
 
-    let coinButtons = options.coinNames.map((c,i) => {
-        let container = new PIXI.Container()
-        let sprite = new PIXI.Sprite(coins[c].texture);
-        sprite.anchor.set(0.5,0.5)
-        container.addChild(sprite)
-        return {
-            to: c,
-            index: i,
-            container: container,
-            sprite: sprite
-        }
-    })
-
-
-    coinButtons.forEach(b => {
-        coinButtonContainer.addChild(b.container)
-    })
+    
 
     function getCoinButtonIndex(event) {
         let xR = event.x - coinButtonContainer.x
@@ -254,6 +292,12 @@ async function initGame() {
 
 
      app.stage.addEventListener('pointerup', (event) => {
+
+        if (isFinalScreen) {
+            startNewGame(options)
+        } else if (event.y < 100){
+            startNewGame(gameData.levels[Math.floor(Math.random()*gameData.levels.length-0.01)])
+        }
         let trade = trades.find(t => t.index === currentIndexInteger)
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1  && !trade) {
@@ -270,22 +314,7 @@ async function initGame() {
        
     })
 
-    const graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
-        let container = new PIXI.Container()
-        let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle)
-        graph.position.set(0, 0);
-        container.addChild(graph)
-        return {
-            coinName: c,
-            index: i,
-            container: container,
-            graph: graph
-        }
-    })
-
-    graphs.forEach(g => {
-        containerGraphs.addChildAt(g.graph); 
-    })
+    
     containerBackground.addChildAt(containerGraphs,1)
 
 
@@ -337,7 +366,7 @@ async function initGame() {
 
         const currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
-        let isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
+        isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
         
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
         containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0)
@@ -390,7 +419,8 @@ async function initGame() {
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
         
         
-        coinButtonContainerTitle.text = 'What do you want ?'
+        //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${options.stops.length-1}` : 'What do you want ?' 
+        coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${options.stops.length-1}\nWhat do you want ?` 
         
         coinButtons.forEach(b => {
             b.active = !coins[b.to].data || coins[b.to].data[currentIndexInteger]?.price ? true : false

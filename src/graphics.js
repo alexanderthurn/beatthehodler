@@ -124,11 +124,11 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     let parsedData = coins[graph.coinName].data
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
-    let maxPriceIndex = currentIndexInteger-maxVisiblePoints+1
-    let minPriceIndex = currentIndexInteger-maxVisiblePoints+1
+    let maxPriceIndex = 0
+    let minPriceIndex = 0
     const price = parsedData[currentIndexInteger].price
     const pricePriorIndex = currentIndexInteger > 0 ? parsedData[currentIndexInteger-1].price : price
-    const priceNextIndex = currentIndexInteger < parsedData.length ? parsedData[currentIndexInteger+1].price : price
+    const priceNextIndex = currentIndexInteger+1 < parsedData.length ? parsedData[currentIndexInteger+1].price : price
     const lastPriceIndex = trades.length > 0 ? trades[trades.length-1].index : (currentIndexInteger-maxVisiblePoints > 0 ? currentIndexInteger-maxVisiblePoints : 0)
     const lastPrice = parsedData[lastPriceIndex].price || price
     const percentage = calculatePriceChange(price, lastPrice)
