@@ -285,7 +285,7 @@ function calculateLevelStatistics(level, coins) {
         let bestFactor = 1
         let worstFactor = 1
         dataCoinNames.forEach(name => {
-            let pricesData = coins[dataCoinNames[0]].data
+            let pricesData = coins[name].data
             
             let price1 = pricesData[level.stopIndizes[i]].price 
             let price2 = pricesData[level.stopIndizes[i-1]].price
