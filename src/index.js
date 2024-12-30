@@ -198,7 +198,7 @@ async function initGame() {
     })
 
     const coinButtonContainer = new PIXI.Container()
-    let coinButtonContainerTitle = new PIXI.Text('What do you want?', textStyleCentered)
+    let coinButtonContainerTitle = new PIXI.Text('', textStyleCentered)
     coinButtonContainerTitle.anchor.set(0.5,0.)
     coinButtonContainer.addChild(coinButtonContainerTitle)
     coinButtons.forEach(b => {
@@ -374,13 +374,26 @@ async function initGame() {
         backgroundImage.texture = coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-        coinButtonContainerTitle.text = 'What do you want?'
+        
+        
+        coinButtonContainerTitle.text = 'What do you want ?'
         
         coinButtons.forEach(b => {
             b.active = !coins[b.to].data || coins[b.to].data[currentIndexInteger]?.price ? true : false
         })
 
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
+            if (focusedCoinName) {
+
+                let fromPrice = yourCoinName === fiatName ? 1 : coins[yourCoinName].data[currentIndexInteger].price
+                let toPrice = focusedCoinName === fiatName ? 1 : coins[focusedCoinName].data[currentIndexInteger].price
+
+                let toCoins = (yourCoins * fromPrice) / toPrice
+       
+                coinButtonContainerTitle.text = formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits) + ' ?'
+            }
+            
+
             coinButtonContainerTitle.x =app.renderer.width*0.5 
             coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
             let maxButtonHeight = 0
