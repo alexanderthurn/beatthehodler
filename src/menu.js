@@ -2,6 +2,7 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
 
     let menu = new PIXI.Container()
+    menu.gameData = gameData
 
     menu.textStyleTitle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
@@ -28,7 +29,7 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
 
-    menu.subtitle = new PIXI.Text('Beat the Hodler', menu.textStyleTitle)
+    menu.subtitle = new PIXI.Text('Can you beat the Hodler?', menu.textStyleTitle)
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
     menu.subtitle.scale = 0.5
@@ -50,23 +51,27 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
     menu.levelEntries = gameData.levels.map((level,index) => {
         let e = new PIXI.Container()
-        e.group = level.group
+        e.level = level
+        e.group = e.level.group
         //e.title = new PIXI.Text(level.name + ' ' + level.coinNames + ' ' + level.stops.length, textStyleCentered)
-        e.title = new PIXI.Text(level.name, textStyleCentered)
+        e.title = new PIXI.Text(e.level.name, textStyleCentered)
         e.title.anchor.set(1,0.5)
         e.addChild(e.title)
 
+        e.stops = new PIXI.Text((e.level.stops.length-1) + 'x', textStyleCentered)
+        e.stops.anchor.set(-2,0.5)
+        e.addChild(e.stops)
 
         e.logos = new PIXI.Container()
-        level.coinNames.forEach(coinName => {
+        e.level.coinNames.forEach(coinName => {
             const logoSprite = new PIXI.Sprite(coins[coinName].texture);
-            logoSprite.anchor.set(0.5,0.5)
+            logoSprite.anchor.set(0,0.5)
             e.logos.addChild(logoSprite)
         })
        
         e.addChild(e.logos)   
 
-        let group = menu.levelGroups.find(group => group.name === level.group)
+        let group = menu.levelGroups.find(group => group.name === e.level.group)
         group.levels.addChild(e)
         group.levelEntries.push(e)
         return e
@@ -74,6 +79,23 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
     menu.levels.addChild(...menu.levelGroups)
     return menu
+}
+
+function menuPointerMoveEvent(menu, event) {
+    menu.levelEntries.forEach((entry,index2) => {
+        entry.active = entry.getBounds().containsPoint(event.x,event.y)
+    })
+}
+
+function menuPointerUpEvent(menu, event, startNewGame) {
+    menu.levelEntries.forEach((entry,index2) => {
+        if (entry.active) {
+            menu.visible = false
+            startNewGame(entry.level)
+        }
+        entry.active = false
+    })
+
 }
 
 function updateMenu(menu, app, deltaTime) {
@@ -93,30 +115,22 @@ function updateMenu(menu, app, deltaTime) {
     menu.levelGroups.forEach((group,index) => {
         group.position.set(0, y)
         group.title.position.set(0,0)
-
+        
         y+= group.title.height*2
 
         group.levelEntries.forEach((entry,index2) => {
             entry.position.set(0, group.title.height*2+index2*entry.title.height)
-    
+            
             entry.logos.children.forEach((child, index3) => {
                 child.scale = 0.01
-                child.position.x = (index3+1)*child.width*0.5
+                child.position.x = (index3+1)*child.width*0.33
             })
 
             y+=entry.title.height
+
+            entry.scale = entry.active ? 1.1 : 1.0
+            entry.rotation = entry.active ? Math.sin(deltaTime.lastTime*0.01)*0.01 : 0.0
         })
     })
 
-    /*menu.levelEntries.forEach((entry,index) => {
-        entry.position.set(0, index*entry.title.height)
-
-        entry.logos.children.forEach((child, index) => {
-            child.scale = 0.01
-            child.position.x = (index+1)*child.width*0.5
-        })
-
-    })*/
-
-    
 }

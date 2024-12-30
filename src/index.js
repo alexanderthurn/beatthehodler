@@ -286,46 +286,53 @@ async function initGame() {
    
 
     app.stage.addEventListener('pointermove', (event) => {
-        let trade = trades.find(t => t.index === currentIndexInteger)
-        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
-    
-        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
-            let i = getCoinButtonIndex(event)
-            if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
-                focusedCoinName = coinButtons[i].to
-             } else {
-                 focusedCoinName = null
-             }
+        if (isMenuVisible()) {
+            menuPointerMoveEvent(menu, event)
+        } else {
+            let trade = trades.find(t => t.index === currentIndexInteger)
+            let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+        
+            if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
+                let i = getCoinButtonIndex(event)
+                if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
+                    focusedCoinName = coinButtons[i].to
+                 } else {
+                     focusedCoinName = null
+                 }
+            }
         }
+        
     });
 
 
      app.stage.addEventListener('pointerup', (event) => {
 
         if (isMenuVisible()) {
-            menu.visible = false
-            startNewGame(gameData.levels[Math.floor(Math.random()*gameData.levels.length-0.01)])
+            menuPointerUpEvent(menu, event, startNewGame)
         } else {
             if (event.y < 100){
                 menu.visible = true
             } else if (isFinalScreen) {
                 startNewGame(options)
             }  
-        }
 
-       
-        let trade = trades.find(t => t.index === currentIndexInteger)
-        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
-        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1  && !trade) {
-            let i = getCoinButtonIndex(event)
-            if (i >= 0 && i < coinButtons.length) {
-                if (focusedCoinName !== coinButtons[i].to) {
-                    focusedCoinName = coinButtons[i].to
-                } else {
-                    doTrade(yourCoinName,coinButtons[i].to )
+
+            let trade = trades.find(t => t.index === currentIndexInteger)
+            let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+            if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1  && !trade) {
+                let i = getCoinButtonIndex(event)
+                if (i >= 0 && i < coinButtons.length) {
+                    if (focusedCoinName !== coinButtons[i].to) {
+                        focusedCoinName = coinButtons[i].to
+                    } else {
+                        doTrade(yourCoinName,coinButtons[i].to )
+                    }
                 }
             }
         }
+
+       
+       
 
        
     })

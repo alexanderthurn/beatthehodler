@@ -11,6 +11,12 @@
         "dateStart": "2009-01-01 00:00:00 UTC",
         "dateEnd": "2142-12-31 00:00:00 UTC",
         "coinNames": ["USD","BTC"]
+    },
+    {
+        "name":"2013-2024 All",
+        "group": "Custom",
+        "dateStart": "2009-01-01 00:00:00 UTC",
+        "dateEnd": "2142-12-31 00:00:00 UTC"
     }
     ]
 }
