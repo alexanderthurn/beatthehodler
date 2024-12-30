@@ -10,6 +10,23 @@ function hexToRGB(hex, a) {
     return [r, g, b, a];
 }
 
+function calculatePriceChange(currentPrice, oldPrice) {
+    // Überprüfung auf ungültige Eingaben
+    if (!isFinite(currentPrice) || !isFinite(oldPrice) || oldPrice === 0 || currentPrice === 0) {
+        return { text: "0%", color: "black" };
+    }
+
+    // Berechnung der prozentualen Veränderung
+    const change = ((currentPrice - oldPrice) / oldPrice) * 100;
+
+    // Formatierung des Ergebnisses
+    const formattedChange = `${change > 0 ? "+" : ""}${change.toFixed(1)}%`;
+
+    // Farbe basierend auf positivem oder negativem Wachstum
+    const color = change < 0 ? "red" : "black";
+
+    return { text: formattedChange, color: color };
+}
 
 function formatCurrencyInner(value, currency, locale, fractionDigits) {
     try {

@@ -240,7 +240,11 @@ async function initGame() {
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1  && !trade) {
             let i = getCoinButtonIndex(event)
             if (i >= 0 && i < coinButtons.length) {
-                doTrade(yourCoinName,coinButtons[i].to )
+                if (focusedCoinName !== coinButtons[i].to) {
+                    focusedCoinName = coinButtons[i].to
+                } else {
+                    doTrade(yourCoinName,coinButtons[i].to )
+                }
             }
         }
 
@@ -365,7 +369,7 @@ async function initGame() {
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
         stackLabel.text = ""//"You have\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || ''
-        //background.shader.resources.backgroundUniforms.uniforms.uColor = hexToRGB(coins[yourCoinName].color, 1.0)
+        background.shader.resources.backgroundUniforms.uniforms.uColor = [1.0,0.0,0.0,1.0];//hexToRGB(coins[yourCoinName].color, 1.0)
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         backgroundImage.texture = coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;

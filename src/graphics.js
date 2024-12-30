@@ -129,6 +129,11 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     const price = parsedData[currentIndexInteger].price
     const pricePriorIndex = currentIndexInteger > 0 ? parsedData[currentIndexInteger-1].price : price
     const priceNextIndex = currentIndexInteger < parsedData.length ? parsedData[currentIndexInteger+1].price : price
+    const lastPriceIndex = trades.length > 0 ? trades[trades.length-1].index : (currentIndexInteger-maxVisiblePoints > 0 ? currentIndexInteger-maxVisiblePoints : 0)
+    const lastPrice = parsedData[lastPriceIndex].price || price
+    const percentage = calculatePriceChange(price, lastPrice)
+    let percentageText = percentage.text
+    let percentageColor = percentage.color
     for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
         if (i >= 0) {
             if (parsedData[i].price > maxPrice) {
@@ -180,22 +185,22 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     if (!isFinalScreen) {
         graph.priceLabel.x = 0.9*graph.priceLabel.x +0.1*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
         graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
-        graph.priceLabel.text = formatCurrency(price, fiatName,null, true) 
+        graph.priceLabel.text = formatCurrency(price, fiatName,null, true) + "\n" + percentageText
         graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, graph.priceLabel.height*graph.priceLabel.anchor.y))
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
         graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = focusedCoinName === graph.coinName
 
         graph.maxPriceLabel.x = 0.9*graph.maxPriceLabel.x +0.1*((maxPriceIndex - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
         graph.maxPriceLabel.y = 0.9*graph.maxPriceLabel.y +0.1*(app.renderer.height*0.9-  (parsedData[maxPriceIndex].price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
-        graph.maxPriceLabel.text = formatCurrency(parsedData[maxPriceIndex].price, fiatName,null, true) 
-        graph.maxPriceLabel.y = Math.min(app.renderer.height-graph.maxPriceLabel.height*(1-graph.maxPriceLabel.anchor.y), Math.max(graph.maxPriceLabel.y, graph.maxPriceLabel.height*graph.maxPriceLabel.anchor.y))
-        graph.maxPriceLabel.x = Math.min(app.renderer.width-graph.maxPriceLabel.width*(1-graph.maxPriceLabel.anchor.x), Math.max(graph.maxPriceLabel.x, -graph.maxPriceLabel.width*(graph.maxPriceLabel.anchor.x)))
+        graph.maxPriceLabel.text = "Max:\n" + formatCurrency(parsedData[maxPriceIndex].price, fiatName,null, true) 
+        graph.maxPriceLabel.y = Math.min(app.renderer.height*0.7-graph.maxPriceLabel.height*(1-graph.maxPriceLabel.anchor.y), Math.max(graph.maxPriceLabel.y, app.renderer.height*0.2+graph.maxPriceLabel.height*graph.maxPriceLabel.anchor.y))
+        graph.maxPriceLabel.x = Math.min(app.renderer.width*0.8-graph.maxPriceLabel.width*(1-graph.maxPriceLabel.anchor.x), Math.max(graph.maxPriceLabel.x, app.renderer.width*0.2-graph.maxPriceLabel.width*(graph.maxPriceLabel.anchor.x)))
         
         graph.minPriceLabel.x = 0.9*graph.minPriceLabel.x +0.1*((minPriceIndex - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
         graph.minPriceLabel.y = 0.9*graph.minPriceLabel.y +0.1*(app.renderer.height*0.9-  (parsedData[minPriceIndex].price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
-        graph.minPriceLabel.text = formatCurrency(parsedData[minPriceIndex].price, fiatName,null, true) 
-        graph.minPriceLabel.y = Math.min(app.renderer.height-graph.minPriceLabel.height*(1-graph.minPriceLabel.anchor.y), Math.max(graph.minPriceLabel.y, graph.minPriceLabel.height*graph.minPriceLabel.anchor.y))
-        graph.minPriceLabel.x = Math.min(app.renderer.width-graph.minPriceLabel.width*(1-graph.minPriceLabel.anchor.x), Math.max(graph.minPriceLabel.x, -graph.minPriceLabel.width*(graph.minPriceLabel.anchor.x)))
+        graph.minPriceLabel.text = "Min:\n" + formatCurrency(parsedData[minPriceIndex].price, fiatName,null, true) 
+        graph.minPriceLabel.y = Math.min(app.renderer.height*0.7-graph.minPriceLabel.height*(1-graph.minPriceLabel.anchor.y), Math.max(graph.minPriceLabel.y, app.renderer.height*0.2+graph.minPriceLabel.height*graph.minPriceLabel.anchor.y))
+        graph.minPriceLabel.x = Math.min(app.renderer.width*0.8-graph.minPriceLabel.width*(1-graph.minPriceLabel.anchor.x), Math.max(graph.minPriceLabel.x, app.renderer.width*0.2-graph.minPriceLabel.width*(graph.minPriceLabel.anchor.x)))
         
     } else {
         graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = false
