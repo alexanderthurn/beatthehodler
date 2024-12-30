@@ -119,7 +119,7 @@ async function initGame() {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
-    const menu = createMenu(gameData, app, textStyle, textStyleCentered)
+    const menu = createMenu(gameData, app, coins, textStyle, textStyleCentered)
     containerMenu.addChild(menu)
 
     function isMenuVisible() {
@@ -302,11 +302,18 @@ async function initGame() {
 
      app.stage.addEventListener('pointerup', (event) => {
 
-        if (isFinalScreen) {
-            startNewGame(options)
-        } else if (event.y < 100){
+        if (isMenuVisible()) {
+            menu.visible = false
             startNewGame(gameData.levels[Math.floor(Math.random()*gameData.levels.length-0.01)])
+        } else {
+            if (event.y < 100){
+                menu.visible = true
+            } else if (isFinalScreen) {
+                startNewGame(options)
+            }  
         }
+
+       
         let trade = trades.find(t => t.index === currentIndexInteger)
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
         if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1  && !trade) {

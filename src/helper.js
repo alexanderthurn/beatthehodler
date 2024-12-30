@@ -330,16 +330,39 @@ function calculateLevelStatistics(level, coins) {
     level.fiatWorst = fiatWorst
 }
 
+function injectGeneratedLevels(gameData) {
 
+    for (let i=2013;i<2024;i++) {
+        gameData.levels.push(
+            {
+                "name": '' + i,
+                "group": "Years",
+                "dateStart": i+"-01-01 00:00:00 UTC",
+                "dateEnd": i+"-12-31 00:00:00 UTC",
+                "coinNames": ["USD","BTC"]
+        })
+
+        gameData.levels.push(
+            {
+                "name": '' + i,
+                "group": "Alt-Coins",
+                "dateStart": i+"-01-01 00:00:00 UTC",
+                "dateEnd": i+"-12-31 00:00:00 UTC",
+                "coinNames": ["USD","ADA"]
+        })
+    }
+   
+
+}
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseGameData(jsonString, coins) {
     var gameData = JSON.parse(jsonString) 
-    
+    injectGeneratedLevels(gameData)
     
     gameData.levels.forEach(level => {
         if (!level.coinNames) {
-            level.coinNames= Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
-             //level.coinNames = Object.keys(coins)
+            //level.coinNames= Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
+             level.coinNames = Object.keys(coins)
         } 
        
         let dataCoinNames = level.coinNames.filter(name => coins[name].data);

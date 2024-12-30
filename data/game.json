@@ -1,28 +1,16 @@
 {
+    "groups": [
+        {"name": "Years"},
+        {"name": "Custom"},
+        {"name": "Alt-Coins"},
+        {"name": "Multi-Coins"}
+    ],
     "levels": [{
-        "name":"all",
+        "name":"2013-2024",
+        "group": "Custom",
         "dateStart": "2009-01-01 00:00:00 UTC",
         "dateEnd": "2142-12-31 00:00:00 UTC",
-        "stops": 22,
         "coinNames": ["USD","BTC"]
-    },{
-        "name":"2017",
-        "dateStart": "2017-05-01 00:00:00 UTC",
-        "dateEnd": "2017-12-31 00:00:00 UTC"
-    },
-    {
-        "name":"2018",
-        "dateStart": "2018-01-01 00:00:00 UTC",
-        "dateEnd": "2018-12-31 00:00:00 UTC"
-    },
-    {
-        "name":"2019",
-        "dateStart": "2019-01-01 00:00:00 UTC",
-        "dateEnd": "2019-12-31 00:00:00 UTC"
-    },
-    {
-        "name":"2020",
-        "dateStart": "2020-01-01 00:00:00 UTC",
-        "dateEnd": "2020-12-31 00:00:00 UTC"
-    }]
+    }
+    ]
 }
