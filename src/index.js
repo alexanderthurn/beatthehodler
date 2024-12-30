@@ -104,33 +104,56 @@ async function initGame() {
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
     backgroundImage.alpha = 0.1;
+    const coinButtonContainer = new PIXI.Container()
+    let coinButtonContainerTitle = new PIXI.Text('', textStyleCentered)
+    coinButtonContainerTitle.anchor.set(0.5,0.)
+    coinButtonContainer.addChild(coinButtonContainerTitle)
+    containerForeground.addChild(coinButtonContainer)
+    const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
+    background.position.set(0, 0);       
+    containerBackground.addChildAt(background,0);
+
 
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
-    let options = gameData.levels[gameData.levels.length-1]
-    var maxVisiblePoints = Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
+    let options
+    var maxVisiblePoints
+    let fiatName
+    let yourFiat
+    let yourCoins
+    let yourCoinName
+    let paused
+    let gameDurationMilliseconds
+    let factorMilliSeconds
+    let currentIndexFloat
+    let currentIndexInteger
+    let focusedCoinName
+    let isMultiCoin 
+    let trades
 
-    let fiatName = Object.keys(coins)[0]
-    let yourFiat = options.fiatStart
-    let yourCoins = yourFiat
-    let yourCoinName = fiatName
-    let paused = Number.MAX_VALUE
+    const startNewGame = (level) => {
+        options = level
+        maxVisiblePoints =  Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
+        fiatName = Object.keys(coins)[0]
+        yourFiat = options.fiatStart
+        yourCoins = yourFiat
+        yourCoinName = fiatName
+        paused = Number.MAX_VALUE
+        gameDurationMilliseconds = 7*2000
+        factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
+        currentIndexFloat = options.indexStart; // Zeitverfolgung
+        currentIndexInteger = Math.floor(currentIndexFloat)
+        focusedCoinName = null
+        isMultiCoin = options.coinNames.length > 2
+        trades = []
+    }
 
-    const gameDurationMilliseconds = 7*2000
-    const factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
-    let currentIndexFloat = options.indexStart; // Zeitverfolgung
-    let currentIndexInteger = Math.floor(currentIndexFloat)
-    let focusedCoinName = null
-    let isMultiCoin = options.coinNames.length > 2
-    
-    let trades = []
+    startNewGame(gameData.levels[gameData.levels.length-1])
+
+ 
     
     const doTrade = (from, to) => {
-
-        
-
-
         if ((coins[to].csv && !coins[to].data[currentIndexInteger].price) || (coins[from].csv && !coins[from].data[currentIndexInteger].price)) {
             console.log('trade not possible null data', from, to, currentIndexInteger)
             return
@@ -184,7 +207,7 @@ async function initGame() {
     }
 
 
-    const coinButtons = options.coinNames.map((c,i) => {
+    let coinButtons = options.coinNames.map((c,i) => {
         let container = new PIXI.Container()
         let sprite = new PIXI.Sprite(coins[c].texture);
         sprite.anchor.set(0.5,0.5)
@@ -197,14 +220,10 @@ async function initGame() {
         }
     })
 
-    const coinButtonContainer = new PIXI.Container()
-    let coinButtonContainerTitle = new PIXI.Text('', textStyleCentered)
-    coinButtonContainerTitle.anchor.set(0.5,0.)
-    coinButtonContainer.addChild(coinButtonContainerTitle)
+
     coinButtons.forEach(b => {
         coinButtonContainer.addChild(b.container)
     })
-    containerForeground.addChild(coinButtonContainer)
 
     function getCoinButtonIndex(event) {
         let xR = event.x - coinButtonContainer.x
@@ -269,11 +288,6 @@ async function initGame() {
     })
     containerBackground.addChildAt(containerGraphs,1)
 
-   
-
-    const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
-    background.position.set(0, 0);       
-    containerBackground.addChildAt(background,0);
 
 
     app.ticker.add((deltaTime) => {
