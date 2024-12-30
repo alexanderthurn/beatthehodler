@@ -21,6 +21,14 @@
                 margin: 0px;
                 padding: 0px;
             }
+
+            canvas {
+                -webkit-user-select: none; /* Verhindert Markieren auf iOS */
+                -webkit-touch-callout: none; /* Blockiert Kontextmenü */
+                user-select: none; /* Für andere Browser */
+                touch-action: none; /* Blockiert Standard-Touch-Ereignisse */
+                pointer-events: auto;
+            }
         </style>
     </head>
 

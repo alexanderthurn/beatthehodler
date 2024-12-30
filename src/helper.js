@@ -310,8 +310,8 @@ function parseGameData(jsonString, coins) {
     
     
     gameData.levels.forEach(level => {
-        //level.coinNames = Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
-        level.coinNames = Object.keys(coins)
+        level.coinNames = Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
+        //level.coinNames = Object.keys(coins)
         let dataCoinNames = level.coinNames.filter(name => coins[name].data);
         let pricesData = coins[dataCoinNames[0]].data
 

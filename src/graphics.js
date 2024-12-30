@@ -167,8 +167,11 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
     graph.logo.x = (1.0-diffCurrentIndexIntToFloat)*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX) + (diffCurrentIndexIntToFloat)*(((currentIndexInteger+1) - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
     graph.logo.y = (1.0-diffCurrentIndexIntToFloat)*(app.renderer.height*0.9-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8) + (diffCurrentIndexIntToFloat)*(app.renderer.height*0.9-(pricePriorIndex-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
+    if (price <= 0) {
+        graph.logo.y = -100
+    }
     graph.logoSprite.height = graph.logoSprite.width = app.renderer.width*0.04
-    graph.alpha = !focusedCoinName || focusedCoinName === graph.coinName ? 1.0 : 0.0
+    graph.alpha = focusedCoinName === fiatName || !focusedCoinName || focusedCoinName === graph.coinName ? 1.0 : 0.0
     graph.curve.shader.resources.graphUniforms.uniforms.uAlpha = graph.alpha
 
 

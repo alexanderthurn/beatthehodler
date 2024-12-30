@@ -34,6 +34,13 @@ async function initGame() {
     });
     await app.init({ background: '#000', resizeTo: window });
     document.body.appendChild(app.canvas);
+    app.canvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+    app.canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+    });
+
 
     app.stage.eventMode = 'static'
     app.stage.hitArea = app.screen
@@ -213,8 +220,10 @@ async function initGame() {
    
 
     app.stage.addEventListener('pointermove', (event) => {
+        let trade = trades.find(t => t.index === currentIndexInteger)
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
-        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1) {
+    
+        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
             let i = getCoinButtonIndex(event)
             if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
                 focusedCoinName = coinButtons[i].to
@@ -226,8 +235,9 @@ async function initGame() {
 
 
      app.stage.addEventListener('pointerup', (event) => {
+        let trade = trades.find(t => t.index === currentIndexInteger)
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
-        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1) {
+        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1  && !trade) {
             let i = getCoinButtonIndex(event)
             if (i >= 0 && i < coinButtons.length) {
                 doTrade(yourCoinName,coinButtons[i].to )
@@ -333,7 +343,7 @@ async function initGame() {
                 })  
             }*/
             
-            dateLabel.text = `Today: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+            dateLabel.text = `Today is: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 
            // dateLabel.text = label
         } else {
@@ -347,27 +357,14 @@ async function initGame() {
             dateLabel.text = txt
             dateLabel.visible = true
         }
-        dateLabel.x = 0.025*app.renderer.width
-        dateLabel.y = 0.025*app.renderer.width
-        if (stopIndex === 0) {
-            if (focusedCoinName) {
-                  dateLabel.visible = false
-            } else {
-                //dateLabel.text = `You can trade\n${coinButtons.map(b => b.to).join(', ')}\n\n${options.stops.length-1} times\nbetween\n\n${options.dateStart.toLocaleDateString()} and \n${options.dateEnd.toLocaleDateString()}\n\nChoose wisely and\nGood luck!`;
-                dateLabel.text = `Today: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
-                dateLabel.visible = true
-            }
 
-        }
-
-       
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
         textStyleCentered.fontSize =  textStyle.fontSize = Math.max(18, (Math.max(app.renderer.height, app.renderer.width) / 1080)*18)
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
         stackLabel.y = app.renderer.height;
         stackLabel.x = 0.5*app.renderer.width
-        stackLabel.text = "You have\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || ''
+        stackLabel.text = ""//"You have\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || ''
         //background.shader.resources.backgroundUniforms.uniforms.uColor = hexToRGB(coins[yourCoinName].color, 1.0)
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         backgroundImage.texture = coins[yourCoinName].texture
@@ -401,7 +398,7 @@ async function initGame() {
         } else {
             coinButtonContainer.visible = false
             stackLabel.visible = true
-            focusedCoinName = yourCoinName
+            focusedCoinName = null
         }
     });
 }
