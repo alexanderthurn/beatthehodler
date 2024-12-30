@@ -134,7 +134,7 @@ async function initGame() {
     let coinButtons = []
     let graphs = []
     let isFinalScreen = false
-
+    let isStopScreen = false
 
     const startNewGame = (level) => {
         options = level
@@ -203,7 +203,7 @@ async function initGame() {
 
     }
 
-    startNewGame(gameData.levels[gameData.levels.length-1])
+    startNewGame(gameData.levels[0])
 
  
     
@@ -367,13 +367,13 @@ async function initGame() {
         const currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
-        
+        isStopScreen = isFinalScreen || options.stopIndizes.indexOf(currentIndexInteger) >= 0
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
         containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0)
 
 
         graphs.forEach(g => {
-            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat)
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options)
         })
         
         if (!isFinalScreen) {
@@ -390,8 +390,10 @@ async function initGame() {
                 })  
             }*/
             
-            dateLabel.text = `Today is: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
-                
+            dateLabel.text = `Today is: ${currentDate.toLocaleDateString()}\nYou have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                if (yourCoinName !== fiatName) {
+                    dateLabel.text += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
+                }
            // dateLabel.text = label
         } else {
             let fiat = yourFiat

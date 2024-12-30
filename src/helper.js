@@ -246,12 +246,22 @@ async function alignData(coins) {
     dataCoinNames.forEach(name => {
         let c = coins[name];
         let dataMap = new Map(c.data.map(entry => [entry.date.toISOString().split('T')[0], entry.price])); // Nutze .date direkt
-        let alignedData = dateRange.map(date => ({
+        let alignedData = dateRange.map((date,index) => ({
             date: date, // Behalte das Date-Objekt
             price: dataMap.get(date.toISOString().split('T')[0]) || null, // Fehlende Daten auffüllen mit null
         }));
         c.data = alignedData; // Ersetze die Daten mit den ausgerichteten Daten
     });
+
+    // fix holes
+    dataCoinNames.forEach(name => {
+        let c = coins[name];
+        c.data.forEach((d,i) => {
+            if (d.price === null && i > 0) {
+                d.price = c.data[i-1].price
+            }
+        })
+    })
 
     return coins; // Optional: aktualisierte Coins zurückgeben
 }
