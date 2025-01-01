@@ -107,15 +107,18 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     return menu
 }
 
+function containsPoint(x,y,bounds) {
+    return x > bounds[0] && x < bounds[2] && y > bounds[1] && y < bounds[3]
+}
 function menuPointerMoveEvent(menu, event) {
     menu.levelEntries.forEach((entry,index2) => {
-        entry.active = entry.indexBackground.getBounds().containsPoint(event.x,event.y)
+        entry.active = entry.getBounds().containsPoint(event.x,event.y)
     })
 }
 
 function menuPointerUpEvent(menu, event, startNewGame) {
     menu.levelEntries.forEach((entry,index2) => {
-        if (entry.active) {
+        if (entry.getBounds().containsPoint(event.x,event.y)) {
             menu.visible = false
             startNewGame(entry.level)
         }
@@ -157,6 +160,8 @@ function updateMenu(menu, app, deltaTime) {
         group.levelEntries.forEach((entry,index2) => {
             
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
+            //let posGlobal = entry.getGlobalPosition()
+           // entry.bounds = [posGlobal.x, posGlobal.y, posGlobal.x+colw, posGlobal.y+colh]
             entry.indexBackground.scale = Math.max(0.20, 0.25*Math.min(colw,colh) / entry.indexBackgroundRadius)
       
             entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.1

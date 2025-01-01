@@ -460,7 +460,7 @@ async function initGame() {
 
                 let toCoins = (yourCoins * fromPrice) / toPrice
        
-                coinButtonContainerTitle.text = formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits) + ' ?'
+                coinButtonContainerTitle.text = 'Please confirm: \n' + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
             }
             
 
