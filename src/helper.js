@@ -352,7 +352,7 @@ function injectGeneratedLevels(gameData) {
         })
     }
 
-    for (let i=2013;i<2023;i++) {
+    /*for (let i=2013;i<2023;i++) {
         gameData.levels.push(
             {
                 "name": '' + i,
@@ -370,7 +370,7 @@ function injectGeneratedLevels(gameData) {
                 "dateEnd": i+"-09-30 00:00:00 UTC",
                 "coinNames": ["USD","BTC"]
         })
-    }
+    }*/
    
 
 }

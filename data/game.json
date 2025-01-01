@@ -2,7 +2,16 @@
     "groups": [
         {"name": "21"}
     ],
-    "levels": [{
+    "levels": [
+        {
+            "name":"1",
+            "group": "21",
+            "dateStart": "2015-01-01 00:00:00 UTC",
+            "dateEnd": "2015-04-01 00:00:00 UTC",
+            "stops": 3,
+            "coinNames": ["USD","BTC"]
+        },
+        {
         "name":"2013-2024",
         "group": "33",
         "dateStart": "2009-01-01 00:00:00 UTC",
@@ -11,7 +20,7 @@
     },
     {
         "name":"2013-2024 All",
-        "group": "21",
+        "group": "33",
         "dateStart": "2009-01-01 00:00:00 UTC",
         "dateEnd": "2142-12-31 00:00:00 UTC"
     }

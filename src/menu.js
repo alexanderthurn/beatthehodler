@@ -162,13 +162,16 @@ function updateMenu(menu, app, deltaTime) {
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
             //let posGlobal = entry.getGlobalPosition()
            // entry.bounds = [posGlobal.x, posGlobal.y, posGlobal.x+colw, posGlobal.y+colh]
-            entry.indexBackground.scale = Math.max(0.20, 0.25*Math.min(colw,colh) / entry.indexBackgroundRadius)
+            entry.indexBackground.scale = (entry.active ? 1.3 : 1.0) * Math.max(0.20, 0.25*Math.min(colw,colh) / entry.indexBackgroundRadius)
       
             entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.1
             entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 0.5 : 0.3 
           
            
-
+            if (index2 > 0) {
+                entry.index.rotation = 0
+                entry.index.alpha *= 0.5
+            }
 
          /*   entry.position.set(0, group.title.height*2+index2*entry.title.height)
             
