@@ -1,20 +1,17 @@
 {
     "groups": [
-        {"name": "Years"},
-        {"name": "Custom"},
-        {"name": "Alt-Coins"},
-        {"name": "Multi-Coins"}
+        {"name": "21"}
     ],
     "levels": [{
         "name":"2013-2024",
-        "group": "Custom",
+        "group": "33",
         "dateStart": "2009-01-01 00:00:00 UTC",
         "dateEnd": "2142-12-31 00:00:00 UTC",
         "coinNames": ["USD","BTC"]
     },
     {
         "name":"2013-2024 All",
-        "group": "Custom",
+        "group": "21",
         "dateStart": "2009-01-01 00:00:00 UTC",
         "dateEnd": "2142-12-31 00:00:00 UTC"
     }
