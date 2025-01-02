@@ -1,4 +1,4 @@
-function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
+async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
 
     let menu = new PIXI.Container()
@@ -32,11 +32,11 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.background = new PIXI.Graphics();
     menu.addChild(menu.background)
 
-    menu.title = new PIXI.Text('Beat the Hodler', menu.textStyleTitle)
+    menu.title = new PIXI.Text('Bitcoin Trader', menu.textStyleTitle)
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
 
-    menu.subtitle = new PIXI.Text('Trade Bitcoin, but can u win?', menu.textStyleTitle)
+    menu.subtitle = new PIXI.Text('Can u beat the Hodler?', menu.textStyleTitle)
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
     menu.subtitle.scale = 0.5
@@ -90,7 +90,7 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         e.index = new PIXI.Container()
         e.indexText = new PIXI.Text(index+1, menu.textStylePreview)
         e.indexBackgroundRadius = 128
-        e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1)
+        e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
         e.index.addChild(e.indexBackground)
         e.index.addChild(e.indexText)
         e.indexText.anchor.set(0.5,0.5)
@@ -104,6 +104,12 @@ function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     })
 
     menu.levelGroupsContainer.addChild(...menu.levelGroups)
+
+    menu.audioOnTexture = await PIXI.Assets.load({src: 'gfx/audio_on.png'})
+    menu.audioOffTexture = await PIXI.Assets.load({src: 'gfx/audio_off.png'})
+
+    menu.audioButtonSprite = new PIXI.Sprite(menu.audioOnTexture);
+    menu.addChild(menu.audioButtonSprite)
     return menu
 }
 
@@ -114,20 +120,39 @@ function menuPointerMoveEvent(menu, event) {
     menu.levelEntries.forEach((entry,index2) => {
         entry.active = entry.getBounds().containsPoint(event.x,event.y)
     })
+    menu.audioButtonSprite.active = menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)
 }
 
-function menuPointerUpEvent(menu, event, startNewGame) {
+function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
     menu.levelEntries.forEach((entry,index2) => {
         if (entry.getBounds().containsPoint(event.x,event.y)) {
-            menu.visible = false
-            startNewGame(entry.level)
+            if (!entry.active) {
+                entry.active = true
+            } else {
+                menu.visible = false
+                startNewGame(entry.level) 
+                entry.active = false
+
+            }
+        } else {
+            entry.active = false
         }
-        entry.active = false
     })
+
+    if (menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)) {
+        setMute(!getMute())
+    } 
 
 }
 
-function updateMenu(menu, app, deltaTime) {
+function updateMenu(menu, app, deltaTime, getMute) {
+
+    //menu.audioButtonSprite.width = menu.audioButtonSprite.height= app.screen.width*0.075
+    menu.audioButtonSprite.scale = (menu.audioButtonSprite.active ? 0.4 : 0.3)
+    menu.audioButtonSprite.alpha = (menu.audioButtonSprite.active ? 1.0 : 0.7)
+   // menu.audioButtonSprite.rotation = (menu.audioButtonSprite.active ? Math.sin(deltaTime.lastTime*0.1)*0.05 : 0.0) 
+    menu.audioButtonSprite.position.set(app.screen.width - menu.audioButtonSprite.width * 1.2, app.screen.height -menu.audioButtonSprite.height * 1.2 )
+    menu.audioButtonSprite.texture = getMute() ? menu.audioOffTexture : menu.audioOnTexture
     //menu.textStyleTitle.fontSize = Math.max(64, (Math.max(app.renderer.height, app.renderer.width) / 1080)*64)
     //menu.textStyleTitle.stroke.width =  
     menu.textStyleTitle.fontSize = 128*Math.min(1.0, app.screen.width/1920)
@@ -138,7 +163,7 @@ function updateMenu(menu, app, deltaTime) {
     
     menu.background
     .rect(0, 0, app.screen.width, app.screen.height)
-    .fill({ color: 0x000000 });
+    .fill({ color: 0xf4b400 });
     
     let cw = app.screen.width * 0.9
     let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y

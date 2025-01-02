@@ -1,5 +1,5 @@
 const coins = {
-    USD: { color: '#000', image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
+    USD: { color: '#85BB65', image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
     BTC: { color: '#F7931B', image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
     ADA: { color: '#0133AD', image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
     DOGE: { color: '#BA9F32', image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
@@ -27,7 +27,7 @@ async function initGame() {
     const app = new PIXI.Application({
         width: window.innerWidth,
         height: window.innerHeight,
-        backgroundColor: 0x000000,
+        backgroundColor: 0xf4b400,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
        
@@ -119,11 +119,20 @@ async function initGame() {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
-    const menu = createMenu(gameData, app, coins, textStyle, textStyleCentered)
+    const menu = await createMenu(gameData, app, coins, textStyle, textStyleCentered)
     containerMenu.addChild(menu)
 
     function isMenuVisible() {
         return menu.visible
+    }
+
+    let mute = false
+    function setMute(value) {
+        mute = value
+    }
+
+    function getMute() {
+        return mute
     }
 
     let options
@@ -308,7 +317,7 @@ async function initGame() {
      app.stage.addEventListener('pointerup', (event) => {
 
         if (isMenuVisible()) {
-            menuPointerUpEvent(menu, event, startNewGame)
+            menuPointerUpEvent(menu, event, startNewGame,getMute, setMute)
         } else {
             if (event.y < 100){
                 menu.visible = true
@@ -343,7 +352,7 @@ async function initGame() {
 
 
     app.ticker.add((deltaTime) => {
-        updateMenu(menu, app, deltaTime)
+        updateMenu(menu, app, deltaTime, getMute)
 
         if (paused <= 0) {
             currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds;
@@ -391,13 +400,13 @@ async function initGame() {
         const currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
-        isStopScreen = isFinalScreen || options.stopIndizes.indexOf(currentIndexInteger) >= 0
+        isStopScreen = isFinalScreen || (options.stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
         containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0)
 
 
         graphs.forEach(g => {
-            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options)
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, options.stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options)
         })
         
         if (!isFinalScreen) {
@@ -414,7 +423,7 @@ async function initGame() {
                 })  
             }*/
             
-            dateLabel.text = `Today is: ${currentDate.toLocaleDateString()}\nYou have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+            dateLabel.text = `Today is: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 if (yourCoinName !== fiatName) {
                     dateLabel.text += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
                 }

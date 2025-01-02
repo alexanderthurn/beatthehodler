@@ -8,6 +8,14 @@
             "group": "21",
             "dateStart": "2015-01-01 00:00:00 UTC",
             "dateEnd": "2015-04-01 00:00:00 UTC",
+            "stops": 2,
+            "coinNames": ["USD","BTC"]
+        },
+        {
+            "name":"2",
+            "group": "21",
+            "dateStart": "2015-01-01 00:00:00 UTC",
+            "dateEnd": "2015-04-01 00:00:00 UTC",
             "stops": 3,
             "coinNames": ["USD","BTC"]
         },
