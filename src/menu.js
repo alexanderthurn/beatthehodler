@@ -22,7 +22,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.textStylePreview = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 32,
+        fontSize: 24,
         stroke: { color: '#fff', width: 5, join: 'round' },
     });
 
@@ -41,10 +41,10 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.addChild(menu.subtitle)
     menu.subtitle.scale = 0.5
 
-    menu.finaltitle = new PIXI.Text('Made by Alexander Thurn', menu.textStyleTitle)
+    menu.finaltitle = new PIXI.Text('by Alexander Thurn', menu.textStyleTitle)
     menu.finaltitle.anchor.set(0.5,1.0)
     menu.addChild(menu.finaltitle)
-    menu.finaltitle.scale = 0.5
+    menu.finaltitle.scale = 0.70
 
     menu.levelGroupsContainer = new PIXI.Container()
     menu.addChild(menu.levelGroupsContainer)
@@ -66,27 +66,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         let e = new PIXI.Container()
         e.level = level
         e.group = e.level.group
-        //e.title = new PIXI.Text(level.name + ' ' + level.coinNames + ' ' + level.stops.length, textStyleCentered)
-        e.title = new PIXI.Text(e.level.name, textStyleCentered)
-        e.title.anchor.set(1,0.5)
-        e.addChild(e.title)
-        e.title.visible = false
-
-        e.stops = new PIXI.Text((e.level.stops.length-1) + 'x', textStyleCentered)
-        e.stops.anchor.set(-2,0.5)
-        e.addChild(e.stops)
-        e.stops.visible = false
-        
-        e.logos = new PIXI.Container()
-        e.level.coinNames.forEach(coinName => {
-            const logoSprite = new PIXI.Sprite(coins[coinName].texture);
-            logoSprite.anchor.set(0,0.5)
-            e.logos.addChild(logoSprite)
-        })
-       
-        e.addChild(e.logos)   
-        e.logos.visible = false
-
+     
         e.index = new PIXI.Container()
         e.indexText = new PIXI.Text(index+1, menu.textStylePreview)
         e.indexBackgroundRadius = 128
@@ -107,20 +87,27 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
     menu.audioOnTexture = await PIXI.Assets.load({src: 'gfx/audio_on.png'})
     menu.audioOffTexture = await PIXI.Assets.load({src: 'gfx/audio_off.png'})
+    menu.helpTexture = await PIXI.Assets.load({src: 'gfx/help.png'})
 
     menu.audioButtonSprite = new PIXI.Sprite(menu.audioOnTexture);
     menu.addChild(menu.audioButtonSprite)
+    menu.audioButtonSprite.scale =  0.20
+
+    menu.helpButtonSprite = new PIXI.Sprite(menu.helpTexture);
+    menu.addChild(menu.helpButtonSprite)
+    menu.helpButtonSprite.scale =  0.20
+
     return menu
 }
 
-function containsPoint(x,y,bounds) {
-    return x > bounds[0] && x < bounds[2] && y > bounds[1] && y < bounds[3]
-}
+
 function menuPointerMoveEvent(menu, event) {
     menu.levelEntries.forEach((entry,index2) => {
         entry.active = entry.getBounds().containsPoint(event.x,event.y)
     })
-    menu.audioButtonSprite.active = menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)
+    menu.audioButtonSprite.active = menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)   
+    menu.helpButtonSprite.active = menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)
+
 }
 
 function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
@@ -143,18 +130,22 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
         setMute(!getMute())
     } 
 
+    if (menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)) {
+        //setMute(!getMute())
+    } 
+
 }
 
-function updateMenu(menu, app, deltaTime, getMute) {
+function updateMenu(menu, app, deltaTime, getMute, getWin) {
 
-    //menu.audioButtonSprite.width = menu.audioButtonSprite.height= app.screen.width*0.075
-    menu.audioButtonSprite.scale =  (menu.audioButtonSprite.active ? 1.3 : 1.0) * Math.max(0.20, 0.25*3 / 64.0)
     menu.audioButtonSprite.alpha = (menu.audioButtonSprite.active ? 1.0 : 0.7)
-   // menu.audioButtonSprite.rotation = (menu.audioButtonSprite.active ? Math.sin(deltaTime.lastTime*0.1)*0.05 : 0.0) 
     menu.audioButtonSprite.position.set(app.screen.width - menu.audioButtonSprite.width * 1.2, app.screen.height -menu.audioButtonSprite.height * 1.2 )
     menu.audioButtonSprite.texture = getMute() ? menu.audioOffTexture : menu.audioOnTexture
-    //menu.textStyleTitle.fontSize = Math.max(64, (Math.max(app.renderer.height, app.renderer.width) / 1080)*64)
-    //menu.textStyleTitle.stroke.width =  
+
+    menu.helpButtonSprite.alpha = (menu.helpButtonSprite.active ? 1.0 : 0.7)
+    menu.helpButtonSprite.position.set(menu.helpButtonSprite.width * 0.2, app.screen.height -menu.helpButtonSprite.height * 1.2 )
+   
+
     menu.textStyleTitle.fontSize = 128*Math.min(1.0, app.screen.width/1920)
     menu.title.position.set(app.screen.width*0.5, app.screen.height*0.0)
     menu.subtitle.rotation = menu.title.rotation = Math.sin(deltaTime.lastTime*0.001)*0.01
@@ -183,33 +174,23 @@ function updateMenu(menu, app, deltaTime, getMute) {
        // x = app.screen.width*0.1
 
         group.levelEntries.forEach((entry,index2) => {
-            
+            entry.isCompleted = getWin(index2)
+            entry.isCompletedLevelBefore = index2 === 0 || getWin(index2-1)
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
-            //let posGlobal = entry.getGlobalPosition()
-           // entry.bounds = [posGlobal.x, posGlobal.y, posGlobal.x+colw, posGlobal.y+colh]
+
             entry.indexBackground.scale = (entry.active ? 1.3 : 1.0) * Math.max(0.20, 0.25*Math.min(colw,colh) / entry.indexBackgroundRadius)
-      
-            entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.1
+            entry.index.rotation = 0
             entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 0.5 : 0.3 
-          
-           
-            if (index2 > 0) {
+
+            if (entry.isCompleted) {
                 entry.index.rotation = 0
-                entry.index.alpha *= 0.5
+                entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 1.0 : 1.0 
+          
+            } else if (entry.isCompletedLevelBefore){
+                entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 1000 > 500 ? 1.0 : 0.5 
+                entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.1
             }
-
-         /*   entry.position.set(0, group.title.height*2+index2*entry.title.height)
-            
-            entry.logos.children.forEach((child, index3) => {
-                child.scale = 0.01
-                child.position.x = (index3+1)*child.width*0.33
-            })
-
-            y+=entry.title.height
-
-            entry.scale = entry.active ? 1.1 : 1.0
-            entry.rotation = entry.active ? Math.sin(deltaTime.lastTime*0.01)*0.01 : 0.0
-            */
+    
         })
     })
 

@@ -97,6 +97,9 @@ async function initGame() {
         coins[key].audio = new Audio(coins[key].sound)
     }))
 
+
+    let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
+
     const stackLabel = new PIXI.Text("", textStyleCentered);
     stackLabel.anchor.set(0.5,1.1)
     containerForeground.addChild(stackLabel);
@@ -115,6 +118,11 @@ async function initGame() {
     background.position.set(0, 0);       
     containerBackground.addChildAt(background,0);
 
+    
+    btnMenuSprite = new PIXI.Sprite(textureBtnMenu);
+    btnMenuSprite.anchor.set(1.1,-0.1)
+    containerForeground.addChild(btnMenuSprite)
+
 
     const buyPaused = 1000
    
@@ -127,12 +135,24 @@ async function initGame() {
     }
 
     let mute = false
+    let localStorageCache = {}
+
     function setMute(value) {
-        mute = value
+        localStorageCache['mute'] = value
+        localStorage.setItem('mute', value)
     }
 
     function getMute() {
-        return mute
+        return localStorageCache['mute'] ?? localStorage.getItem('mute')
+    }
+
+    function setWin(level) {
+        localStorageCache['l'+level] = true
+        localStorage.setItem('l'+level, true)
+    }
+
+    function getWin(level) {
+        return localStorageCache['l'+level] ?? localStorage.getItem('l'+level)
     }
 
     let options
@@ -222,7 +242,7 @@ async function initGame() {
     }
 
     startNewGame(gameData.levels[0])
-
+    setWin(0)
  
     
     const doTrade = (from, to) => {
@@ -309,6 +329,8 @@ async function initGame() {
                      focusedCoinName = null
                  }
             }
+
+            btnMenuSprite.active = btnMenuSprite.getBounds().containsPoint(event.x,event.y)
         }
         
     });
@@ -319,10 +341,10 @@ async function initGame() {
         if (isMenuVisible()) {
             menuPointerUpEvent(menu, event, startNewGame,getMute, setMute)
         } else {
-            if (event.y < 100){
+            if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 menu.visible = true
             } else if (isFinalScreen) {
-                startNewGame(options)
+                menu.visible = true//startNewGame(options)
             }  
 
 
@@ -352,7 +374,7 @@ async function initGame() {
 
 
     app.ticker.add((deltaTime) => {
-        updateMenu(menu, app, deltaTime, getMute)
+        updateMenu(menu, app, deltaTime, getMute, getWin)
 
         if (paused <= 0) {
             currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds;
@@ -519,6 +541,12 @@ async function initGame() {
             stackLabel.visible = true
             focusedCoinName = null
         }
+
+
+        btnMenuSprite.scale = 0.15
+        btnMenuSprite.alpha = (btnMenuSprite.active ? 1.0 : 0.7)
+        btnMenuSprite.position.set(app.screen.width, 0 )
+       
     });
 }
 
