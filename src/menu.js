@@ -3,7 +3,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
     let menu = new PIXI.Container()
     menu.gameData = gameData
-
+    menu.coins = coins
     menu.textStyleTitle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',

@@ -15,8 +15,19 @@ function playBuySound(key) {
 }
 
 
+
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
+
+    let music = PIXI.sound.Sound.from({
+        url: 'sfx/song1.mp3',
+        autoPlay: true,
+        complete: function() {
+            console.log('Sound finished');
+        }
+    });
+
+
     const graphVertexShader = await loadShader('./gfx/graph.vert')
     const graphFragmentShader = await loadShader('./gfx/graph.frag')
     const backgroundVertexShader = await loadShader('./gfx/background.vert')
@@ -94,7 +105,7 @@ async function initGame() {
             src: coins[key].image,
         });
 
-        coins[key].audio = new Audio(coins[key].sound)
+        coins[key].audio = PIXI.sound.Sound.from(coins[key].sound); 
     }))
 
 
@@ -134,17 +145,24 @@ async function initGame() {
         return menu.visible
     }
 
-    let mute = false
     let localStorageCache = {}
 
     function setMute(value) {
         localStorageCache['mute'] = value
         localStorage.setItem('mute', value)
+        if (value) {
+            PIXI.sound.muteAll()
+        } else {
+
+            PIXI.sound.unmuteAll()
+        }
     }
 
     function getMute() {
         return localStorageCache['mute'] ?? localStorage.getItem('mute')
     }
+
+    setMute(getMute())
 
     function setWin(level) {
         if (localStorageCache['l'+level] !== true) {
@@ -390,6 +408,9 @@ async function initGame() {
             }
         }
 
+        //music.speed = paused > 0 ? Math.max(0.75,music.speed*0.9) : Math.min(1.0,music.speed*1.1)
+        music.volume = paused > 0 ? Math.max(0.5,music.volume*0.9) : Math.min(1.0,music.volume*1.1)
+
         if (currentIndexFloat > options.indexEnd) {
             currentIndexFloat = options.indexEnd
         }
@@ -436,60 +457,69 @@ async function initGame() {
             updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, options.stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options)
         })
         
-        if (!isFinalScreen) {
-            dateLabel.visible = true
-            let label = `${currentDate.toLocaleDateString()}\n\n`
-          /*  if (stopIndex > -1) {
-                label += `Trade ${stopIndex+1}/${options.stops.length-1}\n` 
-                label += ("\nYou have:\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || '') + "\n"
-                coinButtons.filter(cb => cb.to !== fiatName).forEach(cb => {
-                    let p = coins[cb.to].data[currentIndexInteger].price
-                    if (p) {
-                        label += `\n${formatCurrency(1, cb.to,0, false)} = ` + formatCurrency(p, fiatName,null, true)
-                    }
-                })  
-            }*/
-            
-            dateLabel.text = `Today is: ${currentDate.toLocaleDateString()}\nYou have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
-                if (yourCoinName !== fiatName) {
-                    dateLabel.text += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
-                }
-            dateLabel.text += `\nBTC Hodler: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n\n`
-            
+        let txt = ''
 
-           // dateLabel.text = label
+        if (!isFinalScreen) {
+            
+            
+           
+        
+            if (stopIndex === 0) {
+                txt += `You will trade ${options.stopIndizes.length-1} ${options.stopIndizes.length-1 > 1 ? 'times' : 'time'} between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
+                txt += `The trading ${options.stopIndizes.length-1 > 1 ? 'dates are' : 'date is'} fixed.\n\n`
+                txt += `Read the graph,\n`
+                txt += `Choose wisely and\n`
+                txt += `Beat the HODler`
+            }  else {
+                txt += `Today is: ${currentDate.toLocaleDateString()}\n`
+                txt += `The Hodler has: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n`
+                txt += `You have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                    if (yourCoinName !== fiatName) {
+                        txt += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
+                    } else {
+                        txt += '\n= '+ formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')+""
+                    }
+                    
+            }
+
+
         } else {
             let fiat = yourFiat
-            let txt = ''
-            if (fiat > options.fiatBTCHodler) {
-                txt = "You won, nice!\n\n" 
-                setWin(options.name)
-            } else {
-                txt = "Oh no, you lost\n\n" 
-            }
+            //txt += 'Finally\n\n'
+            txt += `${options.dateEnd.toLocaleDateString()}\n\n`
            
             //txt += `You traded ${trades.filter(t => t.toName !== t.fromName).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
             //txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
             //txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             //txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
             
-            txt += `Today is: ${options.dateStart.toLocaleDateString()}\n\n`
-            txt += `You have: ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n`
-            txt += `BTC Hodler: ${formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2)}\n\n`
+            //txt += `Today is: ${options.dateStart.toLocaleDateString()}\n\n`
+            txt += `You have: ${formatCurrency(fiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')}\n`
+            txt += '= '+ formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2) +"\n\n"
             
+            
+
+            txt += `The Hodler has: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n`
+            txt += '= '+ formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2) +"\n\n"
+           
             if (fiat > options.fiatBTCHodler) {
-                txt += "You have more\nthen the HODLer\n\n" 
-                txt += "This is not easy. Respect!\n" 
-                txt += `Congratulations!\n`
+                txt += "You won, nice!\n" 
+                setWin(options.name)
             } else {
-                txt += `You have to make more\nthen the Hodler to win!\n\n`
-                txt += "This is not easy!\n" 
+                txt += "Oh no, you lost\n\n" 
+            }
+            if (fiat > options.fiatBTCHodler) {
+                txt += "This was not easy, respect!\n\n" 
+                txt += `Can u win the next level?!\n`
+            } else {
+                txt += `You have to concentrate more\n`
                 txt += "Try again?"
             }
           
-            dateLabel.text = txt
-            dateLabel.visible = true
         }
+
+        dateLabel.text = txt
+        dateLabel.visible = true
 
         dateLabel.y = 0*textStyle.fontSize;
         dateLabel.x = textStyle.fontSize*0.1
@@ -503,7 +533,7 @@ async function initGame() {
         backgroundImage.texture = coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-        
+        backgroundImage.scale = 1.0 + Math.sin(deltaTime.lastTime*0.0001)
         
         //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${options.stops.length-1}` : 'What do you want ?' 
         coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${options.stops.length-1}\nWhat do you want ?` 
