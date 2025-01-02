@@ -205,6 +205,8 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
            graph.minPriceLabel.visible = graph.maxPriceLabel.visible = false
            graph.priceLabel.text = formatCurrency(price, fiatName,null, true)
         } 
+    } else if (isFinalScreen) {
+        graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = false
     } else {
         graph.maxPriceLabel.visible = graph.minPriceLabel.visible = false
         graph.priceLabel.visible = options.coinNames.length < 3 || focusedCoinName === graph.coinName

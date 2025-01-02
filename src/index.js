@@ -427,15 +427,38 @@ async function initGame() {
                 if (yourCoinName !== fiatName) {
                     dateLabel.text += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
                 }
+            dateLabel.text += `\nBTC Hodler: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n\n`
+            
+
            // dateLabel.text = label
         } else {
             let fiat = yourFiat
-            let txt = "Congratulations\n\n" 
-            txt += `You traded ${trades.filter(t => t.toName !== t.fromName).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
-            txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
-            txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
-            txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
-            txt += "Try again?"
+            let txt = ''
+            if (fiat > options.fiatBTCHodler) {
+                txt = "You win\n\n" 
+            } else {
+                txt = "You lose\n\n" 
+            }
+           
+            //txt += `You traded ${trades.filter(t => t.toName !== t.fromName).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
+            //txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
+            //txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
+            //txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
+            
+            txt += `Today is: ${options.dateStart.toLocaleDateString()}\n\n`
+            txt += `You have: ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n`
+            txt += `BTC Hodler: ${formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2)}\n\n`
+            
+            if (fiat > options.fiatBTCHodler) {
+                txt += "You have more\nthen the HODLer\n\n" 
+                txt += "This is not easy. Respect!\n" 
+                txt += `Congratulations!\n`
+            } else {
+                txt += `You have to make more\nthen the Hodler to win!\n\n`
+                txt += "This is not easy!\n" 
+                txt += "Try again?"
+            }
+          
             dateLabel.text = txt
             dateLabel.visible = true
         }

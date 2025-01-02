@@ -290,6 +290,7 @@ function calculateLevelStatistics(level, coins) {
     
     let fiatBest = level.fiatStart
     let fiatWorst = level.fiatStart
+
     for (let i=1;i<level.stopIndizes.length;i++) {
 
         let bestFactor = 1
@@ -328,6 +329,10 @@ function calculateLevelStatistics(level, coins) {
 
     level.fiatBest = fiatBest
     level.fiatWorst = fiatWorst
+
+    let pricesDataBitcoin = coins['BTC'].data
+    level.btcBTCHodler = (level.fiatStart / pricesDataBitcoin[level.stopIndizes[0]].price)
+    level.fiatBTCHodler = level.btcBTCHodler * pricesDataBitcoin[level.stopIndizes[level.stopIndizes.length-1]].price
 }
 
 function injectGeneratedLevels(gameData) {

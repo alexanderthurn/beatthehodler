@@ -32,11 +32,11 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.background = new PIXI.Graphics();
     menu.addChild(menu.background)
 
-    menu.title = new PIXI.Text('Bitcoin Trader', menu.textStyleTitle)
+    menu.title = new PIXI.Text('Bitcoin Hodler', menu.textStyleTitle)
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
 
-    menu.subtitle = new PIXI.Text('Can u beat the Hodler?', menu.textStyleTitle)
+    menu.subtitle = new PIXI.Text('Can u beat him?', menu.textStyleTitle)
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
     menu.subtitle.scale = 0.5
@@ -148,7 +148,7 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
 function updateMenu(menu, app, deltaTime, getMute) {
 
     //menu.audioButtonSprite.width = menu.audioButtonSprite.height= app.screen.width*0.075
-    menu.audioButtonSprite.scale = (menu.audioButtonSprite.active ? 0.4 : 0.3)
+    menu.audioButtonSprite.scale =  (menu.audioButtonSprite.active ? 1.3 : 1.0) * Math.max(0.20, 0.25*3 / 64.0)
     menu.audioButtonSprite.alpha = (menu.audioButtonSprite.active ? 1.0 : 0.7)
    // menu.audioButtonSprite.rotation = (menu.audioButtonSprite.active ? Math.sin(deltaTime.lastTime*0.1)*0.05 : 0.0) 
     menu.audioButtonSprite.position.set(app.screen.width - menu.audioButtonSprite.width * 1.2, app.screen.height -menu.audioButtonSprite.height * 1.2 )
