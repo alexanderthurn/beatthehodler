@@ -147,8 +147,10 @@ async function initGame() {
     }
 
     function setWin(level) {
-        localStorageCache['l'+level] = true
-        localStorage.setItem('l'+level, true)
+        if (localStorageCache['l'+level] !== true) {
+            localStorageCache['l'+level] = true
+            localStorage.setItem('l'+level, true)
+        }
     }
 
     function getWin(level) {
@@ -242,7 +244,6 @@ async function initGame() {
     }
 
     startNewGame(gameData.levels[0])
-    setWin(0)
  
     
     const doTrade = (from, to) => {
@@ -344,7 +345,11 @@ async function initGame() {
             if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 menu.visible = true
             } else if (isFinalScreen) {
-                menu.visible = true//startNewGame(options)
+                if (yourFiat > options.fiatBTCHodler) {
+                    menu.visible = true
+                } else {
+                    startNewGame(options)
+                }
             }  
 
 
@@ -457,9 +462,10 @@ async function initGame() {
             let fiat = yourFiat
             let txt = ''
             if (fiat > options.fiatBTCHodler) {
-                txt = "You win\n\n" 
+                txt = "You won, nice!\n\n" 
+                setWin(options.name)
             } else {
-                txt = "You lose\n\n" 
+                txt = "Oh no, you lost\n\n" 
             }
            
             //txt += `You traded ${trades.filter(t => t.toName !== t.fromName).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
@@ -514,7 +520,7 @@ async function initGame() {
 
                 let toCoins = (yourCoins * fromPrice) / toPrice
        
-                coinButtonContainerTitle.text = 'Please confirm: \n' + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
+                coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${options.stops.length-1}\nPlease confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
             }
             
 

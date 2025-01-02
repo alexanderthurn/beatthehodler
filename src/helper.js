@@ -358,11 +358,13 @@ function injectGeneratedLevels(gameData) {
     }
 
     for (let i=2013;i<2023;i++) {
-        if (gameData.levels.filter(l => l.group === '21').length < 21)  {
+        let length = gameData.levels.filter(l => l.group === '21').length
+        if (length < 21)  {
             gameData.levels.push(
                 {
-                    "name": '' + i,
+                    "name": '' + length+1,
                     "group": "21",
+                    "stops": length+2,
                     "dateStart": i+"-01-01 00:00:00 UTC",
                     "dateEnd": i+"-12-31 00:00:00 UTC",
                     "coinNames": ["USD","BTC"]
@@ -370,11 +372,13 @@ function injectGeneratedLevels(gameData) {
         }
         
 
-        if (gameData.levels.filter(l => l.group === '21').length < 21)  {
+         length = gameData.levels.filter(l => l.group === '21').length
+        if (length < 21)  {
             gameData.levels.push(
                 {
-                    "name": '' + i,
+                    "name": '' + length+1,
                     "group": "21",
+                    "stops": length+2,
                     "dateStart": i+"-03-01 00:00:00 UTC",
                     "dateEnd": i+"-09-30 00:00:00 UTC",
                     "coinNames": ["USD","BTC"]

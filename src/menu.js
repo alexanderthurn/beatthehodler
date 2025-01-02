@@ -174,8 +174,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
        // x = app.screen.width*0.1
 
         group.levelEntries.forEach((entry,index2) => {
-            entry.isCompleted = getWin(index2)
-            entry.isCompletedLevelBefore = index2 === 0 || getWin(index2-1)
+            entry.isCompleted = getWin(entry.level.name)
+            entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
 
             entry.indexBackground.scale = (entry.active ? 1.3 : 1.0) * Math.max(0.20, 0.25*Math.min(colw,colh) / entry.indexBackgroundRadius)
