@@ -120,7 +120,7 @@ async function initGame() {
     const stackImage = new PIXI.Sprite(textureBtnTrade)
     stackLabel.anchor.set(0.5,0.5)
     stackImage.anchor.set(0.5,0.5)
-    stackLabel.text = "Click to trade"
+    stackLabel.text = "Click to stop"
     stackContainer.addChild(stackImage)
     stackContainer.addChild(stackLabel);
 
@@ -205,6 +205,7 @@ async function initGame() {
     let isFinalScreen = false
     let isStopScreen = false
     let canStopManually = false
+    let currentDate = null
     const startNewGame = (level) => {
         options = level
         maxVisiblePoints =  Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
@@ -220,7 +221,7 @@ async function initGame() {
         focusedCoinName = null
         isMultiCoin = options.coinNames.length > 2
         canStopManually = options.canStopManually
-
+        currentDate = null
         coinButtons.forEach(b => {
             coinButtonContainer.removeChild(b.container)
         })
@@ -351,7 +352,7 @@ async function initGame() {
             let trade = trades.find(t => t.index === currentIndexInteger)
             let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
         
-            if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
+            if (stopIndex > -1 && !isFinalScreen && !trade) {
                 let i = getCoinButtonIndex(event)
                 if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
                     focusedCoinName = coinButtons[i].to
@@ -385,7 +386,7 @@ async function initGame() {
 
                 let trade = trades.find(t => t.index === currentIndexInteger)
                 let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
-                if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1  && !trade) {
+                if (stopIndex > -1 && !isFinalScreen  && !trade) {
                     let i = getCoinButtonIndex(event)
                     if (i >= 0 && i < coinButtons.length) {
                         if (focusedCoinName !== coinButtons[i].to) {
@@ -414,9 +415,6 @@ async function initGame() {
 
     
     containerBackground.addChildAt(containerGraphs,1)
-
-
-
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
@@ -444,35 +442,37 @@ async function initGame() {
         let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
         let trade = trades.find(t => t.index === currentIndexInteger)
 
+        maxVisiblePoints = 100
+        currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
+        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
+        isFinalScreen = currentDate >= options.dateEnd
+        isStopScreen = isFinalScreen || (options.stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
+        let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
+
+
         if (stopIndex > -1) {
             
-            if (!trade && stopIndex === options.stopIndizes.length-1) {
+            if (!trade && isFinalScreen) {
                 doTrade(yourCoinName, yourCoinName)
             }
             
             if (!trade) {
                 paused = Number.MAX_VALUE
             } else {
-                if (stopIndex < options.stopIndizes.length-1) {
+              /*  if (stopIndex < options.stopIndizes.length-1) {
                     maxVisiblePoints = Math.max(7, Math.floor((options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex])*1.1))
                 } else {
                     maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0]
                     trades.filter(t => t.index !== options.stopIndizes[0] && (t.index === options.stopIndizes[options.stopIndizes.length-1] || t.toName === t.fromName)).forEach(trade => {
                         trade.container.visible = false
                     })
-                }
+                }*/
                
             }
         }
 
         //maxVisiblePoints = Math.max(20, trades.length > 1 ? currentIndexInteger - trades[trades.length-2].index : currentIndexInteger)
-        maxVisiblePoints = 100
 
-        const currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
-        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
-        isFinalScreen = !(currentIndexInteger < options.stopIndizes[options.stopIndizes.length-1])
-        isStopScreen = isFinalScreen || (options.stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
-        let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
         containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0)
 
 
@@ -497,17 +497,18 @@ async function initGame() {
                     txt += `Choose wisely and\n`
                     txt += `Beat the HODler`
                 } else {
-                    txt += `You will play between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
-                    txt += `Trade & beat the HODLer!\n\n`
+                    txt += `You will play between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
+                    txt += `Your goal is to beat the HODLer!\n`
                     txt += `Good luck!\n\n`
-                    txt += `Today is: ${currentDate.toLocaleDateString()}\n`
-                    txt += `The Hodler has: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n`
+                    txt += `Today   ${currentDate.toLocaleDateString()}\n`
+                    txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
+                    txt += `You     ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 }
                
             }  else {
-                txt += `Today is: ${currentDate.toLocaleDateString()}\n`
-                txt += `The Hodler has: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n`
-                txt += `You have: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                txt += `Today  ${currentDate.toLocaleDateString()}\n`
+                txt += `Hodler ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
+                txt += `You    ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                     if (yourCoinName !== fiatName) {
                         txt += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
                     } else {
@@ -520,6 +521,7 @@ async function initGame() {
         } else {
             let fiat = yourFiat 
             
+            txt += " --- Game Over ---\n\n" 
             if (fiat > options.fiatBTCHodler) {
                 txt += "You won, nice!\n" 
                 setWin(options.name)
@@ -528,27 +530,22 @@ async function initGame() {
             }
 
             txt += `Today is ${options.dateEnd.toLocaleDateString()}\n\n`
-           
-            //txt += `You traded ${trades.filter(t => t.toName !== t.fromName).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
-            //txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
-            //txt += `Maximum would have been:\n${formatCurrency(options.fiatBest, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
-            //txt += `Minimum would have been:\n${formatCurrency(options.fiatWorst, fiatName, options.fiatBest >= 1000 ? 0 : 2)}\n\n`
-            
-            //txt += `Today is: ${options.dateStart.toLocaleDateString()}\n\n`
-            txt += `You have: ${formatCurrency(fiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')}\n`
+            txt += `Hodler ${formatCurrency(options.btcBTCHodler, 'BTC')} `
+            txt += '= '+ formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2) +"\n"
+            txt += `You     ${formatCurrency(fiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')} `
             txt += '= '+ formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2) +"\n\n"
             
             
 
-            txt += `The Hodler has: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n`
-            txt += '= '+ formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2) +"\n\n"
            
            
             if (fiat > options.fiatBTCHodler) {
-                txt += "This was not easy, respect!\n\n" 
-                txt += `Can u win the next level?!\n`
+                txt += `You have ${(100*(fiat / options.fiatBTCHodler - 1)).toFixed(2)}% more\n`
+                txt += `This is a new highscore!\n\n`
+                txt += `Try the next level?!\n`
             } else {
-                txt += `You have to concentrate more\n`
+                txt += `You have ${(100*(1-fiat / options.fiatBTCHodler )).toFixed(2)}% less\n`
+                txt += "You have to make more than him\n\n" 
                 txt += "Try again?"
             }
           
@@ -566,7 +563,7 @@ async function initGame() {
         backgroundImage.texture = coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-        backgroundImage.scale = 1.0 + Math.sin(deltaTime.lastTime*0.0001)
+        backgroundImage.scale = 2.0 + Math.sin(deltaTime.lastTime*0.0001)
         
         //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${options.stops.length-1}` : 'What do you want ?' 
         
@@ -579,8 +576,8 @@ async function initGame() {
         coinButtons.forEach(b => {
             b.active = !coins[b.to].data || coins[b.to].data[currentIndexInteger]?.price ? true : false
         })
-
-        if (stopIndex > -1 && stopIndex < options.stopIndizes.length-1 && !trade) {
+        console.log(trade)
+        if (stopIndex > -1 && !isFinalScreen && !trade) {
             if (focusedCoinName) {
 
                 let fromPrice = yourCoinName === fiatName ? 1 : coins[yourCoinName].data[currentIndexInteger].price
@@ -616,9 +613,10 @@ async function initGame() {
             stackContainer.visible = false
         } else {
             coinButtonContainer.visible = false 
-            stackContainer.visible = !isFinalScreen  && trades[trades.length-1].index < currentIndexInteger - maxVisiblePoints / 10
+            stackContainer.visible = !isFinalScreen  && trades.length > 0 && trades[trades.length-1].index < currentIndexInteger - maxVisiblePoints / 30
+            stackContainer.alpha = !isFinalScreen && trades.length > 0 && Math.min(1.0, (currentIndexInteger - maxVisiblePoints / 30.0) / 8)
 
-            stackImage.height = stackImage.width = app.renderer.width*0.04
+            stackImage.height = stackImage.width = Math.max(32,app.renderer.width*0.04)
             stackContainer.position.set(0.5*app.renderer.width, 0.8*app.renderer.height)
             stackLabel.position.set(0, stackImage.height)
             stackLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01

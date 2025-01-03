@@ -44,7 +44,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.finaltitle = new PIXI.Text('by Alexander Thurn', menu.textStyleTitle)
     menu.finaltitle.anchor.set(0.5,1.0)
     menu.addChild(menu.finaltitle)
-    menu.finaltitle.scale = 0.70
+    menu.finaltitle.scale = 0.50
 
     menu.levelGroupsContainer = new PIXI.Container()
     menu.addChild(menu.levelGroupsContainer)
@@ -178,7 +178,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
             entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
 
-            entry.indexBackground.scale = (entry.active ? 1.3 : 1.0) * Math.max(0.20, 0.25*Math.min(colw,colh) / entry.indexBackgroundRadius)
+            entry.indexBackground.scale = (entry.active ? 1.3 : 1.0) * 0.3*Math.min(colw,colh) / entry.indexBackgroundRadius
             entry.index.rotation = 0
             entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 0.5 : 0.3 
 

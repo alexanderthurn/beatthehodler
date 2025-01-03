@@ -338,26 +338,6 @@ function calculateLevelStatistics(level, coins) {
 function injectGeneratedLevels(gameData) {
 
     for (let i=2013;i<2024;i++) {
-        gameData.levels.push(
-            {
-                "name": '' + i,
-                "group": "Years",
-                "dateStart": i+"-01-01 00:00:00 UTC",
-                "dateEnd": i+"-12-31 00:00:00 UTC",
-                "coinNames": ["USD","BTC"]
-        })
-
-        gameData.levels.push(
-            {
-                "name": '' + i,
-                "group": "Alt-Coins",
-                "dateStart": i+"-01-01 00:00:00 UTC",
-                "dateEnd": i+"-12-31 00:00:00 UTC",
-                "coinNames": ["USD","ADA"]
-        })
-    }
-
-    for (let i=2013;i<2023;i++) {
         let length = gameData.levels.filter(l => l.group === '21').length
         if (length < 21)  {
             gameData.levels.push(
