@@ -312,6 +312,13 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
 
     graphRectsMesh.state.culling = true;
     graphLinesMesh.state.culling = true;
+   
+    const state = new PIXI.State();
+    state.blend = true;
+    state.blendMode = 'subtract'; // This does not work
+
+    graphLinesMesh.state = state;
+
     graph.addChild(graphRectsMesh)
     graph.addChild(graphLinesMesh)
     graph.addChild(logo);

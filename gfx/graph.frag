@@ -3,7 +3,7 @@ varying vec2 vPosition;
 
 void main() {
 
-    vec4 bottomColor = vec4(1.0,1.0,1.0, 1.0);  
+    vec4 bottomColor = vec4(1.0,1.0,1.0, 0.1);  
 
 
     //float xFactor = vPosition.x;
