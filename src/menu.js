@@ -141,7 +141,7 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
 
 function updateMenu(menu, app, deltaTime, getMute, getWin) {
     menu.background.scale.set(app.screen.width / 1024, app.screen.height / 1024)
-    menu.background.alpha = 0.8
+    menu.background.alpha = 0.0
     menu.audioButtonSprite.alpha = (menu.audioButtonSprite.active ? 1.0 : 0.7)
     menu.audioButtonSprite.position.set(app.screen.width - menu.audioButtonSprite.width * 1.2, app.screen.height -menu.audioButtonSprite.height * 1.2 )
     menu.audioButtonSprite.texture = getMute() ? menu.audioOffTexture : menu.audioOnTexture

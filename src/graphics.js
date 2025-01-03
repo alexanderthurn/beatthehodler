@@ -217,7 +217,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
         
     }
-    graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
+    //graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
  
     trades.filter(trade => (trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
         trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
@@ -372,7 +372,10 @@ function createBackground(vertexShader, fragmentShader)  {
             }),
         resources: {
             backgroundUniforms: {
-                uColor: {type: 'vec4<f32>', value: new Float32Array([1.0,0.0,0.0,1.0])},
+                uR: {type: 'f32', value: 0.0},
+                uG: {type: 'f32', value: 0.0},
+                uB: {type: 'f32', value: 0.0},
+                uA: {type: 'f32', value: 0.0},
                 uThreshold: {type: 'f32', value: 0.05},
                 uTime: {type: 'f32', value: 0.0},
                 uCurveStrength: {type: 'f32', value: 1.5},

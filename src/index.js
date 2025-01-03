@@ -207,7 +207,7 @@ async function initGame() {
     let canStopManually = false
     let currentDate = null
     const startNewGame = (level) => {
-        options = level
+        options = JSON.stringify(level)
         maxVisiblePoints =  Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
         fiatName = Object.keys(coins)[0]
         yourFiat = options.fiatStart
@@ -591,7 +591,15 @@ async function initGame() {
         dateLabel.x = textStyle.fontSize*0.1
         textStyleCentered.fontSize =  textStyle.fontSize = Math.max(18, (Math.max(app.renderer.height, app.renderer.width) / 1080)*18)
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
-        background.shader.resources.backgroundUniforms.uniforms.uColor = [1.0,0.0,0.0,1.0];//hexToRGB(coins[yourCoinName].color, 1.0)
+        let color = hexToRGB(coins[yourCoinName].color, 1.0)
+        if (isMenuVisible()) {
+            color = hexToRGB(coins['BTC'].color, 1.0)
+        }
+        background.shader.resources.backgroundUniforms.uniforms.uR = color[0];
+        background.shader.resources.backgroundUniforms.uniforms.uG = color[1];
+        background.shader.resources.backgroundUniforms.uniforms.uB = color[2];
+        background.shader.resources.backgroundUniforms.uniforms.uA = color[3];
+        
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         background.shader.resources.backgroundUniforms.uniforms.uPercentage = (currentIndexFloat-options.indexStart) / (options.indexEnd - options.indexStart)
         backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
