@@ -19,17 +19,17 @@ function playBuySound(key) {
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
 
-   /* let music = PIXI.sound.Sound.from({
+    let music = PIXI.sound.Sound.from({
         url: 'sfx/song1.mp3',
         autoPlay: true,
         complete: function() {
             console.log('Sound finished');
         }
-    });*/
-    let music = {
+    });
+    /*let music = {
         volume: 0,
         speed: 0
-    }
+    }*/
 
     const graphVertexShader = await loadShader('./gfx/graph.vert')
     const graphFragmentShader = await loadShader('./gfx/graph.frag')
@@ -170,7 +170,7 @@ async function initGame() {
     }
 
     function getMute() {
-        return localStorageCache['mute'] ?? localStorage.getItem('mute')
+        return localStorageCache['mute'] ?? getBooleanFromLocalStorage('mute')
     }
 
     setMute(getMute())
@@ -427,7 +427,7 @@ async function initGame() {
             }
         }
 
-        //music.speed = paused > 0 ? Math.max(0.75,music.speed*0.9) : Math.min(1.0,music.speed*1.1)
+        music.speed = paused > 0 ? Math.max(0.75,music.speed*0.9) : Math.min(1.0,music.speed*1.1)
         music.volume = paused > 0 ? Math.max(0.5,music.volume*0.9) : Math.min(1.0,music.volume*1.1)
 
         if (currentIndexFloat > options.indexEnd) {
@@ -477,7 +477,7 @@ async function initGame() {
 
 
         graphs.forEach(g => {
-            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, options.stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options)
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, options.stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName)
         })
         
         let txt = ''
@@ -502,13 +502,13 @@ async function initGame() {
                     txt += `Good luck!\n\n`
                     txt += `Today   ${currentDate.toLocaleDateString()}\n`
                     txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
-                    txt += `You     ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                    txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 }
                
             }  else {
                 txt += `Today  ${currentDate.toLocaleDateString()}\n`
                 txt += `Hodler ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
-                txt += `You    ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                txt += `You     ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                     if (yourCoinName !== fiatName) {
                         txt += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
                     } else {
@@ -523,13 +523,13 @@ async function initGame() {
             
             txt += " --- Game Over ---\n\n" 
             if (fiat > options.fiatBTCHodler) {
-                txt += "You won, nice!\n" 
+                txt += "You won, nice!\n\n" 
                 setWin(options.name)
             } else {
                 txt += "Oh no, you lost\n\n" 
             }
 
-            txt += `Today is ${options.dateEnd.toLocaleDateString()}\n\n`
+           // txt += `Today is ${options.dateEnd.toLocaleDateString()}\n\n`
             txt += `Hodler ${formatCurrency(options.btcBTCHodler, 'BTC')} `
             txt += '= '+ formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2) +"\n"
             txt += `You     ${formatCurrency(fiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')} `
@@ -576,7 +576,6 @@ async function initGame() {
         coinButtons.forEach(b => {
             b.active = !coins[b.to].data || coins[b.to].data[currentIndexInteger]?.price ? true : false
         })
-        console.log(trade)
         if (stopIndex > -1 && !isFinalScreen && !trade) {
             if (focusedCoinName) {
 

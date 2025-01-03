@@ -1,3 +1,14 @@
+function getBooleanFromLocalStorage(key) {
+    const value = localStorage.getItem(key);
+    
+    if (value === null) return null; // Kein Wert vorhanden
+    if (value === "true") return true;
+    if (value === "false") return false;
+    
+    throw new Error(`Ungültiger Wert im localStorage: ${value}`);
+}
+
+
 function hexToRGB(hex, a) {
     // Entfernt das # falls vorhanden
     hex = hex.replace(/^#/, '');
