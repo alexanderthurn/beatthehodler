@@ -207,7 +207,7 @@ async function initGame() {
     let canStopManually = false
     let currentDate = null
     const startNewGame = (level) => {
-        options = JSON.stringify(level)
+        options = level
         maxVisiblePoints =  Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
         fiatName = Object.keys(coins)[0]
         yourFiat = options.fiatStart
