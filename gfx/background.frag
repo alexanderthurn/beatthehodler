@@ -5,10 +5,11 @@ varying vec4 vColor;
 uniform float uThreshold;      // Schwellenwert für den unteren Bereich
 uniform float uCurveStrength; // Stärke der Kurve für die X-Position
 uniform float uTime;           // Zeiteinfluss für Animation
+uniform float uPercentage;           // How much of the level is compeled
 
 void main() {
     vec4 topColor = vec4(0.957, 0.706, 0.0, 1.0);  
-    topColor = vec4(0.522, 0.733, 0.396, 1.0);  
+    //topColor = vec4(0.522, 0.733, 0.396, 1.0);  
 
     vec4 bottomColor = vec4(1.0,1.0,1.0, 1.0); 
     
@@ -17,24 +18,14 @@ void main() {
     float adjustedThreshold = uThreshold * xFactor;
     float mixFactor;
     float radius = 0.3;
-    //mixFactor = smoothstep(adjustedThreshold - 0.1, adjustedThreshold + 0.1, vPosition.y);
-
-    if (vPosition.y < 0.5) {
-        mixFactor = smoothstep(adjustedThreshold - 0.1, adjustedThreshold + 0.1, vPosition.y);
-    } else {
-       // mixFactor = 1.0-smoothstep(radius, radius-0.3, distance(vPosition, vec2(0.0,1.0)));
-
-        // Kugel bei x = 0
-        float distLeft = distance(vec2(vPosition.x*0.25, vPosition.y), vec2(0.0, 1.0));
-        float circleLeft = 1.0-smoothstep(radius, radius - 0.3, distLeft);
-
-      
-        // Kombiniere die beiden Kugeln
-        mixFactor = circleLeft;
+    mixFactor = smoothstep(adjustedThreshold - 0.1, adjustedThreshold + 0.1, vPosition.y);
+    if (vPosition.x < uPercentage) {
+        bottomColor = mix(bottomColor, vec4(0.957, 0.706, 0.0, 1.0), 1.2-distance(uPercentage, vPosition.x));
     }
+    vec4 baseColor = mix(bottomColor, topColor, mixFactor);
+
    
 
-    vec4 baseColor = mix(bottomColor, topColor, mixFactor);
 
     gl_FragColor = baseColor;
 }
