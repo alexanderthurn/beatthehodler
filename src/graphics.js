@@ -120,7 +120,7 @@ function createStockRectangles(dataPoints, rectWidth) {
 
 }
 
-function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndex, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName) {
+function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndex, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible) {
     let parsedData = coins[graph.coinName].data
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
@@ -218,7 +218,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         
     }
     graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
-
+ 
     trades.filter(trade => (trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
         trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         trade.container.y = app.renderer.height*0.9-  ((trade.fromName === graph.coinName ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8;
@@ -235,6 +235,13 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         trade.container.visible = options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === graph.coinName
      })
 
+     if (isMenuVisible) {
+        graph.logoSprite.visible = false
+        graph.maxPriceLabel.visible = graph.minPriceLabel.visible = graph.priceLabel.visible = false
+        trades.forEach(trade => {
+            trade.container.visible = false
+        })
+    }
 
     return {
         maxPrice: maxPrice,

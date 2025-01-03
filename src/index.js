@@ -214,7 +214,7 @@ async function initGame() {
         yourCoins = yourFiat
         yourCoinName = fiatName
         paused = Number.MAX_VALUE
-        gameDurationMilliseconds = 20000
+        gameDurationMilliseconds = options.duration
         factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
         currentIndexFloat = options.indexStart; // Zeitverfolgung
         currentIndexInteger = Math.floor(currentIndexFloat)
@@ -273,7 +273,7 @@ async function initGame() {
 
     }
 
-    startNewGame(gameData.levels[0])
+    startNewGame(gameData.levels.find(level => level.name === 'menu'))
  
     
     const doTrade = (from, to) => {
@@ -418,6 +418,32 @@ async function initGame() {
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
+
+        if (isMenuVisible()) {
+            containerForeground.visible = false
+            paused = 0
+            if (options.name !== 'menu') {
+                startNewGame(gameData.levels.find(level => level.name === 'menu'))
+            }
+            if (trades.length < options.stops.length) {
+                options.stopIndizes.forEach((stopIndex) => {
+                    trades.push({
+                        index: stopIndex, 
+                        fromPrice: 1,
+                        fromName: fiatName,
+                        fromCoins: 1,
+                        toPrice: 1, 
+                        toName: fiatName, 
+                        toCoins: 1,
+                        sprite: null,
+                        container: new PIXI.Container(),
+                    })
+                })
+               
+            }
+        } else {
+            containerForeground.visible = true
+        }
         if (paused <= 0) {
             currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds;
         } else {
@@ -449,7 +475,11 @@ async function initGame() {
         isStopScreen = isFinalScreen || (options.stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
 
-
+        if (isMenuVisible()) {
+            isStopScreen = false
+            isFinalScreen = false
+        }
+        
         if (stopIndex > -1) {
             
             if (!trade && isFinalScreen) {
@@ -477,7 +507,7 @@ async function initGame() {
 
 
         graphs.forEach(g => {
-            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, options.stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName)
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, options.stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible())
         })
         
         let txt = ''
@@ -497,12 +527,13 @@ async function initGame() {
                     txt += `Choose wisely and\n`
                     txt += `Beat the HODler`
                 } else {
+                    txt += `Today   ${currentDate.toLocaleDateString()}\n`
+                    txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
+                    txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
                     txt += `You will play between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat the HODLer!\n`
                     txt += `Good luck!\n\n`
-                    txt += `Today   ${currentDate.toLocaleDateString()}\n`
-                    txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
-                    txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                  
                 }
                
             }  else {
@@ -560,7 +591,7 @@ async function initGame() {
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
         background.shader.resources.backgroundUniforms.uniforms.uColor = [1.0,0.0,0.0,1.0];//hexToRGB(coins[yourCoinName].color, 1.0)
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
-        backgroundImage.texture = coins[yourCoinName].texture
+        backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
         backgroundImage.scale = 2.0 + Math.sin(deltaTime.lastTime*0.0001)

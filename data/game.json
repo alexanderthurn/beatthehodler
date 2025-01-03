@@ -13,6 +13,16 @@
             "coinNames": ["USD","BTC"]
         },
         {
+            "name":"menu",
+            "group": "custom",
+            "duration": 240000,
+            "dateStart": "2013-01-01 00:00:00 UTC",
+            "dateEnd": "2025-01-01 00:00:00 UTC",
+            "stops": 2,
+            "canStopManually": false,
+            "coinNames": ["USD","BTC"]
+        },
+        {
             "name":"22",
             "group": "212",
             "dateStart": "2015-01-01 00:00:00 UTC",
