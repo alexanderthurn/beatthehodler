@@ -364,7 +364,8 @@ function injectGeneratedLevels(gameData) {
                 {
                     "name": '' + length+1,
                     "group": "21",
-                    "stops": length+2,
+                    "stops": 2,
+                    "canStopManually": true,
                     "dateStart": i+"-01-01 00:00:00 UTC",
                     "dateEnd": i+"-12-31 00:00:00 UTC",
                     "coinNames": ["USD","BTC"]
@@ -378,7 +379,8 @@ function injectGeneratedLevels(gameData) {
                 {
                     "name": '' + length+1,
                     "group": "21",
-                    "stops": length+2,
+                    "stops": 2,
+                    "canStopManually": true,
                     "dateStart": i+"-03-01 00:00:00 UTC",
                     "dateEnd": i+"-09-30 00:00:00 UTC",
                     "coinNames": ["USD","BTC"]

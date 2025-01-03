@@ -36,7 +36,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
 
-    menu.subtitle = new PIXI.Text('Can u beat him?', menu.textStyleTitle)
+    menu.subtitle = new PIXI.Text('Can u win by trading?', menu.textStyleTitle)
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
     menu.subtitle.scale = 0.5

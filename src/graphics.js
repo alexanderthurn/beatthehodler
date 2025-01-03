@@ -181,7 +181,8 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
 
 
-
+    graph.priceLabel.text = formatCurrency(price, fiatName,null, true)
+       
     if (isStopScreen && !isFinalScreen) {
         graph.priceLabel.x = 0.9*graph.priceLabel.x +0.1*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
         graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
@@ -214,7 +215,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
         graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, app.renderer.height*0.1+graph.priceLabel.height*graph.priceLabel.anchor.y))
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
-      
+        
 
     }
 

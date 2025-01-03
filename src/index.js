@@ -113,10 +113,18 @@ async function initGame() {
 
 
     let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
+    let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
 
+    const stackContainer = new PIXI.Container()
     const stackLabel = new PIXI.Text("", textStyleCentered);
-    stackLabel.anchor.set(0.5,1.1)
-    containerForeground.addChild(stackLabel);
+    const stackImage = new PIXI.Sprite(textureBtnTrade)
+    stackLabel.anchor.set(0.5,0.5)
+    stackImage.anchor.set(0.5,0.5)
+    stackLabel.text = "Click to trade"
+    stackContainer.addChild(stackImage)
+    stackContainer.addChild(stackLabel);
+
+    containerForeground.addChild(stackContainer);
 
     const backgroundImage = new PIXI.Sprite();
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
@@ -205,7 +213,7 @@ async function initGame() {
         yourCoins = yourFiat
         yourCoinName = fiatName
         paused = Number.MAX_VALUE
-        gameDurationMilliseconds = options.stopIndizes.length*2000
+        gameDurationMilliseconds = 20000
         factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
         currentIndexFloat = options.indexStart; // Zeitverfolgung
         currentIndexInteger = Math.floor(currentIndexFloat)
@@ -295,7 +303,7 @@ async function initGame() {
       
 
      
-        trade.labelPrice = new PIXI.Text(formatCurrency(trade.toPrice, fiatName,null, true) , textStyle)
+        trade.labelPrice = new PIXI.Text(formatCurrency(trade.toName !== fiatName ? trade.toPrice : trade.fromPrice, fiatName,null, true) , textStyle)
         trade.labelPrice.anchor.set(0.5,1.5)
         trade.container.addChild(trade.labelPrice)
         if (from === to) {
@@ -353,6 +361,7 @@ async function initGame() {
             }
 
             btnMenuSprite.active = btnMenuSprite.getBounds().containsPoint(event.x,event.y)
+            stackContainer.active = stackContainer.getBounds().containsPoint(event.x,event.y)
         }
         
     });
@@ -456,6 +465,8 @@ async function initGame() {
             }
         }
 
+        //maxVisiblePoints = Math.max(20, trades.length > 1 ? currentIndexInteger - trades[trades.length-2].index : currentIndexInteger)
+        maxVisiblePoints = 100
 
         const currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
@@ -480,14 +491,17 @@ async function initGame() {
                 
                 if (!canStopManually) {
                     txt += `You will trade ${options.stopIndizes.length-1} ${options.stopIndizes.length-1 > 1 ? 'times' : 'time'} between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
+                    
                     txt += `The trading ${options.stopIndizes.length-1 > 1 ? 'dates are' : 'date is'} fixed.\n\n`
                     txt += `Read the graph,\n`
                     txt += `Choose wisely and\n`
                     txt += `Beat the HODler`
                 } else {
-                    txt += `You can trade as often as you want\nbetween\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
-                    txt += `You have 60 seconds\n`
-                    txt += `You can stop by clicking anywhere\n`
+                    txt += `You will play between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
+                    txt += `Trade & beat the HODLer!\n\n`
+                    txt += `Good luck!\n\n`
+                    txt += `Today is: ${currentDate.toLocaleDateString()}\n`
+                    txt += `The Hodler has: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n`
                 }
                
             }  else {
@@ -504,9 +518,16 @@ async function initGame() {
 
 
         } else {
-            let fiat = yourFiat
-            //txt += 'Finally\n\n'
-            txt += `${options.dateEnd.toLocaleDateString()}\n\n`
+            let fiat = yourFiat 
+            
+            if (fiat > options.fiatBTCHodler) {
+                txt += "You won, nice!\n" 
+                setWin(options.name)
+            } else {
+                txt += "Oh no, you lost\n\n" 
+            }
+
+            txt += `Today is ${options.dateEnd.toLocaleDateString()}\n\n`
            
             //txt += `You traded ${trades.filter(t => t.toName !== t.fromName).length} times\n\nand went from\n${formatCurrency(options.fiatStart, fiatName, options.fiatStart >= 1000 ? 0 : 2)} to ${formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2)}\n\n`
             //txt += `between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
@@ -522,12 +543,7 @@ async function initGame() {
             txt += `The Hodler has: ${formatCurrency(options.btcBTCHodler, 'BTC')}\n`
             txt += '= '+ formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2) +"\n\n"
            
-            if (fiat > options.fiatBTCHodler) {
-                txt += "You won, nice!\n" 
-                setWin(options.name)
-            } else {
-                txt += "Oh no, you lost\n\n" 
-            }
+           
             if (fiat > options.fiatBTCHodler) {
                 txt += "This was not easy, respect!\n\n" 
                 txt += `Can u win the next level?!\n`
@@ -545,9 +561,6 @@ async function initGame() {
         dateLabel.x = textStyle.fontSize*0.1
         textStyleCentered.fontSize =  textStyle.fontSize = Math.max(18, (Math.max(app.renderer.height, app.renderer.width) / 1080)*18)
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.2
-        stackLabel.y = app.renderer.height;
-        stackLabel.x = 0.5*app.renderer.width
-        stackLabel.text = "Click to stop"//"You have\n" + formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits) || ''
         background.shader.resources.backgroundUniforms.uniforms.uColor = [1.0,0.0,0.0,1.0];//hexToRGB(coins[yourCoinName].color, 1.0)
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         backgroundImage.texture = coins[yourCoinName].texture
@@ -600,10 +613,17 @@ async function initGame() {
             coinButtonContainer.y = app.renderer.height - maxButtonHeight*2.2
 
             coinButtonContainer.visible = true
-            stackLabel.visible = false
+            stackContainer.visible = false
         } else {
-            coinButtonContainer.visible = false
-            stackLabel.visible = true
+            coinButtonContainer.visible = false 
+            stackContainer.visible = !isFinalScreen  && trades[trades.length-1].index < currentIndexInteger - maxVisiblePoints / 10
+
+            stackImage.height = stackImage.width = app.renderer.width*0.04
+            stackContainer.position.set(0.5*app.renderer.width, 0.8*app.renderer.height)
+            stackLabel.position.set(0, stackImage.height)
+            stackLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
+            stackContainer.scale=(stackContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01
+            
             focusedCoinName = null
         }
 
