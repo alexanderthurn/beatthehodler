@@ -53,8 +53,8 @@ function createStockLines(dataPoints, lineWidth, coin) {
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
         const color = currentY < prevY 
-            ? hexToRGB('#ff0000', 1.0).map((e,i) => e) // Rot (RGBA: 1, 0, 0, 1)
-            : hexToRGB('#00ff00', 1.0); // Grün (RGBA: 0, 1, 0, 1)
+            ? hexToRGB(coin.color, 1.0).map((e,i) => e) // Rot (RGBA: 1, 0, 0, 1)
+            : hexToRGB(coin.color, 1.0); // Grün (RGBA: 0, 1, 0, 1)
 
         for (let j = 0; j < 4; j++) {
             colors.push(...color);

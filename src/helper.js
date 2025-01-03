@@ -348,7 +348,7 @@ function calculateLevelStatistics(level, coins) {
 
 function injectGeneratedLevels(gameData) {
 
-    for (let i=2013;i<2024;i++) {
+    for (let i=2018;i<2024;i++) {
         let length = gameData.levels.filter(l => l.group === '21').length
         if (length < 21)  {
             gameData.levels.push(
@@ -375,7 +375,7 @@ function injectGeneratedLevels(gameData) {
                     "canStopManually": true,
                     "dateStart": i+"-03-01 00:00:00 UTC",
                     "dateEnd": i+"-09-30 00:00:00 UTC",
-                    "coinNames": ["USD","BTC"],
+                    "coinNames": ["USD","BTC", "ADA"],
                     "duration": 30000
             })
         }
