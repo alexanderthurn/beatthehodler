@@ -584,9 +584,7 @@ async function initGame() {
 
         dateLabel.text = txt
         dateLabel.visible = true
-
-        dateLabel.y = 0*textStyle.fontSize;
-        dateLabel.x = textStyle.fontSize*0.1
+        dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.01)
         textStyleCentered.fontSize =  textStyle.fontSize = Math.max(18, (Math.max(app.renderer.height, app.renderer.width) / 1080)*18)
         textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.1
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
@@ -667,7 +665,7 @@ async function initGame() {
 
         btnMenuSprite.scale = 0.15
         btnMenuSprite.alpha = (btnMenuSprite.active ? 1.0 : 0.7)
-        btnMenuSprite.position.set(app.screen.width, 0 )
+        btnMenuSprite.position.set(app.screen.width*0.99, app.screen.height*0.01 )
        
     });
 }

@@ -18,7 +18,7 @@ function createStockLines(dataPoints, lineWidth, coin) {
         const currentY = dataPoints[i].price || 0;
         const x = (i - 1) * lineWidth;
         const prevX = (i - 2) * lineWidth;
-        const halfWidth = lineWidth * 0.25
+        const halfWidth = lineWidth * 0.5
 
         // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
@@ -53,8 +53,8 @@ function createStockLines(dataPoints, lineWidth, coin) {
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
         const color = currentY < prevY 
-            ? hexToRGB(coin.color, 1.0).map((e,i) => e*0.5) // Rot (RGBA: 1, 0, 0, 1)
-            : hexToRGB(coin.color, 1.0); // Grün (RGBA: 0, 1, 0, 1)
+            ? hexToRGB('#ff0000', 1.0).map((e,i) => e) // Rot (RGBA: 1, 0, 0, 1)
+            : hexToRGB('#00ff00', 1.0); // Grün (RGBA: 0, 1, 0, 1)
 
         for (let j = 0; j < 4; j++) {
             colors.push(...color);
@@ -155,7 +155,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     var scaleY = -app.renderer.height*0.8/(maxPrice-minPrice)
     
-    if (graph.coinName === 'BTC') {
+    if (graph.coinName === 'BTC2') {
         graph.curve = graph.meshRects
         graph.meshLines.visible = false
         graph.curve.visible = true
@@ -211,8 +211,8 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     } else {
         graph.maxPriceLabel.visible = graph.minPriceLabel.visible = false
         graph.priceLabel.visible = options.coinNames.length < 3 || focusedCoinName === graph.coinName
-        graph.priceLabel.x = 0.9*graph.priceLabel.x +0.1*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
-        graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
+        graph.priceLabel.x = 0.99*graph.priceLabel.x +0.01*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
+        graph.priceLabel.y = 0.99*graph.priceLabel.y +0.01*(app.renderer.height*0.9-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*0.8);
         graph.priceLabel.y = Math.min(app.renderer.height-graph.priceLabel.height*(1-graph.priceLabel.anchor.y), Math.max(graph.priceLabel.y, app.renderer.height*0.1+graph.priceLabel.height*graph.priceLabel.anchor.y))
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
         
