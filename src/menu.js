@@ -9,12 +9,6 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         fontStyle: 'Bold',
         fontSize: 128,
         stroke: { color: '#fff', width: 5, join: 'round' },
-        dropShadow: {
-            color: '#000',
-            blur: 4,
-            angle: Math.PI / 6,
-            distance: 6,
-        },
         wordWrap: false,
         wordWrapWidth: 440,
     });
