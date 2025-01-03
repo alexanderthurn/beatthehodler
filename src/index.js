@@ -85,7 +85,8 @@ async function initGame() {
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
         fontSize: 32,
-        stroke: { color: '#fff', width: 2, join: 'round' },
+        fill: '#fff',
+        stroke: { color: '#000', width: 0, join: 'round' },
         wordWrap: false,
         wordWrapWidth: 440,
     });
@@ -586,7 +587,7 @@ async function initGame() {
         dateLabel.visible = true
         dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.01)
         textStyleCentered.fontSize =  textStyle.fontSize = Math.max(18, (Math.max(app.renderer.height, app.renderer.width) / 1080)*18)
-        textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.1
+        //textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.1
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
         if (isMenuVisible()) {
             color = hexToRGB(coins['BTC'].color, 1.0)

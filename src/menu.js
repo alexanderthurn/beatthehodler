@@ -8,7 +8,8 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
         fontSize: 128,
-        stroke: { color: '#fff', width: 5, join: 'round' },
+        fill: '#fff',
+        stroke: { color: '#000', width: 0, join: 'round' },
         wordWrap: false,
         wordWrapWidth: 440,
     });
@@ -17,7 +18,8 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
         fontSize: 24,
-        stroke: { color: '#fff', width: 5, join: 'round' },
+        fill: '#fff',
+        stroke: { color: '#000', width: 0, join: 'round' },
     });
 
 
