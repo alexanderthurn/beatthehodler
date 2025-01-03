@@ -105,7 +105,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
 
 function menuPointerMoveEvent(menu, event) {
-    menu.levelEntries.forEach((entry,index2) => {
+    menu.levelEntries.filter(entry => entry.isCompletedLevelBefore ).forEach((entry,index2) => {
         entry.active = entry.getBounds().containsPoint(event.x,event.y)
     })
     menu.audioButtonSprite.active = menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)   
@@ -114,9 +114,9 @@ function menuPointerMoveEvent(menu, event) {
 }
 
 function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
-    menu.levelEntries.forEach((entry,index2) => {
+    menu.levelEntries.filter(entry => entry.isCompletedLevelBefore ).forEach((entry,index2) => {
         if (entry.getBounds().containsPoint(event.x,event.y)) {
-            if (!entry.active) {
+            if (!entry.active ) {
                 entry.active = true
             } else {
                 menu.visible = false
@@ -179,9 +179,9 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
             entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
 
-            entry.indexBackground.scale = (entry.active ? 1.3 : 1.0) * 0.3*Math.min(colw,colh) / entry.indexBackgroundRadius
+            entry.indexBackground.scale = (entry.active && entry.isCompletedLevelBefore ? 1.3 : 1.0) * 0.3*Math.min(colw,colh) / entry.indexBackgroundRadius
             entry.index.rotation = 0
-            entry.index.alpha = entry.active ? 1.0 : 0.0 
+            entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 0.0 
 
             if (entry.isCompleted) {
                 entry.index.rotation = 0

@@ -530,9 +530,11 @@ async function initGame() {
                     txt += `Today   ${currentDate.toLocaleDateString()}\n`
                     txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
                     txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
+                    txt += `--- Level ${options.name} ---\n`
                     txt += `You will play between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
-                    txt += `Your goal is to beat the HODLer!\n`
-                    txt += `Good luck!\n\n`
+                    txt += `Your goal is to beat\n`
+                    txt += `the HODLer by trading.\n`
+                    txt += `Good luck with that!\n\n`
                   
                 }
                
@@ -540,11 +542,11 @@ async function initGame() {
                 txt += `Today  ${currentDate.toLocaleDateString()}\n`
                 txt += `Hodler ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
                 txt += `You     ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
-                    if (yourCoinName !== fiatName) {
-                        txt += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
-                    } else {
-                        txt += '\n= '+ formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')+""
-                    }
+                /*if (yourCoinName !== fiatName) {
+                    txt += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
+                } else {
+                    txt += '\n= '+ formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')+""
+                }*/
                     
             }
 
