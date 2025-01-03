@@ -206,8 +206,12 @@ async function initGame() {
     let isStopScreen = false
     let canStopManually = false
     let currentDate = null
+    let stops = []
+    let stopIndizes = []
     const startNewGame = (level) => {
         options = level
+        stops = [...options.stops]
+        stopIndizes = [...options.stopIndizes]
         maxVisiblePoints =  Math.max(7,  Math.floor((options.stopIndizes[1] - options.stopIndizes[0])*1.1))
         fiatName = Object.keys(coins)[0]
         yourFiat = options.fiatStart
@@ -350,7 +354,7 @@ async function initGame() {
             menuPointerMoveEvent(menu, event)
         } else {
             let trade = trades.find(t => t.index === currentIndexInteger)
-            let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+            let stopIndex = stopIndizes.indexOf(currentIndexInteger)
         
             if (stopIndex > -1 && !isFinalScreen && !trade) {
                 let i = getCoinButtonIndex(event)
@@ -385,7 +389,7 @@ async function initGame() {
                 
 
                 let trade = trades.find(t => t.index === currentIndexInteger)
-                let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+                let stopIndex = stopIndizes.indexOf(currentIndexInteger)
                 if (stopIndex > -1 && !isFinalScreen  && !trade) {
                     let i = getCoinButtonIndex(event)
                     if (i >= 0 && i < coinButtons.length) {
@@ -396,10 +400,10 @@ async function initGame() {
                         }
                     }
                 } else if (stopIndex === -1  && !trade && canStopManually) {
-                    options.stopIndizes.push(currentIndexInteger)
-                    options.stopIndizes.sort()
-                    options.stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
-                    options.stops.sort()
+                    stopIndizes.push(currentIndexInteger)
+                    stopIndizes.sort()
+                    stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
+                    stops.sort()
                 }
             }
 
@@ -425,8 +429,8 @@ async function initGame() {
             if (options.name !== 'menu') {
                 startNewGame(gameData.levels.find(level => level.name === 'menu'))
             }
-            if (trades.length < options.stops.length) {
-                options.stopIndizes.forEach((stopIndex) => {
+            if (trades.length < stops.length) {
+                stopIndizes.forEach((stopIndex) => {
                     trades.push({
                         index: stopIndex, 
                         fromPrice: 1,
@@ -460,19 +464,19 @@ async function initGame() {
             currentIndexFloat = options.indexEnd
         }
         currentIndexInteger = Math.floor(currentIndexFloat)
-        let missedStopIndex = options.stopIndizes.findIndex(stop => stop < currentIndexInteger && !trades.find(t => t.index === stop))
+        let missedStopIndex = stopIndizes.findIndex(stop => stop < currentIndexInteger && !trades.find(t => t.index === stop))
         if (missedStopIndex > -1) {
-            currentIndexFloat = options.stopIndizes[missedStopIndex]
+            currentIndexFloat = stopIndizes[missedStopIndex]
             currentIndexInteger = Math.floor(currentIndexFloat)
         }
-        let stopIndex = options.stopIndizes.indexOf(currentIndexInteger)
+        let stopIndex = stopIndizes.indexOf(currentIndexInteger)
         let trade = trades.find(t => t.index === currentIndexInteger)
 
         maxVisiblePoints = 100
         currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
         isFinalScreen = currentDate >= options.dateEnd
-        isStopScreen = isFinalScreen || (options.stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
+        isStopScreen = isFinalScreen || (stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
 
         if (isMenuVisible()) {
@@ -489,11 +493,11 @@ async function initGame() {
             if (!trade) {
                 paused = Number.MAX_VALUE
             } else {
-              /*  if (stopIndex < options.stopIndizes.length-1) {
-                    maxVisiblePoints = Math.max(7, Math.floor((options.stopIndizes[stopIndex+1] - options.stopIndizes[stopIndex])*1.1))
+              /*  if (stopIndex < stopIndizes.length-1) {
+                    maxVisiblePoints = Math.max(7, Math.floor((stopIndizes[stopIndex+1] - stopIndizes[stopIndex])*1.1))
                 } else {
-                    maxVisiblePoints = options.stopIndizes[options.stopIndizes.length-1] - options.stopIndizes[0]
-                    trades.filter(t => t.index !== options.stopIndizes[0] && (t.index === options.stopIndizes[options.stopIndizes.length-1] || t.toName === t.fromName)).forEach(trade => {
+                    maxVisiblePoints = stopIndizes[stopIndizes.length-1] - stopIndizes[0]
+                    trades.filter(t => t.index !== stopIndizes[0] && (t.index === stopIndizes[stopIndizes.length-1] || t.toName === t.fromName)).forEach(trade => {
                         trade.container.visible = false
                     })
                 }*/
@@ -507,7 +511,7 @@ async function initGame() {
 
 
         graphs.forEach(g => {
-            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, options.stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible())
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible())
         })
         
         let txt = ''
@@ -520,9 +524,9 @@ async function initGame() {
             if (stopIndex === 0) {
                 
                 if (!canStopManually) {
-                    txt += `You will trade ${options.stopIndizes.length-1} ${options.stopIndizes.length-1 > 1 ? 'times' : 'time'} between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
+                    txt += `You will trade ${stopIndizes.length-1} ${stopIndizes.length-1 > 1 ? 'times' : 'time'} between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
                     
-                    txt += `The trading ${options.stopIndizes.length-1 > 1 ? 'dates are' : 'date is'} fixed.\n\n`
+                    txt += `The trading ${stopIndizes.length-1 > 1 ? 'dates are' : 'date is'} fixed.\n\n`
                     txt += `Read the graph,\n`
                     txt += `Choose wisely and\n`
                     txt += `Beat the HODler`
@@ -607,12 +611,12 @@ async function initGame() {
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
         backgroundImage.scale = 2.0 + Math.sin(deltaTime.lastTime*0.0001)
         
-        //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${options.stops.length-1}` : 'What do you want ?' 
+        //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${stops.length-1}` : 'What do you want ?' 
         
         if (canStopManually) {
             coinButtonContainerTitle.text = `What do you want ?` 
         } else {
-            coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${options.stops.length-1}\nWhat do you want ?` 
+            coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${stops.length-1}\nWhat do you want ?` 
         }
        
         coinButtons.forEach(b => {
@@ -629,7 +633,7 @@ async function initGame() {
                 if (canStopManually) {
                     coinButtonContainerTitle.text = `Please confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
                 } else {
-                    coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${options.stops.length-1}\nPlease confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
+                    coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${stops.length-1}\nPlease confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
                 }
             }
             
