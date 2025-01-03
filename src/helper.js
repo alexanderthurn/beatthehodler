@@ -401,6 +401,7 @@ function parseGameData(jsonString, coins) {
        
         let dataCoinNames = level.coinNames.filter(name => coins[name].data);
         let pricesData = coins[dataCoinNames[0]].data
+        level.canStopManually = level.canStopManually || true
         level.fiatStart = level.fiatStart || 1000
         level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].date
         level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].date
