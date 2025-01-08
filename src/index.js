@@ -123,7 +123,7 @@ async function initGame() {
 
     containerForeground.addChild(stackContainer);
 
-    const backgroundImage = new PIXI.Sprite();
+    const backgroundImage = new PIXI.Sprite({blendMode: 'screen'});
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
