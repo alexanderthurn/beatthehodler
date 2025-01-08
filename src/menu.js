@@ -78,7 +78,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         e.indexSubText.scale.set(0.25)
         e.indexBackgroundRadius = 512
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
-        e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.05})
+        e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
         
        e.index.addChild(e.indexBackground)
         e.index.addChild(e.indexText)
@@ -173,8 +173,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     
     let cw = app.screen.width * 0.9
     let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
-    let cols = cw > ch*2 ? 7 : 3 
-    let rows = cw > ch*2 ? 3 : 7
+    let cols = cw > ch*2 ? 4 : 3 
+    let rows = cw > ch*2 ? 3 : 4
     let colw = cw / cols
     let colh = ch / rows
     colh = Math.min(colw, colh)

@@ -13,7 +13,7 @@ function playBuySound(key) {
         coins[key].audio.play()
     }
 }
-
+const SCALE_TEXT_BASE = 1.0/16.0*1.5
 
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
@@ -84,16 +84,12 @@ async function initGame() {
     const textStyle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 64,
-        fill: '#fff',
-        stroke: { color: '#000', width: 0, join: 'round' },
-        wordWrap: false,
-        wordWrapWidth: 440,
+        fontSize: 256,
+        fill: '#fff'
     });
 
     const textStyleCentered = textStyle.clone()
     textStyleCentered.align = 'center'
-    textStyleCentered.wordWrap = true
     const dateLabel = new PIXI.Text("", textStyle);
     dateLabel.anchor.set(0.0,0.0)
     containerForeground.addChild(dateLabel);
@@ -582,15 +578,15 @@ async function initGame() {
             }
           
         }
-        let scaleToFullHD = app.screen.width/1920
+        
+
         dateLabel.text = txt
         dateLabel.visible = true
         dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.01)
-        dateLabel.scale.set(0.5*scaleToFullHD)
-        stackLabel.scale.set(0.5*scaleToFullHD)
-        coinButtonContainerTitle.scale.set(0.5*scaleToFullHD)
-        //textStyleCentered.fontSize =  textStyle.fontSize = Math.max(18, (Math.max(app.renderer.height, app.renderer.width) / 1080)*18)
-        //textStyleCentered.stroke.width = textStyle.stroke.width = textStyle.fontSize*0.1
+        dateLabel.scale.set(SCALE_TEXT_BASE)
+        stackLabel.scale.set(SCALE_TEXT_BASE)
+        coinButtonContainerTitle.scale.set(SCALE_TEXT_BASE * (Math.max(640, app.screen.width)/640))
+
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
         if (isMenuVisible()) {
             color = hexToRGB(coins['BTC'].color, 1.0)
