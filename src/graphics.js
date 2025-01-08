@@ -52,9 +52,56 @@ function createStockLines(dataPoints, lineWidth, coin) {
         
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
-        const color = currentY < prevY 
-            ? hexToRGB(coin.color, 1.0).map((e,i) => e) // Rot (RGBA: 1, 0, 0, 1)
-            : hexToRGB(coin.color, 1.0); // Grün (RGBA: 0, 1, 0, 1)
+        const color = hexToRGB('#ffffff', 1.0)
+        for (let j = 0; j < 4; j++) {
+            colors.push(...color);
+        }
+    }
+
+    return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
+
+}
+
+
+function createStockBottomLines(dataPoints, lineWidth, coin) {
+    const vertices = []
+    const indices = []
+    const colors = []
+    const pointIndices = []
+
+    for (let i = 1; i < dataPoints.length; i++) {
+        const prevY = dataPoints[i - 1].price || 0;
+        const currentY = dataPoints[i].price || 0;
+        const x = (i - 1) * lineWidth;
+        const prevX = (i - 2) * lineWidth;
+        const halfWidth = lineWidth * 0.5
+
+        // Punkte für Triangle Strip: P1, P2, P3, P4
+        vertices.push(
+            prevX+halfWidth, prevY,                  // P1: Unten links
+            x+halfWidth, currentY,               // P2: Oben links
+            prevX+halfWidth, 0,      // P3: Unten rechts
+            x+halfWidth, 0    // P4: Oben rechts
+        );
+        for (let h = 0; h < 4; h++) {
+            pointIndices.push(i-1)
+        }
+
+
+       
+
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+1); 
+        indices.push(4*(i - 1)+0); 
+        indices.push(4*(i - 1)+1); 
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+3); 
+        
+       
+        
+
+        // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
+        const color = hexToRGB('#565656', 1.0)
 
         for (let j = 0; j < 4; j++) {
             colors.push(...color);
@@ -166,6 +213,13 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.curve = graph.meshLines
         graph.meshRects.visible = false
         graph.curve.visible = true
+        graph.meshLinesBottom.visible =true
+        graph.meshLinesBottom.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
+        graph.meshLinesBottom.scale.set(stepX, scaleY);
+        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
+        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
+        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uAlpha = 0.5
+
     }
   
     graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
@@ -184,7 +238,6 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
 
     graph.priceLabel.text = formatCurrency(price, fiatName,null, true)
-       
     graph.maxPriceLabel.x  = graph.minPriceLabel.x  = graph.priceLabel.x = app.screen.width + diffCurrentIndexIntToFloat*stepX;
     graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*gscalebg-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale);
     graph.minPriceLabel.y = app.renderer.height*gscalebg;
@@ -256,6 +309,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
 
     let rects = createStockRectangles(parsedData,1)
     let lines = createStockLines(parsedData,1, coins[coinName])
+    let linesBottom = createStockBottomLines(parsedData, 1, coins[coinName])
 
     const geometryRects = new PIXI.Geometry({
         attributes: {
@@ -275,6 +329,15 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         indexBuffer: lines.indices
     });
 
+    
+    const geometryLinesBottom = new PIXI.Geometry({
+        attributes: {
+            aPosition: linesBottom.vertices,
+            aColor: linesBottom.colors,
+            aIndex: linesBottom.pointIndices
+        },
+        indexBuffer: linesBottom.indices
+    });
 
     const shader = new PIXI.Shader({
         glProgram: new PIXI.GlProgram({ 
@@ -303,6 +366,11 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         shader
     });
 
+    const graphLinesBottomMesh = new PIXI.Mesh({
+        geometry: geometryLinesBottom,
+        shader
+    });
+
 
     const logo = new PIXI.Container()
     const logoSprite = new PIXI.Sprite(coins[coinName].texture);
@@ -312,19 +380,17 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
 
     graphRectsMesh.state.culling = true;
     graphLinesMesh.state.culling = true;
+    graphLinesBottomMesh.state.culling = true;
    
-    const state = new PIXI.State();
-    state.blend = true;
-    state.blendMode = 'subtract'; // This does not work
-
-    graphLinesMesh.state = state;
-
     graph.addChild(graphRectsMesh)
     graph.addChild(graphLinesMesh)
+    graph.addChild(graphLinesBottomMesh)
+
     graph.addChild(logo);
     graph.curve = graphLinesMesh
     graph.meshRects = graphRectsMesh
     graph.meshLines = graphLinesMesh
+    graph.meshLinesBottom = graphLinesBottomMesh
     graph.logo = logo
     graph.logoSprite = logoSprite
 

@@ -9,8 +9,8 @@ void main() {
     //float xFactor = vPosition.x;
 
     //vec4 baseColor = mix(vColor, bottomColor, xFactor);
-    gl_FragColor = bottomColor;
+   // gl_FragColor = bottomColor;
 
 
-     //gl_FragColor = vColor;
+     gl_FragColor = vColor;
 }
