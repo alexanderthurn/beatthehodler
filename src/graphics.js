@@ -217,7 +217,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.meshLinesBottom.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
         graph.meshLinesBottom.scale.set(stepX, scaleY);
         graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
-        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
+        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
         graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uAlpha = 0.5
 
     }
@@ -225,7 +225,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
     graph.curve.scale.set(stepX, scaleY);
     graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
-    graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = maxVisiblePoints
+    graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
     graph.logo.x = (1.0-diffCurrentIndexIntToFloat)*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX) + (diffCurrentIndexIntToFloat)*(((currentIndexInteger+1) - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
     graph.logo.y = (1.0-diffCurrentIndexIntToFloat)*(app.renderer.height*gscalebg-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale) + (diffCurrentIndexIntToFloat)*(app.renderer.height*gscalebg-(pricePriorIndex-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale);
     if (price <= 0) {

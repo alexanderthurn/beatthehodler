@@ -680,12 +680,11 @@ async function initGame() {
         btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
        
         if (isMenuVisible()){
-            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height*0.5)
+            containerGraphs.position.set(150-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
             containerGraphs.border.visible = false
-            if (menu.state === MENU_STATE_INTRO) {
-                backgroundImage.scale.set(0.2)
-                backgroundImage.alpha = 1;
-            }
+            backgroundImage.scale.set(0.2)
+            backgroundImage.alpha = 1;
+            
             
         
         } else {
