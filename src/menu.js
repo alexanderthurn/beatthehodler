@@ -1,7 +1,15 @@
+const MENU_STATE_INTRO = 1
+const MENU_STATE_LEVELS = 2
+const MENU_STATE_HELP = 3
+
+
+
+
 async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
 
     let menu = new PIXI.Container()
+    menu.state = MENU_STATE_LEVELS
     menu.gameData = gameData
     menu.coins = coins
     menu.textStyleTitle = new PIXI.TextStyle({
@@ -158,58 +166,56 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
 
     //menu.textStyleTitle.fontSize = 128*Math.min(1.0, app.screen.width/1920)
     let scaleToFullHD = app.screen.width/1920
-    menu.title.scale.set(scaleToFullHD*0.5)
-    menu.subtitle.scale.set(scaleToFullHD*0.25)
-    menu.finaltitle.scale.set(scaleToFullHD*0.25)
-    menu.title.position.set(app.screen.width*0.5, app.screen.height*0.0)
-    menu.subtitle.rotation = menu.title.rotation = Math.sin(deltaTime.lastTime*0.001)*0.01
-    menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.0)
-    menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
-    
-    
-    let cw = app.screen.width * 0.9
-    let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
-    let cols = cw > ch*2 ? 4 : 3 
-    let rows = cw > ch*2 ? 3 : 4
-    let colw = cw / cols
-    let colh = ch / rows
-    colh = Math.min(colw, colh)
-    ch = colh * rows
-    menu.levelGroupsContainer.position.set(0.5*(app.screen.width - cw), 20+menu.subtitle.position.y - menu.subtitle.height*menu.subtitle.anchor.y + menu.subtitle.height + (app.screen.height*0.9 - menu.levelGroupsContainer.position.y -ch)*0.5)
-    
-    menu.levelGroups.forEach((group,index) => {
-       // group.position.set(0, 0)
-      //  group.title.position.set(0,0)
+
+    if (menu.state === MENU_STATE_LEVELS) {
+        menu.title.scale.set(scaleToFullHD*0.5)
+        menu.subtitle.scale.set(scaleToFullHD*0.25)
+        menu.finaltitle.scale.set(scaleToFullHD*0.25)
+        menu.title.position.set(app.screen.width*0.5, app.screen.height*0.0)
+        menu.subtitle.rotation = menu.title.rotation = Math.sin(deltaTime.lastTime*0.001)*0.01
+        menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.0)
+        menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
+
+        let cw = app.screen.width * 0.9
+        let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
+        let cols = cw > ch*2 ? 4 : 3 
+        let rows = cw > ch*2 ? 3 : 4
+        let colw = cw / cols
+        let colh = ch / rows
+        colh = Math.min(colw, colh)
+        ch = colh * rows
+        menu.levelGroupsContainer.position.set(0.5*(app.screen.width - cw), 20+menu.subtitle.position.y - menu.subtitle.height*menu.subtitle.anchor.y + menu.subtitle.height + (app.screen.height*0.9 - menu.levelGroupsContainer.position.y -ch)*0.5)
         
-        //y+= group.title.height*2
-       // x = app.screen.width*0.1
-
-        group.levelEntries.forEach((entry,index2) => {
-
-            
-            entry.indexText.scale.set(0.25* (Math.max(640, app.screen.width)/640))
-            entry.indexSubText.scale.set(0.25* (Math.max(640, app.screen.width)/640)) 
-            entry.indexSubText.position.set(0,  entry.indexText.height/2)
-            entry.indexText.position.set(0,  -entry.indexText.height/2)
-
-            entry.isCompleted = getWin(entry.level.name)
-            entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
-            entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
-
-            entry.indexBackground.scale = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * Math.min(colw / (entry.indexBackgroundRadius*2), colh / (entry.indexBackgroundRadius))
-            //entry.index.rotation = 0
-            entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
-
-            if (entry.isCompleted) {
-              //  entry.index.rotation = 0
-              //  entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 1.0 : 1.0 
-          
-            } else if (entry.isCompletedLevelBefore){
-               // entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 1000 > 500 ? 1.0 : 0.5 
-                //entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.01
-            }
+        menu.levelGroups.forEach((group,index) => {
+            group.levelEntries.forEach((entry,index2) => {
+                entry.indexText.scale.set(0.25* (Math.max(640, app.screen.width)/640))
+                entry.indexSubText.scale.set(0.25* (Math.max(640, app.screen.width)/640)) 
+                entry.indexSubText.position.set(0,  entry.indexText.height/2)
+                entry.indexText.position.set(0,  -entry.indexText.height/2)
     
+                entry.isCompleted = getWin(entry.level.name)
+                entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
+                entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
+    
+                entry.indexBackground.scale = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * Math.min(colw / (entry.indexBackgroundRadius*2), colh / (entry.indexBackgroundRadius))
+                //entry.index.rotation = 0
+                entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
+    
+                if (entry.isCompleted) {
+                  //  entry.index.rotation = 0
+                  //  entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 1.0 : 1.0 
+              
+                } else if (entry.isCompletedLevelBefore){
+                   // entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 1000 > 500 ? 1.0 : 0.5 
+                    //entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.01
+                }
+            })
         })
-    })
+
+    }
+   
+    
+    
+    
 
 }
