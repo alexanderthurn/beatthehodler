@@ -14,7 +14,10 @@ function playBuySound(key) {
     }
 }
 const SCALE_TEXT_BASE = 1.0/16.0*1.5
-
+const gscale = 0.5 // how much screen height does the graph take
+const gscalet = 0.2 // how much screen height space on top
+const gscaleb = 1.0 - gscale - gscalet
+const gscalebg = 1.0 - gscaleb // bottom percentage where graph ends
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
@@ -250,7 +253,6 @@ async function initGame() {
         graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
             let container = new PIXI.Container()
             let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle)
-            graph.position.set(0, 0);
             container.addChild(graph)
             return {
                 coinName: c,
@@ -498,7 +500,7 @@ async function initGame() {
 
         //maxVisiblePoints = Math.max(20, trades.length > 1 ? currentIndexInteger - trades[trades.length-2].index : currentIndexInteger)
 
-        containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0)
+        containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,isMenuVisible() && menu.state === MENU_STATE_INTRO ? gscaleb*app.screen.height*0.75 : 0.0)
 
 
         graphs.forEach(g => {
@@ -636,6 +638,7 @@ async function initGame() {
             
 
             coinButtonContainerTitle.x =app.renderer.width*0.5 
+            coinButtonContainerTitle.y = app.screen.height*0.05
             coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
             let maxButtonHeight = 0
             coinButtons.forEach(b => {
@@ -659,7 +662,7 @@ async function initGame() {
             stackContainer.alpha = !isFinalScreen && trades.length > 0 && Math.min(1.0, (currentIndexInteger - maxVisiblePoints / 30.0) / 8)
 
             stackImage.height = stackImage.width = Math.max(32,app.renderer.width*0.04)
-            stackContainer.position.set(0.5*app.renderer.width, 0.8*app.renderer.height)
+            stackContainer.position.set(0.5*app.renderer.width, gscalebg*app.renderer.height + stackLabel.height + stackImage.height)
             stackLabel.position.set(0, stackImage.height)
             stackLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
             stackContainer.scale=(stackContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01
