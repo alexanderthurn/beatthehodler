@@ -188,7 +188,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
         menu.clickTitle.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
 
         menu.title.scale.set(Math.min(0.5,scaleToFullHD)*0.5)
-        menu.subtitle.scale.set(Math.min(0.25,scaleToFullHD)*0.3)
+        menu.subtitle.scale.set(Math.min(0.25,scaleToFullHD)*0.25)
         menu.title.position.set(app.screen.width*0.5, app.screen.height*0.1)
         menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.15)
        // menu.subtitle.rotation = menu.title.rotation = -10*Math.PI/360
