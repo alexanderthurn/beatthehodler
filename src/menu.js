@@ -7,9 +7,8 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.textStyleTitle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 128,
+        fontSize: 256,
         fill: '#fff',
-        stroke: { color: '#000', width: 0, join: 'round' },
         wordWrap: false,
         wordWrapWidth: 440,
     });
@@ -17,17 +16,15 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.textStylePreview = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 18,
+        fontSize: 64,
         fill: '#fff',
-        stroke: { color: '#000', width: 0, join: 'round' },
     });
 
     menu.textStylePreviewSub = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 18,
+        fontSize: 64,
         fill: '#fff',
-        stroke: { color: '#000', width: 0, join: 'round' },
     });
 
 
@@ -38,19 +35,20 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     .rect(0, 0, 1024, 1024)
     .fill({ color: 0xf4b400 });
 
-    menu.title = new PIXI.Text('Bitcoin Hodler', menu.textStyleTitle)
+    menu.title = new PIXI.Text('Beat the Hodler', menu.textStyleTitle)
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
+    menu.title.scale = 0.5
 
-    menu.subtitle = new PIXI.Text('Can you win by trading?', menu.textStyleTitle)
+    menu.subtitle = new PIXI.Text('Can you win by trading against a Bitcoin Hodler?', menu.textStyleTitle)
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
-    menu.subtitle.scale = 0.5
+    menu.subtitle.scale = 0.25
 
     menu.finaltitle = new PIXI.Text('by Alexander Thurn', menu.textStyleTitle)
     menu.finaltitle.anchor.set(0.5,1.0)
     menu.addChild(menu.finaltitle)
-    menu.finaltitle.scale = 0.50
+    menu.finaltitle.scale = 0.25
 
     menu.levelGroupsContainer = new PIXI.Container()
     menu.addChild(menu.levelGroupsContainer)
@@ -76,6 +74,8 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         e.index = new PIXI.Container()
         e.indexText = new PIXI.Text(e.level.name, menu.textStylePreview)
         e.indexSubText = new PIXI.Text('0%', menu.textStylePreviewSub)
+        e.indexText.scale.set(0.25)
+        e.indexSubText.scale.set(0.25)
         e.indexBackgroundRadius = 512
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
         e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.05})
@@ -160,7 +160,11 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     menu.helpButtonSprite.position.set(menu.helpButtonSprite.width * 0.2, app.screen.height -menu.helpButtonSprite.height * 1.2 )
    
 
-    menu.textStyleTitle.fontSize = 128*Math.min(1.0, app.screen.width/1920)
+    //menu.textStyleTitle.fontSize = 128*Math.min(1.0, app.screen.width/1920)
+    let scaleToFullHD = app.screen.width/1920
+    menu.title.scale.set(scaleToFullHD*0.5)
+    menu.subtitle.scale.set(scaleToFullHD*0.25)
+    menu.finaltitle.scale.set(scaleToFullHD*0.25)
     menu.title.position.set(app.screen.width*0.5, app.screen.height*0.0)
     menu.subtitle.rotation = menu.title.rotation = Math.sin(deltaTime.lastTime*0.001)*0.01
     menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.0)
