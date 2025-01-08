@@ -217,6 +217,11 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.priceLabel.x = Math.min(app.renderer.width-graph.priceLabel.width*(1-graph.priceLabel.anchor.x), Math.max(graph.priceLabel.x, -graph.priceLabel.width*(graph.priceLabel.anchor.x)))
         
     }
+
+
+    let scaleToFullHD = app.screen.width/1920
+    //ALEX    graph.priceLabel.scale.set(0.2*scaleToFullHD)
+    
     //graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
  
     trades.filter(trade => (trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
