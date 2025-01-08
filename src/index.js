@@ -529,7 +529,7 @@ async function initGame() {
                     txt += `You will play between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
                     txt += `the HODLer by trading.\n`
-                    txt += `Every percentage counts!\n\n`
+                    txt += `Every percent counts!\n\n`
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n...`
                 }
                
@@ -585,8 +585,10 @@ async function initGame() {
 
         dateLabel.text = txt
         dateLabel.visible = true
-        dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.01)
-        dateLabel.scale.set(SCALE_TEXT_BASE)
+        dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.005)
+
+
+        dateLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
         stackLabel.scale.set(SCALE_TEXT_BASE)
         coinButtonContainerTitle.scale.set(SCALE_TEXT_BASE * (Math.max(640, app.screen.width)/640))
 
@@ -666,9 +668,9 @@ async function initGame() {
         }
 
 
-        btnMenuSprite.scale = 0.15
+        btnMenuSprite.scale = 0.3*(Math.max(640,app.screen.width)/640.0)*0.5
         btnMenuSprite.alpha = (btnMenuSprite.active ? 1.0 : 0.7)
-        btnMenuSprite.position.set(app.screen.width*0.99, app.screen.height*0.01 )
+        btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
        
     });
 }
