@@ -228,7 +228,7 @@ async function initGame() {
         graphs.forEach(g => {
             containerGraphs.removeChild(g.graph); 
         })
-        containerGraphs.removeChild(containerGraphs.border)
+        containerForeground.removeChild(containerGraphs.border)
 
         trades.forEach(trade => {
             containerGraphs.removeChild(trade.container); 
@@ -269,7 +269,6 @@ async function initGame() {
         containerGraphs.border.cheight = 0
         containerGraphs.border.cwidth = 0
 
-        containerGraphs.addChild(containerGraphs.border)
         graphs.forEach(g => {
             containerGraphs.addChild(g.graph); 
         })
@@ -420,6 +419,8 @@ async function initGame() {
 
     
     containerBackground.addChildAt(containerGraphs,2)
+    containerForeground.addChild(containerGraphs.border)
+
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
@@ -475,7 +476,7 @@ async function initGame() {
 
         maxVisiblePoints = 100
         currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
-        const stepX = (app.renderer.width-100) / (maxVisiblePoints-1);
+        const stepX = (app.renderer.width) / (maxVisiblePoints-2);
         isFinalScreen = currentDate >= options.dateEnd
         isStopScreen = isFinalScreen || (stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
@@ -510,11 +511,12 @@ async function initGame() {
 
 
 
-        if (containerGraphs.border.cheight !== app.screen.height*gscale || containerGraphs.border.cwidth !== app.screen.width+100) {
+        if (containerGraphs.border.cheight !== app.screen.height*gscale || containerGraphs.border.cwidth !== app.screen.width-150) {
             containerGraphs.border.cheight = app.screen.height*gscale
-            containerGraphs.border.cwidth = app.screen.width+100
+            containerGraphs.border.cwidth = app.screen.width-150
             containerGraphs.border.clear()
-            containerGraphs.border.rect(-50, app.screen.height*gscalet, containerGraphs.border.cwidth, containerGraphs.border.cheight).stroke({color: 0xffffff, width:2})
+           // containerGraphs.border.rect(0, app.screen.height*gscalet, containerGraphs.border.cwidth, containerGraphs.border.cheight).stroke({color: 0xffffff, width:2})
+            containerGraphs.border.rect(0, 0, containerGraphs.border.cwidth, containerGraphs.border.cheight).fill({color: 0xff0000}).stroke({color: 0xffffff, width:2})
 
         }
 
@@ -680,7 +682,8 @@ async function initGame() {
         backgroundImage.alpha = 0.1;
 
         if (isMenuVisible()){
-            containerGraphs.position.set(150-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
+           // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
+           containerGraphs.position.set(stepX-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
             containerGraphs.border.visible = false
             backgroundImage.scale.set(0.2)
             backgroundImage.alpha = 1;
@@ -688,11 +691,21 @@ async function initGame() {
             backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
        
         } else {
-            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
+           /* containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
             containerGraphs.border.visible = true
             backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
             backgroundImage.x = app.renderer.width*0.5 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
             backgroundImage.y = app.renderer.height*0.5 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+            */
+
+            containerGraphs.position.set(stepX-diffCurrentIndexIntToFloat*stepX,0.0)
+            containerGraphs.border.visible = true
+            containerGraphs.border.position.set(0,0) 
+            backgroundImage.scale.set(0.2)
+            backgroundImage.alpha = 1;
+            backgroundImage.x = app.renderer.width*0.7 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
+            backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+
         }       
 
     });
