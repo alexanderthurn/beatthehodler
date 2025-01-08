@@ -93,9 +93,12 @@ async function initGame() {
 
     const textStyleCentered = textStyle.clone()
     textStyleCentered.align = 'center'
+
+    const bigtextLabel = new PIXI.Text('', textStyleCentered)
+    bigtextLabel.anchor.set(0.5,0.5)
     const dateLabel = new PIXI.Text("", textStyle);
-    dateLabel.anchor.set(0.0,0.0)
     containerForeground.addChild(dateLabel);
+    containerForeground.addChild(bigtextLabel);
 
     await Promise.all(Object.keys(coins).map(async (key) => {
         coins[key].texture = await PIXI.Assets.load({
@@ -124,7 +127,6 @@ async function initGame() {
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
-    backgroundImage.alpha = 0.1;
     const coinButtonContainer = new PIXI.Container()
     let coinButtonContainerTitle = new PIXI.Text('', textStyleCentered)
     coinButtonContainerTitle.anchor.set(0.5,0.)
@@ -506,13 +508,7 @@ async function initGame() {
 
         //maxVisiblePoints = Math.max(20, trades.length > 1 ? currentIndexInteger - trades[trades.length-2].index : currentIndexInteger)
 
-        if (isMenuVisible()){
-            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height*0.5)
-            containerGraphs.border.visible = false
-        } else {
-            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
-            containerGraphs.border.visible = true
-        }       
+
 
         if (containerGraphs.border.cheight !== app.screen.height*gscale || containerGraphs.border.cwidth !== app.screen.width+100) {
             containerGraphs.border.cheight = app.screen.height*gscale
@@ -528,45 +524,34 @@ async function initGame() {
         
         let txt = ''
 
-        if (!isFinalScreen) {
-            
-            
-           
-        
+        txt += `Today   ${currentDate.toLocaleDateString()}\n`
+        txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
+        txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
+      
+        dateLabel.text = txt
+        dateLabel.visible = true
+        dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.005)
+        dateLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
+
+        txt = ''
+        if (!isFinalScreen) { 
             if (stopIndex === 0) {
-                
                 if (!canStopManually) {
                     txt += `You will trade ${stopIndizes.length-1} ${stopIndizes.length-1 > 1 ? 'times' : 'time'} between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
-                    
                     txt += `The trading ${stopIndizes.length-1 > 1 ? 'dates are' : 'date is'} fixed.\n\n`
                     txt += `Read the graph,\n`
                     txt += `Choose wisely and\n`
                     txt += `Beat the HODler`
                 } else {
-                    txt += `Today   ${currentDate.toLocaleDateString()}\n`
-                    txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
-                    txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
-                    txt += `--- Level ${options.name} ---\n`
-                    txt += `You will play between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
+                    txt += `--- Level ${options.name} ---\n\n\n`
+                    txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
-                    txt += `the HODLer by trading.\n`
+                    txt += `a HODLer by trading.\n`
                     txt += `Every percent counts!\n\n`
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n...`
                 }
                
-            }  else {
-                txt += `Today  ${currentDate.toLocaleDateString()}\n`
-                txt += `Hodler ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
-                txt += `You     ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
-                /*if (yourCoinName !== fiatName) {
-                    txt += '\n= '+ formatCurrency(yourCoins*coins[yourCoinName].data[currentIndexInteger].price, fiatName,null, true)+""
-                } else {
-                    txt += '\n= '+ formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')+""
-                }*/
-                    
-            }
-
-
+            } 
         } else {
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
@@ -581,16 +566,7 @@ async function initGame() {
                 txt += "Oh no, you lost\n\n" 
             }
 
-           // txt += `Today is ${options.dateEnd.toLocaleDateString()}\n\n`
-            txt += `Hodler ${formatCurrency(options.btcBTCHodler, 'BTC')} `
-            txt += '= '+ formatCurrency(options.fiatBTCHodler, fiatName, options.fiatBTCHodler >= 1000 ? 0 : 2) +"\n"
-            txt += `You     ${formatCurrency(fiat / coins['BTC'].data[currentIndexInteger].price, 'BTC')} `
-            txt += '= '+ formatCurrency(fiat, fiatName, fiat >= 1000 ? 0 : 2) +"\n\n"
-            
-            
 
-           
-           
             if (fiat > options.fiatBTCHodler) {
                 txt += `You have ${res.toFixed(2)}% more\n`
                 txt += `This is a new highscore!\n\n`
@@ -604,14 +580,13 @@ async function initGame() {
         }
         
 
-        dateLabel.text = txt
-        dateLabel.visible = true
-        dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.005)
+        bigtextLabel.text = txt
+        bigtextLabel.visible = true
+        bigtextLabel.position.set(app.screen.width*0.5, app.screen.height*0.4)
+        bigtextLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
 
-
-        dateLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
         stackLabel.scale.set(SCALE_TEXT_BASE)
-        coinButtonContainerTitle.scale.set(SCALE_TEXT_BASE * (Math.max(640, app.screen.width)/640))
+        coinButtonContainerTitle.scale.set(SCALE_TEXT_BASE * (Math.min(640,Math.max(640, app.screen.width))/640))
 
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
         if (isMenuVisible()) {
@@ -628,6 +603,7 @@ async function initGame() {
         backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
         backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
         backgroundImage.scale = 2.0 + Math.sin(deltaTime.lastTime*0.0001)
+        backgroundImage.alpha = 0.1;
         
         //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${stops.length-1}` : 'What do you want ?' 
         
@@ -690,10 +666,33 @@ async function initGame() {
         }
 
 
+        if (isStopScreen && (stopIndex === 0 || isFinalScreen)) {
+            containerGraphs.visible = false
+           // dateLabel.fontStyle = textStyleCentered
+            //dateLabel.position.set(0.5*app.screen.width, 0.5*app.screen.height)
+            //dateLabel.anchor.set(0.5,0.5)
+        } else {
+            containerGraphs.visible = true
+            //dateLabel.anchor.set(0.0,0.0)
+        }
         btnMenuSprite.scale = 0.3*(Math.max(640,app.screen.width)/640.0)*0.5
         btnMenuSprite.alpha = (btnMenuSprite.active ? 1.0 : 0.7)
         btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
        
+        if (isMenuVisible()){
+            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height*0.5)
+            containerGraphs.border.visible = false
+            if (menu.state === MENU_STATE_INTRO) {
+                backgroundImage.scale.set(0.2)
+                backgroundImage.alpha = 1;
+            }
+            
+        
+        } else {
+            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
+            containerGraphs.border.visible = true
+        }       
+
     });
 }
 
