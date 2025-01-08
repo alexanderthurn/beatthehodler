@@ -46,17 +46,18 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.title = new PIXI.Text('Beat the Hodler', menu.textStyleTitle)
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
-    menu.title.scale = 0.5
 
     menu.subtitle = new PIXI.Text('Can you win by trading against a Bitcoin Hodler?', menu.textStyleTitle)
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
-    menu.subtitle.scale = 0.25
 
     menu.finaltitle = new PIXI.Text('by Alexander Thurn', menu.textStyleTitle)
     menu.finaltitle.anchor.set(0.5,1.0)
     menu.addChild(menu.finaltitle)
-    menu.finaltitle.scale = 0.25
+
+    menu.clickTitle =  new PIXI.Text('Click to proceed', menu.textStyleTitle) 
+    menu.clickTitle.anchor.set(0.5,0.5)
+    menu.addChild(menu.clickTitle)
 
     menu.levelGroupsContainer = new PIXI.Container()
     menu.addChild(menu.levelGroupsContainer)
@@ -179,13 +180,20 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
 
     if (menu.state === MENU_STATE_INTRO) {
         menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
+        menu.clickTitle.visible = true
+        menu.clickTitle.scale.set(scaleToFullHD*0.4)
+        menu.clickTitle.position.set(app.screen.width*0.5, 0.8*app.screen.height)
+        menu.clickTitle.alpha =  deltaTime.lastTime % 2000 > 1000 ? 1.0 : 0.0
+        menu.clickTitle.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
 
-        menu.title.position.set(app.screen.width*0.5, app.screen.height*0.35)
-        menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.35)
+        menu.title.scale.set(scaleToFullHD*0.7)
+        menu.title.position.set(app.screen.width*0.5, app.screen.height*0.2)
+        menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.25)
         menu.subtitle.rotation = menu.title.rotation = -20*Math.PI/360
 
     } else if (menu.state === MENU_STATE_LEVELS) {
-        menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
+        menu.clickTitle.visible = false
+         menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
 
        
         menu.title.position.set(0.9*menu.title.position.x+0.1*app.screen.width*0.5, 0.9*menu.title.position.y+0.1*app.screen.height*0.0)

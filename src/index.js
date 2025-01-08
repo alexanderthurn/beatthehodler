@@ -530,6 +530,7 @@ async function initGame() {
                     txt += `Your goal is to beat\n`
                     txt += `the HODLer by trading.\n`
                     txt += `Good luck with that!\n\n`
+                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n...\n...`
                   
                 }
                
