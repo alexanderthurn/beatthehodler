@@ -228,6 +228,7 @@ async function initGame() {
         graphs.forEach(g => {
             containerGraphs.removeChild(g.graph); 
         })
+        containerGraphs.removeChild(containerGraphs.border)
 
         trades.forEach(trade => {
             containerGraphs.removeChild(trade.container); 
@@ -513,7 +514,7 @@ async function initGame() {
             containerGraphs.border.cheight = app.screen.height*gscale
             containerGraphs.border.cwidth = app.screen.width+100
             containerGraphs.border.clear()
-            containerGraphs.border.rect(-50, app.screen.height*gscalet, containerGraphs.border.cwidth, containerGraphs.border.cheight).fill({ color: 0xff0000 }).stroke({color: 0xffffff, width:2})
+            containerGraphs.border.rect(-50, app.screen.height*gscalet, containerGraphs.border.cwidth, containerGraphs.border.cheight).stroke({color: 0xffffff, width:2})
 
         }
 
