@@ -74,8 +74,6 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         e.index = new PIXI.Container()
         e.indexText = new PIXI.Text(e.level.name, menu.textStylePreview)
         e.indexSubText = new PIXI.Text('0%', menu.textStylePreviewSub)
-        e.indexText.scale.set(0.25)
-        e.indexSubText.scale.set(0.25)
         e.indexBackgroundRadius = 512
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
         e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
@@ -85,8 +83,6 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         e.index.addChild(e.indexSubText)
         e.indexText.anchor.set(0.5,0.5)
         e.indexSubText.anchor.set(0.5,0.5)
-        e.indexSubText.position.set(0,  e.indexText.height/2)
-        e.indexText.position.set(0,  -e.indexText.height/2)
         e.addChild(e.index)
 
 
@@ -189,6 +185,13 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
        // x = app.screen.width*0.1
 
         group.levelEntries.forEach((entry,index2) => {
+
+            
+            entry.indexText.scale.set(0.25* (Math.max(640, app.screen.width)/640))
+            entry.indexSubText.scale.set(0.25* (Math.max(640, app.screen.width)/640)) 
+            entry.indexSubText.position.set(0,  entry.indexText.height/2)
+            entry.indexText.position.set(0,  -entry.indexText.height/2)
+
             entry.isCompleted = getWin(entry.level.name)
             entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
