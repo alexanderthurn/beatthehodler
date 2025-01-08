@@ -237,6 +237,9 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
             trade.labelPrice.position.set(0,0)
         }
 
+        trade.labelPrice.scale = SCALE_TEXT_BASE
+
+
         trade.container.visible = options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === graph.coinName
      })
 

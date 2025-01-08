@@ -9,7 +9,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
 
     let menu = new PIXI.Container()
-    menu.state = MENU_STATE_LEVELS
+    menu.state = MENU_STATE_INTRO
     menu.gameData = gameData
     menu.coins = coins
     menu.textStyleTitle = new PIXI.TextStyle({
@@ -86,7 +86,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
         e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
         
-       e.index.addChild(e.indexBackground)
+        e.index.addChild(e.indexBackground)
         e.index.addChild(e.indexText)
         e.index.addChild(e.indexSubText)
         e.indexText.anchor.set(0.5,0.5)
@@ -128,28 +128,33 @@ function menuPointerMoveEvent(menu, event) {
 }
 
 function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
-    menu.levelEntries.filter(entry => true || entry.isCompletedLevelBefore ).forEach((entry,index2) => {
-        if (entry.getBounds().containsPoint(event.x,event.y)) {
-            if (!entry.active ) {
-                entry.active = true
+    if (menu.state === MENU_STATE_INTRO) {
+        menu.state = MENU_STATE_LEVELS
+    } else {
+        menu.levelEntries.filter(entry => true || entry.isCompletedLevelBefore ).forEach((entry,index2) => {
+            if (entry.getBounds().containsPoint(event.x,event.y)) {
+                if (!entry.active ) {
+                    entry.active = true
+                } else {
+                    menu.visible = false
+                    startNewGame(entry.level) 
+                    entry.active = false
+    
+                }
             } else {
-                menu.visible = false
-                startNewGame(entry.level) 
                 entry.active = false
-
             }
-        } else {
-            entry.active = false
-        }
-    })
-
-    if (menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)) {
-        setMute(!getMute())
-    } 
-
-    if (menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)) {
-        //setMute(!getMute())
-    } 
+        })
+    
+        if (menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)) {
+            setMute(!getMute())
+        } 
+    
+        if (menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)) {
+            //setMute(!getMute())
+        } 
+    }
+    
 
 }
 
@@ -167,15 +172,26 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     //menu.textStyleTitle.fontSize = 128*Math.min(1.0, app.screen.width/1920)
     let scaleToFullHD = app.screen.width/1920
 
-    if (menu.state === MENU_STATE_LEVELS) {
-        menu.title.scale.set(scaleToFullHD*0.5)
-        menu.subtitle.scale.set(scaleToFullHD*0.25)
-        menu.finaltitle.scale.set(scaleToFullHD*0.25)
-        menu.title.position.set(app.screen.width*0.5, app.screen.height*0.0)
-        menu.subtitle.rotation = menu.title.rotation = Math.sin(deltaTime.lastTime*0.001)*0.01
-        menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.0)
-        menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
+    menu.title.scale.set(scaleToFullHD*0.5)
+    menu.subtitle.scale.set(scaleToFullHD*0.25)
+    menu.finaltitle.scale.set(scaleToFullHD*0.25)
+    menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
 
+    if (menu.state === MENU_STATE_INTRO) {
+        menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
+
+        menu.title.position.set(app.screen.width*0.5, app.screen.height*0.35)
+        menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.35)
+        menu.subtitle.rotation = menu.title.rotation = -20*Math.PI/360
+
+    } else if (menu.state === MENU_STATE_LEVELS) {
+        menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
+
+       
+        menu.title.position.set(0.9*menu.title.position.x+0.1*app.screen.width*0.5, 0.9*menu.title.position.y+0.1*app.screen.height*0.0)
+        menu.subtitle.rotation = menu.title.rotation = 0
+        menu.subtitle.position.set(0.9*menu.subtitle.position.x+0.1*app.screen.width*0.5, 0.9*menu.subtitle.position.y+0.1*app.screen.height*0.0)
+        
         let cw = app.screen.width * 0.9
         let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
         let cols = cw > ch*2 ? 4 : 3 

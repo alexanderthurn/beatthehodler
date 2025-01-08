@@ -25,7 +25,7 @@ void main() {
 
 
     float modifiedCurveStrength = uCurveStrength * (1.0 + sin(uTime * 0.005) * 0.25);
-    float xFactor = 1.0 - pow(abs(vPosition.x - 0.5) * 2.0, modifiedCurveStrength);
+    float xFactor = 0.1-distance(vPosition.x,uPercentage);
     float adjustedThreshold = uThreshold * xFactor;
     float mixFactor;
 
