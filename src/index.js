@@ -166,15 +166,15 @@ async function initGame() {
 
     setMute(getMute())
 
-    function setWin(level) {
-        if (localStorageCache['l'+level] !== true) {
-            localStorageCache['l'+level] = true
-            localStorage.setItem('l'+level, true)
+    function setWin(level, value) {
+        if (localStorageCache['l'+level] !== value) {
+            localStorageCache['l'+level] = value
+            localStorage.setItem('l'+level, value)
         }
     }
 
     function getWin(level) {
-        return localStorageCache['l'+level] ?? localStorage.getItem('l'+level)
+        return localStorageCache['l'+level] ?? getFloatFromLocalStorage('l'+level)
     }
 
     let options
@@ -529,9 +529,8 @@ async function initGame() {
                     txt += `You will play between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
                     txt += `the HODLer by trading.\n`
-                    txt += `Good luck with that!\n\n`
-                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n...\n...`
-                  
+                    txt += `Every percentage counts!\n\n`
+                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n...`
                 }
                
             }  else {
@@ -549,11 +548,14 @@ async function initGame() {
 
         } else {
             let fiat = yourFiat 
-            
+            let res = (100*(fiat / options.fiatBTCHodler - 1))
             txt += " --- Game Over ---\n\n" 
             if (fiat > options.fiatBTCHodler) {
                 txt += "You won, nice!\n\n" 
-                setWin(options.name)
+               
+                if (res > getWin(options.name)) {
+                    setWin(options.name, res)
+                }
             } else {
                 txt += "Oh no, you lost\n\n" 
             }
@@ -569,11 +571,11 @@ async function initGame() {
            
            
             if (fiat > options.fiatBTCHodler) {
-                txt += `You have ${(100*(fiat / options.fiatBTCHodler - 1)).toFixed(2)}% more\n`
+                txt += `You have ${res.toFixed(2)}% more\n`
                 txt += `This is a new highscore!\n\n`
                 txt += `Try the next level?!\n`
             } else {
-                txt += `You have ${(100*(1-fiat / options.fiatBTCHodler )).toFixed(2)}% less\n`
+                txt += `You have ${res.toFixed(2)}% less\n`
                 txt += "You have to make more than him\n\n" 
                 txt += "Try again?"
             }

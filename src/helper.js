@@ -9,6 +9,22 @@ function getBooleanFromLocalStorage(key) {
 }
 
 
+function getFloatFromLocalStorage(key) {
+    const value = localStorage.getItem(key);
+    
+    if (value === null) return 0.0; // Kein Wert vorhanden
+    if (value === "true") return 0.0;
+    if (value === "false") return 0.0;
+    
+    try {
+        return Number.parseFloat(value)
+    } catch(ex) {
+        return 0.0
+    }
+    
+}
+
+
 function hexToRGB(hex, a) {
     // Entfernt das # falls vorhanden
     hex = hex.replace(/^#/, '');

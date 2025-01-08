@@ -83,6 +83,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         e.index = new PIXI.Container()
         e.indexText = new PIXI.Text(e.level.name, menu.textStylePreview)
         e.indexSubText = new PIXI.Text('0%', menu.textStylePreviewSub)
+        e.indexSubText.value = 0.0
         e.indexBackgroundRadius = 512
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
         e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
@@ -213,11 +214,11 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
         menu.levelGroups.forEach((group,index) => {
             group.levelEntries.forEach((entry,index2) => {
                 entry.indexText.scale.set(0.25* (Math.max(640, app.screen.width)/640))
-                entry.indexSubText.scale.set(0.25* (Math.max(640, app.screen.width)/640)) 
+                entry.indexSubText.scale.set(0.2* (Math.max(640, app.screen.width)/640)) 
                 entry.indexSubText.position.set(0,  entry.indexText.height/2)
                 entry.indexText.position.set(0,  -entry.indexText.height/2)
-    
-                entry.isCompleted = getWin(entry.level.name)
+                let score = getWin(entry.level.name)
+                entry.isCompleted = score > 0
                 entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
                 entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
     
@@ -225,6 +226,15 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
                 //entry.index.rotation = 0
                 entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
     
+                if (entry.indexSubText.value !== score)  {
+                    entry.indexSubText.value = score
+                    if (score === true || score === null) {
+                        entry.indexSubText.text = ''
+                    } else {
+                        entry.indexSubText.text =  score > 0 ? '+' + (500*score).toFixed(2) + '%' : score.toFixed(2) + '%'
+                    }
+                }
+
                 if (entry.isCompleted) {
                   //  entry.index.rotation = 0
                   //  entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 1.0 : 1.0 
