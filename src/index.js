@@ -260,8 +260,14 @@ async function initGame() {
                 container: container,
                 graph: graph
             }
+
         })
     
+        containerGraphs.border = new PIXI.Graphics()
+        containerGraphs.border.cheight = 0
+        containerGraphs.border.cwidth = 0
+
+        containerGraphs.addChild(containerGraphs.border)
         graphs.forEach(g => {
             containerGraphs.addChild(g.graph); 
         })
@@ -467,7 +473,7 @@ async function initGame() {
 
         maxVisiblePoints = 100
         currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
-        const stepX = app.renderer.width / (maxVisiblePoints-1) * 0.9;
+        const stepX = (app.renderer.width-100) / (maxVisiblePoints-1);
         isFinalScreen = currentDate >= options.dateEnd
         isStopScreen = isFinalScreen || (stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
@@ -500,8 +506,21 @@ async function initGame() {
 
         //maxVisiblePoints = Math.max(20, trades.length > 1 ? currentIndexInteger - trades[trades.length-2].index : currentIndexInteger)
 
-        containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,isMenuVisible() && menu.state === MENU_STATE_INTRO ? gscaleb*app.screen.height*0.75 : 0.0)
+        if (isMenuVisible()){
+            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height*0.5)
+            containerGraphs.border.visible = false
+        } else {
+            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
+            containerGraphs.border.visible = true
+        }       
 
+        if (containerGraphs.border.cheight !== app.screen.height*gscale || containerGraphs.border.cwidth !== app.screen.width+100) {
+            containerGraphs.border.cheight = app.screen.height*gscale
+            containerGraphs.border.cwidth = app.screen.width+100
+            containerGraphs.border.clear()
+            containerGraphs.border.rect(-50, app.screen.height*gscalet, containerGraphs.border.cwidth, containerGraphs.border.cheight).stroke({color: 0xffffff, width:2})
+
+        }
 
         graphs.forEach(g => {
             updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible())

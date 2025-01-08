@@ -56,7 +56,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.addChild(menu.finaltitle)
 
     menu.clickTitle =  new PIXI.Text('Click to proceed', menu.textStyleTitle) 
-    menu.clickTitle.anchor.set(0.5,0.5)
+    menu.clickTitle.anchor.set(0.5,1.25)
     menu.addChild(menu.clickTitle)
 
     menu.levelGroupsContainer = new PIXI.Container()
@@ -182,12 +182,13 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     if (menu.state === MENU_STATE_INTRO) {
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
         menu.clickTitle.visible = true
-        menu.clickTitle.scale.set(scaleToFullHD*0.25)
-        menu.clickTitle.position.set(app.screen.width*0.5, gscalebg*app.screen.height + menu.clickTitle.height)
+        menu.clickTitle.scale.set(scaleToFullHD*0.3)
+        menu.clickTitle.position.set(app.screen.width*0.5, app.screen.height)
         menu.clickTitle.alpha =  deltaTime.lastTime % 2000 > 1000 ? 1.0 : 0.0
         menu.clickTitle.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
 
-        menu.title.scale.set(scaleToFullHD*0.7)
+        menu.title.scale.set(Math.min(0.5,scaleToFullHD)*0.5)
+        menu.subtitle.scale.set(Math.min(0.25,scaleToFullHD)*0.25)
         menu.title.position.set(app.screen.width*0.5, app.screen.height*0.1)
         menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.15)
         menu.subtitle.rotation = menu.title.rotation = -10*Math.PI/360
