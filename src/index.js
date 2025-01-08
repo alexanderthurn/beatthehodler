@@ -133,7 +133,6 @@ async function initGame() {
     coinButtonContainer.addChild(coinButtonContainerTitle)
     containerForeground.addChild(coinButtonContainer)
     const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
-    background.position.set(0, 0);       
     containerBackground.addChildAt(background,0);
 
     
@@ -599,11 +598,7 @@ async function initGame() {
         
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         background.shader.resources.backgroundUniforms.uniforms.uPercentage = (currentIndexFloat-options.indexStart) / (options.indexEnd - options.indexStart)
-        backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
-        backgroundImage.x = app.renderer.width / 2 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
-        backgroundImage.y = app.renderer.height / 2 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-        backgroundImage.scale = 2.0 + Math.sin(deltaTime.lastTime*0.0001)
-        backgroundImage.alpha = 0.1;
+
         
         //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${stops.length-1}` : 'What do you want ?' 
         
@@ -679,17 +674,24 @@ async function initGame() {
         btnMenuSprite.alpha = (btnMenuSprite.active ? 1.0 : 0.7)
         btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
        
+        backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
+        backgroundImage.scale = 2.0 + Math.sin(deltaTime.lastTime*0.0001)
+        backgroundImage.alpha = 0.1;
+
         if (isMenuVisible()){
             containerGraphs.position.set(150-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
             containerGraphs.border.visible = false
             backgroundImage.scale.set(0.2)
             backgroundImage.alpha = 1;
-            
-            
-        
+            backgroundImage.x = app.renderer.width*0.7 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
+            backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+       
         } else {
             containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
             containerGraphs.border.visible = true
+            backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
+            backgroundImage.x = app.renderer.width*0.5 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
+            backgroundImage.y = app.renderer.height*0.5 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
         }       
 
     });

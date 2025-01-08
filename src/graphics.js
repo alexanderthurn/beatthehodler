@@ -101,7 +101,7 @@ function createStockBottomLines(dataPoints, lineWidth, coin) {
         
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
-        const color = hexToRGB('#565656', 1.0)
+        const color = hexToRGB('#4d4d4d', 1.0)
 
         for (let j = 0; j < 4; j++) {
             colors.push(...color);
