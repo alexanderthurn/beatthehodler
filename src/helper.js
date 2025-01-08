@@ -348,12 +348,12 @@ function calculateLevelStatistics(level, coins) {
 
 function injectGeneratedLevels(gameData) {
 
-    for (let i=2018;i<2024;i++) {
+    for (let i=2014;i<2025;i++) {
         let length = gameData.levels.filter(l => l.group === '21').length
         if (length < 21)  {
             gameData.levels.push(
                 {
-                    "name": '' + length+1,
+                    "name": '' + i,
                     "group": "21",
                     "stops": 2,
                     "canStopManually": true,
@@ -363,22 +363,7 @@ function injectGeneratedLevels(gameData) {
                     "duration": 30000
             })
         }
-        
-
-         length = gameData.levels.filter(l => l.group === '21').length
-        if (length < 21)  {
-            gameData.levels.push(
-                {
-                    "name": '' + length+1,
-                    "group": "21",
-                    "stops": 2,
-                    "canStopManually": true,
-                    "dateStart": i+"-03-01 00:00:00 UTC",
-                    "dateEnd": i+"-09-30 00:00:00 UTC",
-                    "coinNames": ["USD","BTC", "ADA"],
-                    "duration": 30000
-            })
-        }
+    
     }
    
 

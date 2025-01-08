@@ -17,11 +17,18 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.textStylePreview = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 24,
+        fontSize: 18,
         fill: '#fff',
         stroke: { color: '#000', width: 0, join: 'round' },
     });
 
+    menu.textStylePreviewSub = new PIXI.TextStyle({
+        fontFamily: 'Xolonium',
+        fontStyle: 'Bold',
+        fontSize: 18,
+        fill: '#fff',
+        stroke: { color: '#000', width: 0, join: 'round' },
+    });
 
 
 
@@ -67,12 +74,19 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
         e.group = e.level.group
      
         e.index = new PIXI.Container()
-        e.indexText = new PIXI.Text(index+1, menu.textStylePreview)
-        e.indexBackgroundRadius = 128
-        e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
-        e.index.addChild(e.indexBackground)
+        e.indexText = new PIXI.Text(e.level.name, menu.textStylePreview)
+        e.indexSubText = new PIXI.Text('0%', menu.textStylePreviewSub)
+        e.indexBackgroundRadius = 512
+       // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
+        e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.05})
+        
+       e.index.addChild(e.indexBackground)
         e.index.addChild(e.indexText)
+        e.index.addChild(e.indexSubText)
         e.indexText.anchor.set(0.5,0.5)
+        e.indexSubText.anchor.set(0.5,0.5)
+        e.indexSubText.position.set(0,  e.indexText.height/2)
+        e.indexText.position.set(0,  -e.indexText.height/2)
         e.addChild(e.index)
 
 
@@ -101,7 +115,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
 
 
 function menuPointerMoveEvent(menu, event) {
-    menu.levelEntries.filter(entry => entry.isCompletedLevelBefore ).forEach((entry,index2) => {
+    menu.levelEntries.filter(entry =>  true || entry.isCompletedLevelBefore ).forEach((entry,index2) => {
         entry.active = entry.getBounds().containsPoint(event.x,event.y)
     })
     menu.audioButtonSprite.active = menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)   
@@ -110,7 +124,7 @@ function menuPointerMoveEvent(menu, event) {
 }
 
 function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
-    menu.levelEntries.filter(entry => entry.isCompletedLevelBefore ).forEach((entry,index2) => {
+    menu.levelEntries.filter(entry => true || entry.isCompletedLevelBefore ).forEach((entry,index2) => {
         if (entry.getBounds().containsPoint(event.x,event.y)) {
             if (!entry.active ) {
                 entry.active = true
@@ -155,8 +169,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     
     let cw = app.screen.width * 0.9
     let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
-    let cols = cw > ch ? 7 : 3 
-    let rows = cw > ch ? 3 : 7
+    let cols = cw > ch*2 ? 7 : 3 
+    let rows = cw > ch*2 ? 3 : 7
     let colw = cw / cols
     let colh = ch / rows
     colh = Math.min(colw, colh)
@@ -175,17 +189,17 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
             entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
             entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
 
-            entry.indexBackground.scale = (entry.active && entry.isCompletedLevelBefore ? 1.3 : 1.0) * 0.3*Math.min(colw,colh) / entry.indexBackgroundRadius
-            entry.index.rotation = 0
-            entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 0.0 
+            entry.indexBackground.scale = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * Math.min(colw / (entry.indexBackgroundRadius*2), colh / (entry.indexBackgroundRadius))
+            //entry.index.rotation = 0
+            entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
 
             if (entry.isCompleted) {
-                entry.index.rotation = 0
-                entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 1.0 : 1.0 
+              //  entry.index.rotation = 0
+              //  entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 1.0 : 1.0 
           
             } else if (entry.isCompletedLevelBefore){
-                entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 1000 > 500 ? 1.0 : 0.5 
-                entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.1
+               // entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 1000 > 500 ? 1.0 : 0.5 
+                //entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.01
             }
     
         })
