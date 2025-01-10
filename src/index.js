@@ -543,7 +543,7 @@ async function initGame() {
             graphBorderAreaRight.cheight = graphBorder.cheight
             graphBorderAreaRight.cwidth = 100
             graphBorderAreaRight.clear()
-            graphBorderAreaRight.rect(0,0,100,app.screen.height*gscale).fill({color: 0x4d4d4d, alpha: 0.5})
+            graphBorderAreaRight.rect(-4,0,4,graphBorderAreaRight.cheight).fill({color: 0xffffff,alpha:1}).rect(0,0,graphBorderAreaRight.cwidth,graphBorderAreaRight.cheight).fill({color: 0x4d4d4d, alpha: 0.0})
             minPriceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight)
             maxPriceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y)
             priceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
@@ -560,6 +560,7 @@ async function initGame() {
             
             if (options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === g.graph.coinName) {
                 priceLabel.text = g.graph.priceLabel.text
+                priceLabel.y = g.graph.priceLabel.y
                 minPriceLabel.text = g.graph.minPriceLabel.text
                 maxPriceLabel.text = g.graph.maxPriceLabel.text
             }
