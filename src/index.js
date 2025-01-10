@@ -68,17 +68,7 @@ async function initGame() {
    const containerBackground = new PIXI.Container()
    const containerMenu = new PIXI.Container()
    let containerGraphs = new PIXI.Container()
-   let containerGraphsForeground = new PIXI.Container()
-   let graphBorder = new PIXI.Graphics()
-   let graphBorderMask = new PIXI.Graphics()
-   graphBorder.cheight = 0
-   graphBorder.cwidth = 0
-   containerGraphsForeground.addChild(graphBorder)
-
-
-   app.stage.addChild(containerBackground)
-   app.stage.addChild(containerForeground)
-   app.stage.addChild(containerMenu)
+  
 
     containerForeground.visible = containerBackground.visible = containerMenu.visible = false
     PIXI.Assets.addBundle('fonts', {
@@ -150,6 +140,28 @@ async function initGame() {
     btnMenuSprite.anchor.set(1.1,-0.1)
     containerForeground.addChild(btnMenuSprite)
 
+    let containerGraphsForeground = new PIXI.Container()
+    let graphBorder = new PIXI.Graphics()
+    let graphBorderMask = new PIXI.Graphics()
+    let graphBorderAreaRight = new PIXI.Graphics()
+    graphBorder.cheight = 0
+    graphBorder.cwidth = 0
+    containerGraphsForeground.addChild(graphBorder)
+    containerGraphsForeground.addChild(graphBorderAreaRight)
+    let priceLabel = new PIXI.Text("100$", textStyle);
+    let maxPriceLabel =new PIXI.Text("150$", textStyle);
+    let minPriceLabel =new PIXI.Text("200$", textStyle);
+    priceLabel.anchor.set(0,0.5)
+    maxPriceLabel.anchor.set(0,0)
+    minPriceLabel.anchor.set(0,1)
+    containerGraphsForeground.addChild(priceLabel)
+    containerGraphsForeground.addChild(maxPriceLabel)
+    containerGraphsForeground.addChild(minPriceLabel)
+    priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 0.078
+ 
+    app.stage.addChild(containerBackground)
+    app.stage.addChild(containerForeground)
+    app.stage.addChild(containerMenu)
 
 
     const buyPaused = 1000
@@ -266,6 +278,7 @@ async function initGame() {
             let container = new PIXI.Container()
             let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle)
             container.addChild(graph)
+        
             return {
                 coinName: c,
                 index: i,
@@ -524,9 +537,16 @@ async function initGame() {
             graphBorder.cheight = app.screen.height*gscale
             graphBorder.cwidth = app.screen.width-100
             graphBorder.clear()
-            graphBorder.rect(app.screen.width-100,app.screen.height*gscalet,100,app.screen.height*gscale).fill({color: 0x4d4d4d, alpha: 0.5}).rect(0,app.screen.height*gscalebg,app.screen.width,app.screen.height*(1.0-gscalebg)).fill({color: 0x4d4d4d}).rect(0, app.screen.height*gscalet, graphBorder.cwidth, graphBorder.cheight)//.stroke({color: 0xffffff, width:2})
+            graphBorder.rect(0,app.screen.height*gscalebg,app.screen.width,app.screen.height*(1.0-gscalebg)).fill({color: 0x4d4d4d}).rect(0, app.screen.height*gscalet, graphBorder.cwidth, graphBorder.cheight)//.stroke({color: 0xffffff, width:2})
         
-
+            graphBorderAreaRight.position.set(app.screen.width-100,app.screen.height*gscalet)
+            graphBorderAreaRight.cheight = graphBorder.cheight
+            graphBorderAreaRight.cwidth = 100
+            graphBorderAreaRight.clear()
+            graphBorderAreaRight.rect(0,0,100,app.screen.height*gscale).fill({color: 0x4d4d4d, alpha: 0.5})
+            minPriceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight)
+            maxPriceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y)
+            priceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
             
             graphBorderMask.clear()
             graphBorderMask.rect(0, app.screen.height*gscalet, graphBorder.cwidth, graphBorder.cheight).fill({color: 0xff0000})
@@ -537,7 +557,15 @@ async function initGame() {
         
         graphs.forEach(g => {
             updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible())
+            
+            if (options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === g.graph.coinName) {
+                priceLabel.text = g.graph.priceLabel.text
+                minPriceLabel.text = g.graph.minPriceLabel.text
+                maxPriceLabel.text = g.graph.maxPriceLabel.text
+            }
         })
+
+
         
         let txt = ''
 

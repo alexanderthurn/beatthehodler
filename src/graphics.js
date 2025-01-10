@@ -296,6 +296,8 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
             trade.container.visible = false
         })
     }
+    graph.logoSprite.visible = false
+    graph.priceLabel.visible = false
 
     return {
         maxPrice: maxPrice,
