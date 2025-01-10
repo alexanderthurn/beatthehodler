@@ -376,7 +376,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     const logo = new PIXI.Container()
     const logoSprite = new PIXI.Sprite(coins[coinName].texture);
     logo.addChild(logoSprite)
-    logoSprite.anchor.set(0.5,0.5)
+    logoSprite.anchor.set(1,0.5)
     logoSprite.scale.set(0.001,0.001)        
 
     graphRectsMesh.state.culling = true;
@@ -398,7 +398,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graph.priceLabel = new PIXI.Text("", textStyle);
     graph.addChild(graph.priceLabel);
     graph.priceLabel.visible = false
-    graph.priceLabel.anchor.set(1,0.5)
+    graph.priceLabel.anchor.set(10.5,0.5)
 
     graph.maxPriceLabel = new PIXI.Text("", textStyle);
     graph.addChild(graph.maxPriceLabel);
