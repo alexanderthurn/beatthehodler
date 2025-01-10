@@ -41,15 +41,17 @@ async function initGame() {
 
     await fetchData(coins);
 
-    const app = new PIXI.Application({
+    const app = new PIXI.Application();
+    await app.init({
         width: window.innerWidth,
         height: window.innerHeight,
         backgroundColor: 0xf4b400,
+        antialias: true,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
-       
+        resizeTo: window
     });
-    await app.init({ background: '#000', resizeTo: window });
+
     document.body.appendChild(app.canvas);
     app.canvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
@@ -71,6 +73,7 @@ async function initGame() {
    app.stage.addChild(containerForeground)
    app.stage.addChild(containerMenu)
 
+    containerForeground.visible = containerBackground.visible = containerMenu.visible = false
     PIXI.Assets.addBundle('fonts', {
         XoloniumBold: {
             src: './gfx/XoloniumBold-xKZO.ttf',
@@ -420,6 +423,9 @@ async function initGame() {
     
     containerBackground.addChildAt(containerGraphs,2)
     containerForeground.addChild(containerGraphs.border)
+
+    
+    containerForeground.visible = containerBackground.visible = containerMenu.visible = true
 
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
