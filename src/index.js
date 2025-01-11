@@ -443,7 +443,7 @@ async function initGame() {
     
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
 
-    menu.visible = false
+   // menu.visible = false
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
@@ -551,7 +551,7 @@ async function initGame() {
             graphBorderMask.clear()
             graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height*gscalet+graphBorder.cheight).fill({color: 0xff0000})
         
-            containerGraphs.mask = graphBorderMask
+            containerGraphs.cmask = graphBorderMask
         }
 
         
@@ -730,8 +730,11 @@ async function initGame() {
 
         if (isMenuVisible()){
            // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
-           containerGraphs.position.set(stepX-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
+           backgroundImage.y += (1.0-gscalebg)*app.screen.height
+           containerGraphs.position.set(100-diffCurrentIndexIntToFloat*stepX,(1.0-gscalebg)*app.screen.height)
             graphBorder.visible = false
+            containerGraphsForeground.visible = false
+            containerGraphs.mask = null
            // backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
        
         } else {
@@ -742,6 +745,8 @@ async function initGame() {
             backgroundImage.y = app.renderer.height*0.5 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
             */
 
+            containerGraphs.mask = containerGraphs.cmask
+            containerGraphsForeground.visible = true
             //containerGraphs.scale = 0.9
             containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
          
