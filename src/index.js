@@ -549,7 +549,7 @@ async function initGame() {
             priceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
             
             graphBorderMask.clear()
-            graphBorderMask.rect(0, app.screen.height*gscalet, graphBorder.cwidth, graphBorder.cheight).fill({color: 0xff0000})
+            graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height*gscalet+graphBorder.cheight).fill({color: 0xff0000})
         
             containerGraphs.mask = graphBorderMask
         }
@@ -722,17 +722,17 @@ async function initGame() {
         btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
        
         backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
-        backgroundImage.scale = 2.0 + Math.sin(deltaTime.lastTime*0.0001)
-        backgroundImage.alpha = 0.1;
+
+        backgroundImage.scale.set(0.2*(Math.min(app.screen.width,1080)/1080))
+        backgroundImage.alpha = 1;
+        backgroundImage.x = app.renderer.width-100-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100);
+        backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
 
         if (isMenuVisible()){
            // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
            containerGraphs.position.set(stepX-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
             graphBorder.visible = false
-            backgroundImage.scale.set(0.2)
-            backgroundImage.alpha = 1;
-            backgroundImage.x = app.renderer.width*0.7 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
-            backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+           // backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
        
         } else {
            /* containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
@@ -747,11 +747,8 @@ async function initGame() {
          
             graphBorder.visible = true
             //graphBorder.position.set(0,0) 
-            backgroundImage.scale.set(0.2)
-            backgroundImage.alpha = 1;
-            backgroundImage.x = app.renderer.width*0.7 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
-            backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-
+         
+           
         }       
 
     });
