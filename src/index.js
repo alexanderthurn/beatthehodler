@@ -112,16 +112,16 @@ async function initGame() {
     let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
     let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
 
-    const stackContainer = new PIXI.Container()
-    const stackLabel = new PIXI.Text("", textStyleCentered);
-    const stackImage = new PIXI.Sprite(textureBtnTrade)
-    stackLabel.anchor.set(0.5,0.5)
-    stackImage.anchor.set(0.5,0.5)
-    stackLabel.text = "Click to stop"
-    stackContainer.addChild(stackImage)
-    stackContainer.addChild(stackLabel);
+    const stopContainer = new PIXI.Container()
+    const stopLabel = new PIXI.Text("", textStyleCentered);
+    const stopImage = new PIXI.Sprite(textureBtnTrade)
+    stopLabel.anchor.set(0.5,0.5)
+    stopImage.anchor.set(0.5,0.5)
+    stopLabel.text = "Click to stop"
+    stopContainer.addChild(stopImage)
+    stopContainer.addChild(stopLabel);
 
-    containerForeground.addChild(stackContainer);
+    containerForeground.addChild(stopContainer);
 
     const backgroundImage = new PIXI.Sprite({blendMode: 'screen'});
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
@@ -389,7 +389,7 @@ async function initGame() {
             }
 
             btnMenuSprite.active = btnMenuSprite.getBounds().containsPoint(event.x,event.y)
-            stackContainer.active = stackContainer.getBounds().containsPoint(event.x,event.y)
+            stopContainer.active = stopContainer.getBounds().containsPoint(event.x,event.y)
         }
         
     });
@@ -637,7 +637,7 @@ async function initGame() {
         bigtextLabel.position.set(app.screen.width*0.5, app.screen.height*0.4)
         bigtextLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
 
-        stackLabel.scale.set(SCALE_TEXT_BASE)
+        stopLabel.scale.set(SCALE_TEXT_BASE)
         coinButtonContainerTitle.scale.set(0.75*SCALE_TEXT_BASE)
 
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
@@ -698,17 +698,17 @@ async function initGame() {
             coinButtonContainer.y = app.renderer.height - maxButtonHeight*2.2
 
             coinButtonContainer.visible = true
-            stackContainer.visible = false
+            stopContainer.visible = false
         } else {
             coinButtonContainer.visible = false 
-            stackContainer.visible = !isFinalScreen  && trades.length > 0 && trades[trades.length-1].index < currentIndexInteger - maxVisiblePoints / 30
-            stackContainer.alpha = !isFinalScreen && trades.length > 0 && Math.min(1.0, (currentIndexInteger - maxVisiblePoints / 30.0) / 8)
+            stopContainer.visible = !isFinalScreen  && trades.length > 0 && trades[trades.length-1].index < currentIndexInteger - maxVisiblePoints / 30
+            stopContainer.alpha = !isFinalScreen && trades.length > 0 && Math.min(1.0, (currentIndexInteger - maxVisiblePoints / 30.0) / 8)
 
-            stackImage.height = stackImage.width = Math.max(32,app.renderer.width*0.04)
-            stackContainer.position.set(0.5*app.renderer.width, gscalebg*app.renderer.height + stackLabel.height + stackImage.height)
-            stackLabel.position.set(0, stackImage.height)
-            stackLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
-            stackContainer.scale=(stackContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01
+            stopImage.height = stopImage.width = Math.max(32,app.renderer.width*0.04)
+            stopContainer.position.set(0.5*app.renderer.width, gscalebg*app.renderer.height + stopLabel.height + stopImage.height)
+            stopLabel.position.set(0, stopImage.height)
+            stopLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
+            stopContainer.scale=(stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01
             
             focusedCoinName = null
         }
