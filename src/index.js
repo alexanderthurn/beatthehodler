@@ -117,7 +117,7 @@ async function initGame() {
     const stopImage = new PIXI.Sprite(textureBtnTrade)
     stopLabel.anchor.set(0.5,0.5)
     stopImage.anchor.set(0.5,0.5)
-    stopLabel.text = "Click to stop"
+    stopLabel.text = "Stop"
     stopContainer.addChild(stopImage)
     stopContainer.addChild(stopLabel);
 
@@ -360,15 +360,7 @@ async function initGame() {
     
 
     function getCoinButtonIndex(event) {
-        let xR = event.x - coinButtonContainer.x
-        let yR = event.y - coinButtonContainer.y
-        if (yR > 0) {
-            let i = Math.floor(xR/app.renderer.width *coinButtons.length)
-            if (i >= 0 && i < coinButtons.length) {
-                return i
-            }
-        }
-        return -1
+        return coinButtons.findIndex(b => b.container.getBounds().containsPoint(event.x,event.y))
     }
    
 
@@ -376,10 +368,12 @@ async function initGame() {
         if (isMenuVisible()) {
             menuPointerMoveEvent(menu, event)
         } else {
+            btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
+            stopContainer.active = stopContainer.visible && stopContainer.getBounds().containsPoint(event.x,event.y)
+            coinButtonContainer.active = coinButtonContainer.visible && coinButtonContainer.getBounds().containsPoint(event.x,event.y)
             let trade = trades.find(t => t.index === currentIndexInteger)
-            let stopIndex = stopIndizes.indexOf(currentIndexInteger)
-        
-            if (stopIndex > -1 && !isFinalScreen && !trade) {
+          
+            if (coinButtonContainer.active && !trade) {
                 let i = getCoinButtonIndex(event)
                 if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
                     focusedCoinName = coinButtons[i].to
@@ -388,8 +382,6 @@ async function initGame() {
                  }
             }
 
-            btnMenuSprite.active = btnMenuSprite.getBounds().containsPoint(event.x,event.y)
-            stopContainer.active = stopContainer.getBounds().containsPoint(event.x,event.y)
         }
         
     });
@@ -400,6 +392,7 @@ async function initGame() {
         if (isMenuVisible()) {
             menuPointerUpEvent(menu, event, startNewGame,getMute, setMute)
         } else {
+
             if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 menu.visible = true
             } else if (isFinalScreen) {
@@ -409,11 +402,16 @@ async function initGame() {
                     startNewGame(options)
                 }
             }  else {
-                
 
+
+                btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
+                stopContainer.active = stopContainer.visible && stopContainer.getBounds().containsPoint(event.x,event.y)
+                coinButtonContainer.active = coinButtonContainer.visible && coinButtonContainer.getBounds().containsPoint(event.x,event.y)
                 let trade = trades.find(t => t.index === currentIndexInteger)
-                let stopIndex = stopIndizes.indexOf(currentIndexInteger)
-                if (stopIndex > -1 && !isFinalScreen  && !trade) {
+        
+
+                if (coinButtonContainer.active && !trade) {
+                    
                     let i = getCoinButtonIndex(event)
                     if (i >= 0 && i < coinButtons.length) {
                         if (focusedCoinName !== coinButtons[i].to) {
@@ -422,7 +420,9 @@ async function initGame() {
                             doTrade(yourCoinName,coinButtons[i].to )
                         }
                     }
-                } else if (stopIndex === -1  && !trade && canStopManually) {
+                } 
+                
+                if (stopContainer.active && !isFinalScreen && !trade && canStopManually) {
                     stopIndizes.push(currentIndexInteger)
                     stopIndizes.sort()
                     stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
@@ -637,7 +637,7 @@ async function initGame() {
         bigtextLabel.position.set(app.screen.width*0.5, app.screen.height*0.4)
         bigtextLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
 
-        stopLabel.scale.set(SCALE_TEXT_BASE)
+        stopLabel.scale.set(0.75*SCALE_TEXT_BASE)
         coinButtonContainerTitle.scale.set(0.75*SCALE_TEXT_BASE)
 
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
@@ -664,55 +664,48 @@ async function initGame() {
         coinButtons.forEach(b => {
             b.active = !coins[b.to].data || coins[b.to].data[currentIndexInteger]?.price ? true : false
         })
+
+
+        coinButtonContainer.y = gscalebg*app.renderer.height
+        coinButtonContainer.cheight = app.renderer.height-coinButtonContainer.y
+        coinButtonContainerTitle.x =app.renderer.width*0.5 
+        coinButtonContainerTitle.y = coinButtonContainer.cheight*1.0/3.0
+        coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
+        let maxButtonHeight = 0
+        coinButtons.forEach(b => {
+            b.sprite.height = b.sprite.width = (focusedCoinName && b.to === focusedCoinName ? 1.1/3.0 : 1.0/3.0) * coinButtonContainer.cheight
+            b.container.x = (app.renderer.width / coinButtons.length)*(b.index+0.5)
+            b.container.y = 2.0/3.0 * coinButtonContainer.cheight
+            b.sprite.rotation = focusedCoinName && b.to === focusedCoinName ? Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1 : 0.0
+            b.sprite.alpha = 1
+            b.sprite.alpha = (!coins[b.to].csv || b.active) ? b.sprite.alpha : 0.0
+            maxButtonHeight = Math.max(maxButtonHeight, b.sprite.height)
+           
+        })
+        stopImage.height = stopImage.width = Math.min(app.renderer.height*0.1, app.renderer.width*0.9 / coinButtons.length)
+        stopContainer.position.set(0.5*app.renderer.width, gscalebg*app.renderer.height + stopLabel.height + stopImage.height)
+        stopLabel.position.set(0, -stopImage.height*0.75)
+        stopLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
+        stopContainer.scale=(stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01
+        
+
         if (stopIndex > -1 && !isFinalScreen && !trade) {
             if (focusedCoinName) {
-
                 let fromPrice = yourCoinName === fiatName ? 1 : coins[yourCoinName].data[currentIndexInteger].price
                 let toPrice = focusedCoinName === fiatName ? 1 : coins[focusedCoinName].data[currentIndexInteger].price
-
                 let toCoins = (yourCoins * fromPrice) / toPrice
-       
                 if (canStopManually) {
                     coinButtonContainerTitle.text = `Please confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
                 } else {
                     coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${stops.length-1}\nPlease confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
                 }
             }
-            
-
-            coinButtonContainerTitle.x =app.renderer.width*0.5 
-            coinButtonContainerTitle.y = 0
-            coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
-            let maxButtonHeight = 0
-            coinButtons.forEach(b => {
-                b.sprite.height = b.sprite.width = Math.min(app.renderer.height*0.1, app.renderer.width*0.9 / coinButtons.length)
-                maxButtonHeight = Math.max(maxButtonHeight, b.sprite.height)
-                b.container.x = (app.renderer.width / coinButtons.length)*(b.index+0.5)
-                b.container.y = b.sprite.height
-                b.sprite.y = b.sprite.height*0.5
-                b.sprite.rotation = Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1
-                b.sprite.alpha = focusedCoinName ? (b.to === focusedCoinName && b.active && 1.0 || 0.1) : (deltaTime.lastTime - (1000/coinButtons.length)*b.index) % 1500 > 500 ? 1 : 0.5 
-                b.sprite.alpha = (!coins[b.to].csv || b.active) ? b.sprite.alpha : 0.0
-               
-            })
-            coinButtonContainer.y = app.renderer.height - maxButtonHeight*2.2
-
-            coinButtonContainer.visible = true
-            stopContainer.visible = false
         } else {
-            coinButtonContainer.visible = false 
-            stopContainer.visible = !isFinalScreen  && trades.length > 0 && trades[trades.length-1].index < currentIndexInteger - maxVisiblePoints / 30
-            stopContainer.alpha = !isFinalScreen && trades.length > 0 && Math.min(1.0, (currentIndexInteger - maxVisiblePoints / 30.0) / 8)
-
-            stopImage.height = stopImage.width = Math.max(32,app.renderer.width*0.04)
-            stopContainer.position.set(0.5*app.renderer.width, gscalebg*app.renderer.height + stopLabel.height + stopImage.height)
-            stopLabel.position.set(0, stopImage.height)
-            stopLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
-            stopContainer.scale=(stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01
-            
-            focusedCoinName = null
+            coinButtonContainerTitle.text = ''
         }
 
+        stopContainer.visible = !isFinalScreen  && stopIndizes.indexOf(currentIndexInteger) < 0
+        coinButtonContainer.visible = !isFinalScreen
 
         if (isStopScreen && (stopIndex === 0 || isFinalScreen)) {
             //containerGraphs.visible = false
