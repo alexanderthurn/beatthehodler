@@ -599,7 +599,8 @@ async function initGame() {
                     txt += `Your goal is to beat\n`
                     txt += `a HODLer by trading.\n`
                     txt += `Every percent counts!\n\n`
-                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n...`
+                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
+                    txt += `1${formatCurrency(null,options.coinNames[1])} is ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, options.coinNames[1], coins[options.coinNames[1]].data[currentIndexInteger].digits)}\n\n...`
                 }
                
             } 
@@ -637,7 +638,7 @@ async function initGame() {
         bigtextLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
 
         stackLabel.scale.set(SCALE_TEXT_BASE)
-        coinButtonContainerTitle.scale.set(SCALE_TEXT_BASE * (Math.min(640,Math.max(640, app.screen.width))/640))
+        coinButtonContainerTitle.scale.set(0.75*SCALE_TEXT_BASE)
 
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
         if (isMenuVisible()) {
@@ -680,7 +681,7 @@ async function initGame() {
             
 
             coinButtonContainerTitle.x =app.renderer.width*0.5 
-            coinButtonContainerTitle.y = app.screen.height*0.05
+            coinButtonContainerTitle.y = 0
             coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
             let maxButtonHeight = 0
             coinButtons.forEach(b => {
@@ -715,11 +716,13 @@ async function initGame() {
 
         if (isStopScreen && (stopIndex === 0 || isFinalScreen)) {
             //containerGraphs.visible = false
+            backgroundImage.visible = false
            // dateLabel.fontStyle = textStyleCentered
             //dateLabel.position.set(0.5*app.screen.width, 0.5*app.screen.height)
             //dateLabel.anchor.set(0.5,0.5)
         } else {
-            containerGraphs.visible = true
+            //containerGraphs.visible = true
+            backgroundImage.visible = true
             //dateLabel.anchor.set(0.0,0.0)
         }
         btnMenuSprite.scale = 0.3*(Math.max(640,app.screen.width)/640.0)*0.5
