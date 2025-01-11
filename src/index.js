@@ -148,13 +148,17 @@ async function initGame() {
     graphBorder.cwidth = 0
     containerGraphsForeground.addChild(graphBorder)
     containerGraphsForeground.addChild(graphBorderAreaRight)
+    let priceLabelContainer = new PIXI.Container()
+    let priceLabelLine = new PIXI.Graphics().rect(-20,-2,18,4).fill({color: 0xffffff,alpha:1})
+    priceLabelContainer.addChild(priceLabelLine)
     let priceLabel = new PIXI.Text("100$", textStyle);
     let maxPriceLabel =new PIXI.Text("150$", textStyle);
     let minPriceLabel =new PIXI.Text("200$", textStyle);
     priceLabel.anchor.set(0,0.5)
     maxPriceLabel.anchor.set(0,0)
     minPriceLabel.anchor.set(0,1)
-    containerGraphsForeground.addChild(priceLabel)
+    priceLabelContainer.addChild(priceLabel)
+    containerGraphsForeground.addChild(priceLabelContainer)
     containerGraphsForeground.addChild(maxPriceLabel)
     containerGraphsForeground.addChild(minPriceLabel)
     priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 0.078
@@ -443,7 +447,7 @@ async function initGame() {
     
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
 
-   // menu.visible = false
+    menu.visible = false
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
@@ -543,10 +547,10 @@ async function initGame() {
             graphBorderAreaRight.cheight = graphBorder.cheight
             graphBorderAreaRight.cwidth = 100
             graphBorderAreaRight.clear()
-            graphBorderAreaRight.rect(-4,0,4,graphBorderAreaRight.cheight).fill({color: 0xffffff,alpha:1}).rect(0,0,graphBorderAreaRight.cwidth,graphBorderAreaRight.cheight).fill({color: 0x4d4d4d, alpha: 0.0})
-            minPriceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight)
-            maxPriceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y)
-            priceLabel.position.set(graphBorderAreaRight.position.x, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
+            graphBorderAreaRight.rect(-10,graphBorder.cheight-4,10,4).rect(-10,0,10,4).rect(-4,0,4,graphBorderAreaRight.cheight).fill({color: 0xffffff,alpha:1}).rect(0,0,graphBorderAreaRight.cwidth,graphBorderAreaRight.cheight).fill({color: 0x4d4d4d, alpha: 0.0})
+            minPriceLabel.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight)
+            maxPriceLabel.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y)
+            priceLabelContainer.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
             
             graphBorderMask.clear()
             graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height*gscalet+graphBorder.cheight).fill({color: 0xff0000})
@@ -560,7 +564,8 @@ async function initGame() {
             
             if (options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === g.graph.coinName) {
                 priceLabel.text = g.graph.priceLabel.text
-                priceLabel.y = g.graph.priceLabel.y
+                priceLabelContainer.y = g.graph.priceLabel.yOriginal
+                priceLabel.y = g.graph.priceLabel.y - g.graph.priceLabel.yOriginal
                 minPriceLabel.text = g.graph.minPriceLabel.text
                 maxPriceLabel.text = g.graph.maxPriceLabel.text
             }
@@ -748,7 +753,7 @@ async function initGame() {
             containerGraphs.mask = containerGraphs.cmask
             containerGraphsForeground.visible = true
             //containerGraphs.scale = 0.9
-            containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
+            containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
          
             graphBorder.visible = true
             //graphBorder.position.set(0,0) 

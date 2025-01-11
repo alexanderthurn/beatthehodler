@@ -247,6 +247,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
    
 
     graph.maxPriceLabel.x  = graph.minPriceLabel.x  = graph.priceLabel.x =  graph.logo.x
+    graph.priceLabel.yOriginal = graph.priceLabel.y
     graph.priceLabel.y = Math.min(graph.minPriceLabel.y - graph.minPriceLabel.height*2, Math.max(graph.priceLabel.y, graph.maxPriceLabel.y + graph.minPriceLabel.height*2))
     if (isStopScreen && !isFinalScreen) {
         graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = options.coinNames.length < 3 || focusedCoinName === graph.coinName

@@ -17,7 +17,7 @@ uniform float uAlpha;
 
 void main() {
    
-    if (int(aIndex) < uCurrentIndex-uMaxVisiblePoints || int(aIndex) >= uCurrentIndex ) {
+    if (int(aIndex) < uCurrentIndex-uMaxVisiblePoints || int(aIndex) > uCurrentIndex ) {
         gl_Position = vec4(-2.0, -2.0, 0.0, 1.0);
         return;
     }
