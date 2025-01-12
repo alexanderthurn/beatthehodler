@@ -1,10 +1,10 @@
 const coins = {
-    USD: { color: '#85BB65', image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
-    BTC: { color: '#F7931B', image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
-    ADA: { color: '#0133AD', image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
-    DOGE: { color: '#BA9F32', image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
-    ETH: { color: '#383938', image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', csv: 'data/eth-usd-max.csv',  digits: 2},
-    SOL: { color: '#BD3EF3', image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', csv: 'data/sol-usd-max.csv',  digits: 2},
+    USD: { color: '#85BB65', colorInt: 0x85BB65, image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
+    BTC: { color: '#F7931B', colorInt: 0xF7931B,image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
+    ADA: { color: '#0133AD', colorInt: 0x0133AD,image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
+    DOGE: { color: '#BA9F32', colorInt: 0xBA9F325,image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
+    ETH: { color: '#383938', colorInt: 0x383938,image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', csv: 'data/eth-usd-max.csv',  digits: 2},
+    SOL: { color: '#BD3EF3', colorInt: 0xBD3EF3,image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', csv: 'data/sol-usd-max.csv',  digits: 2},
 }
 
 function playBuySound(key) {
@@ -110,17 +110,23 @@ async function initGame() {
 
 
     let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
+    let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
     let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
 
     const stopContainer = new PIXI.Container()
-    const stopLabel = new PIXI.Text("", textStyleCentered);
-    const stopImage = new PIXI.Sprite(textureBtnTrade)
+    const stopLabel = new PIXI.Text("Stop", textStyleCentered);
+    const stopImage = new PIXI.Sprite(textureBtnStop)
     stopLabel.anchor.set(0.5,0.5)
     stopImage.anchor.set(0.5,0.5)
-    stopLabel.text = "Stop"
     stopContainer.addChild(stopImage)
     stopContainer.addChild(stopLabel);
 
+    const swapLabel = new PIXI.Text("Swap", textStyleCentered);
+    const swapImage = new PIXI.Sprite(textureBtnTrade)
+    swapLabel.anchor.set(0.5,0.5)
+    swapImage.anchor.set(0.5,0.5)
+    stopContainer.addChild(swapImage)
+    stopContainer.addChild(swapLabel);
     containerForeground.addChild(stopContainer);
 
     const backgroundImage = new PIXI.Sprite({blendMode: 'screen'});
@@ -369,7 +375,8 @@ async function initGame() {
             menuPointerMoveEvent(menu, event)
         } else {
             btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
-            stopContainer.active = stopContainer.visible && stopContainer.getBounds().containsPoint(event.x,event.y)
+            stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
+            swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
             coinButtonContainer.active = coinButtonContainer.visible && coinButtonContainer.getBounds().containsPoint(event.x,event.y)
             let trade = trades.find(t => t.index === currentIndexInteger)
           
@@ -405,7 +412,8 @@ async function initGame() {
 
 
                 btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
-                stopContainer.active = stopContainer.visible && stopContainer.getBounds().containsPoint(event.x,event.y)
+                stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
+                swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
                 coinButtonContainer.active = coinButtonContainer.visible && coinButtonContainer.getBounds().containsPoint(event.x,event.y)
                 let trade = trades.find(t => t.index === currentIndexInteger)
         
@@ -422,11 +430,19 @@ async function initGame() {
                     }
                 } 
                 
-                if (stopContainer.active && !isFinalScreen && !trade && canStopManually) {
+                if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
                     stopIndizes.push(currentIndexInteger)
                     stopIndizes.sort()
                     stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
                     stops.sort()
+                    
+                    if (swapImage.active) {
+                        if (yourCoinName === coinButtons[0].to) {
+                            doTrade(coinButtons[0].to, coinButtons[1].to)
+                        } else {
+                            doTrade(coinButtons[1].to, coinButtons[0].to)
+                        }
+                    }
                 }
             }
 
@@ -637,7 +653,7 @@ async function initGame() {
         bigtextLabel.position.set(app.screen.width*0.5, app.screen.height*0.4)
         bigtextLabel.scale.set(8*SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
 
-        stopLabel.scale.set(8*0.75*SCALE_TEXT_BASE)
+        swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
         coinButtonContainerTitle.scale.set(8*0.75*SCALE_TEXT_BASE)
 
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
@@ -673,7 +689,7 @@ async function initGame() {
         coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
         let maxButtonHeight = 0
         coinButtons.forEach(b => {
-            b.sprite.height = b.sprite.width = (focusedCoinName && b.to === focusedCoinName ? 1.1/3.0 : 1.0/3.0) * coinButtonContainer.cheight
+            b.sprite.height = b.sprite.width = (focusedCoinName && b.to === focusedCoinName ? 1.1 : 1.0)*(1.0/3.0) * coinButtonContainer.cheight
             b.container.x = (app.renderer.width / coinButtons.length)*(b.index+0.5)
             b.container.y = 2.0/3.0 * coinButtonContainer.cheight
             b.sprite.rotation = focusedCoinName && b.to === focusedCoinName ? Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1 : 0.0
@@ -682,11 +698,18 @@ async function initGame() {
             maxButtonHeight = Math.max(maxButtonHeight, b.sprite.height)
            
         })
-        stopImage.height = stopImage.width = Math.min(app.renderer.height*0.1, app.renderer.width*0.9 / coinButtons.length)
-        stopContainer.position.set(0.5*app.renderer.width, gscalebg*app.renderer.height + stopLabel.height + stopImage.height)
-        stopLabel.position.set(0, -stopImage.height*0.75)
-        stopLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
-        stopContainer.scale=((stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01)
+        stopContainer.y = coinButtonContainer.y
+        stopImage.height = stopImage.width = (stopImage.active ? 1.1 : 1.0) * (1.0/3.0) * coinButtonContainer.cheight
+        swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * (1.0/3.0) * coinButtonContainer.cheight
+        swapImage.tint = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].colorInt
+        stopImage.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight)
+        stopLabel.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight-stopImage.height*0.75)
+        
+        swapImage.position.set(app.renderer.width*0.75, 2.0/3.0 * coinButtonContainer.cheight)
+        swapLabel.position.set(app.renderer.width*0.75, 2.0/3.0 * coinButtonContainer.cheight-swapImage.height*0.75)
+        
+        //stopLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
+        //stopContainer.scale=((stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01)
         
 
         if (stopIndex > -1 && !isFinalScreen && !trade) {
@@ -704,8 +727,8 @@ async function initGame() {
             coinButtonContainerTitle.text = ''
         }
 
-        stopContainer.visible = !isFinalScreen  && stopIndizes.indexOf(currentIndexInteger) < 0
-        coinButtonContainer.visible = !isFinalScreen
+        stopContainer.visible =  !isFinalScreen  && stopIndex < 0
+        coinButtonContainer.visible = !isFinalScreen && !stopContainer.visible && stopIndex > -1 && !trade
 
         if (isStopScreen && (stopIndex === 0 || isFinalScreen)) {
             //containerGraphs.visible = false
