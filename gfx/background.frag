@@ -35,5 +35,13 @@ void main() {
     }
 
     vec4 baseColor = mix(bottomColor, topColor, mixFactor);
+    if (vPosition.y > 0.995) {
+         if (vPosition.x < uPercentage) {
+            baseColor = vec4(1.0,0.0,0.0,1.0);
+        } else {    
+            baseColor = vec4(1.0,1.0,1.0,0.0);
+        }
+    }
     gl_FragColor = baseColor;
+
 }

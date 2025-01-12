@@ -131,6 +131,9 @@ async function initGame() {
 
     const backgroundImage = new PIXI.Sprite({blendMode: 'screen'});
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
+
+
+
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
     const coinButtonContainer = new PIXI.Container()
@@ -462,8 +465,8 @@ async function initGame() {
 
     
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
-
-    menu.visible = false
+    
+    menu.visible = true
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
