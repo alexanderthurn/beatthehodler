@@ -701,7 +701,9 @@ async function initGame() {
         stopContainer.y = coinButtonContainer.y
         stopImage.height = stopImage.width = (stopImage.active ? 1.1 : 1.0) * (1.0/3.0) * coinButtonContainer.cheight
         swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * (1.0/3.0) * coinButtonContainer.cheight
-        swapImage.tint = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].colorInt
+        //swapImage.tint = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].colorInt
+        
+        swapImage.texture = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].texture
         stopImage.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight)
         stopLabel.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight-stopImage.height*0.75)
         
