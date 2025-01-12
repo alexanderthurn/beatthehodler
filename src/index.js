@@ -520,7 +520,7 @@ async function initGame() {
         let stopIndex = stopIndizes.indexOf(currentIndexInteger)
         let trade = trades.find(t => t.index === currentIndexInteger)
 
-        maxVisiblePoints = 100
+        maxVisiblePoints = isFinalScreen ? options.indexEnd-options.indexStart : 100
         currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = (app.renderer.width-100) / (maxVisiblePoints-3);
         isFinalScreen = currentDate >= options.dateEnd

@@ -213,8 +213,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
         
         menu.levelGroups.forEach((group,index) => {
             group.levelEntries.forEach((entry,index2) => {
-                entry.indexText.scale.set(0.25* (Math.max(640, app.screen.width)/640))
-                entry.indexSubText.scale.set(0.2* (Math.max(640, app.screen.width)/640)) 
+                entry.indexText.scale.set(0.4* (Math.max(640, app.screen.width)/640))
+                entry.indexSubText.scale.set(0.3* (Math.max(640, app.screen.width)/640)) 
                 entry.indexSubText.position.set(0,  entry.indexText.height/2)
                 entry.indexText.position.set(0,  -entry.indexText.height/2)
                 let score = getWin(entry.level.name)
