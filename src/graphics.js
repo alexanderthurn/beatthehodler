@@ -264,8 +264,8 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
 
 
-    graph.priceLabel.scale  = SCALE_TEXT_BASE
-    graph.maxPriceLabel.scale = graph.minPriceLabel.scale = SCALE_TEXT_BASE * 0.75
+    graph.priceLabel.scale  = 8*SCALE_TEXT_BASE
+    graph.maxPriceLabel.scale = graph.minPriceLabel.scale = 8*SCALE_TEXT_BASE * 0.75
 
     //graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
  

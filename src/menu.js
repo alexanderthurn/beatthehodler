@@ -15,7 +15,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.textStyleTitle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 256,
+        fontSize: 64,
         fill: '#fff',
         wordWrap: false,
         wordWrapWidth: 440,
@@ -24,14 +24,14 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     menu.textStylePreview = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 64,
+        fontSize: 32,
         fill: '#fff',
     });
 
     menu.textStylePreviewSub = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 64,
+        fontSize: 32,
         fill: '#fff',
     });
 
@@ -171,24 +171,23 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     menu.helpButtonSprite.position.set(menu.helpButtonSprite.width * 0.2, app.screen.height -menu.helpButtonSprite.height * 1.2 )
    
 
-    //menu.textStyleTitle.fontSize = 128*Math.min(1.0, app.screen.width/1920)
     let scaleToFullHD = app.screen.width/1920
 
-    menu.title.scale.set(scaleToFullHD*0.5)
-    menu.subtitle.scale.set(scaleToFullHD*0.25)
-    menu.finaltitle.scale.set(scaleToFullHD*0.25)
+    menu.title.scale.set(4*scaleToFullHD*0.5)
+    menu.subtitle.scale.set(4*scaleToFullHD*0.25)
+    menu.finaltitle.scale.set(4*scaleToFullHD*0.25)
     menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
 
     if (menu.state === MENU_STATE_INTRO) {
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
         menu.clickTitle.visible = true
-        menu.clickTitle.scale.set(0.05)
+        menu.clickTitle.scale.set(4*0.05)
         menu.clickTitle.position.set(app.screen.width*0.5, app.screen.height)
         menu.clickTitle.alpha =  deltaTime.lastTime % 3000 > 500 ? 1.0 : 0.0
         menu.clickTitle.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
 
-        menu.title.scale.set(Math.min(1,scaleToFullHD)*0.5)
-        menu.subtitle.scale.set(Math.min(0.5,scaleToFullHD)*0.25)
+        menu.title.scale.set(4*Math.min(1,scaleToFullHD)*0.5)
+        menu.subtitle.scale.set(4*Math.min(0.5,scaleToFullHD)*0.25)
         menu.title.position.set(app.screen.width*0.5, app.screen.height*0.1)
         menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.15)
        // menu.subtitle.rotation = menu.title.rotation = -10*Math.PI/360

@@ -87,7 +87,7 @@ async function initGame() {
     const textStyle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
         fontStyle: 'Bold',
-        fontSize: 256,
+        fontSize: 32,
         fill: '#fff'
     });
 
@@ -161,7 +161,7 @@ async function initGame() {
     containerGraphsForeground.addChild(priceLabelContainer)
     containerGraphsForeground.addChild(maxPriceLabel)
     containerGraphsForeground.addChild(minPriceLabel)
-    priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 0.078
+    priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 4*0.078
  
     app.stage.addChild(containerBackground)
     app.stage.addChild(containerForeground)
@@ -335,7 +335,7 @@ async function initGame() {
         trade.labelPrice.anchor.set(0.5,1.5)
         trade.container.addChild(trade.labelPrice)
         if (from === to) {
-            trade.labelPrice.scale.set(1.0)
+            trade.labelPrice.scale.set(8*1.0)
         } else {
             trade.sprite = new PIXI.Sprite(coins[to].texture)
             trade.sprite.anchor.set(0.5,0.5)
@@ -582,7 +582,7 @@ async function initGame() {
         dateLabel.text = txt
         dateLabel.visible = true
         dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.005)
-        dateLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
+        dateLabel.scale.set(8*SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
 
         txt = ''
         if (!isFinalScreen) { 
@@ -635,10 +635,10 @@ async function initGame() {
         bigtextLabel.text = txt
         bigtextLabel.visible = true
         bigtextLabel.position.set(app.screen.width*0.5, app.screen.height*0.4)
-        bigtextLabel.scale.set(SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
+        bigtextLabel.scale.set(8*SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
 
-        stopLabel.scale.set(0.75*SCALE_TEXT_BASE)
-        coinButtonContainerTitle.scale.set(0.75*SCALE_TEXT_BASE)
+        stopLabel.scale.set(8*0.75*SCALE_TEXT_BASE)
+        coinButtonContainerTitle.scale.set(8*0.75*SCALE_TEXT_BASE)
 
         let color = hexToRGB(coins[yourCoinName].color, 1.0)
         if (isMenuVisible()) {
@@ -686,7 +686,7 @@ async function initGame() {
         stopContainer.position.set(0.5*app.renderer.width, gscalebg*app.renderer.height + stopLabel.height + stopImage.height)
         stopLabel.position.set(0, -stopImage.height*0.75)
         stopLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
-        stopContainer.scale=(stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01
+        stopContainer.scale=((stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01)
         
 
         if (stopIndex > -1 && !isFinalScreen && !trade) {
