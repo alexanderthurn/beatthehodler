@@ -431,9 +431,7 @@ async function initGame() {
                             doTrade(yourCoinName,coinButtons[i].to )
                         }
                     }
-                } 
-                
-                if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
+                } else if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
                     stopIndizes.push(currentIndexInteger)
                     stopIndizes.sort()
                     stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)

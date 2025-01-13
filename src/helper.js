@@ -376,7 +376,7 @@ function injectGeneratedLevels(gameData) {
                     "dateStart": i+"-01-01 00:00:00 UTC",
                     "dateEnd": i+"-12-31 00:00:00 UTC",
                     "coinNames": ["USD","BTC"],
-                    "duration": 30000
+                    "duration": 60000
             })
         }
     
