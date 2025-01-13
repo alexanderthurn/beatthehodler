@@ -615,7 +615,8 @@ async function initGame() {
                 if (yourCoinName !== fiatName) {
                     ownLabelContainer.y = priceLabelContainer.y
                 } else {
-                    ownLabelContainer.y =trades.length < 1 ? priceLabelContainer.y: trades[trades.length-1].container.getGlobalPosition().y
+                    let ts = trades.filter(t => t.toName !== t.fromName)
+                    ownLabelContainer.y =trades.length < 1 ? priceLabelContainer.y: ts[ts.length-1].container.getGlobalPosition().y
                 }
 
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}
