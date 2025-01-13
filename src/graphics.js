@@ -257,7 +257,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
    
 
     graph.maxPriceLabel.x  = graph.minPriceLabel.x  = graph.priceLabel.x =  graph.logo.x
-    graph.priceLabel.yOriginal = graph.priceLabel.y
+    graph.priceLabel.yOriginal =0.9*graph.priceLabel.yOriginal+ 0.1*(app.renderer.height*gscalebg-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale)
     graph.priceLabel.y = Math.min(graph.minPriceLabel.y - graph.minPriceLabel.height*2, Math.max(graph.priceLabel.y, graph.maxPriceLabel.y + graph.minPriceLabel.height*2))
     if (isStopScreen && !isFinalScreen) {
         graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = options.coinNames.length < 3 || focusedCoinName === graph.coinName
@@ -398,8 +398,8 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graphLinesBottomMesh.state.culling = true;
    
     graph.addChild(graphRectsMesh)
-    graph.addChild(graphLinesMesh)
     graph.addChild(graphLinesBottomMesh)
+    graph.addChild(graphLinesMesh)
 
     graph.addChild(logo);
     graph.curve = graphLinesMesh
@@ -413,6 +413,8 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graph.addChild(graph.priceLabel);
     graph.priceLabel.visible = false
     graph.priceLabel.anchor.set(10.5,0.5)
+    graph.priceLabel.yOriginal = 0
+    
 
     graph.maxPriceLabel = new PIXI.Text("", textStyle);
     graph.addChild(graph.maxPriceLabel);

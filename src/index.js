@@ -165,6 +165,7 @@ async function initGame() {
     let ownLabelLine =  new PIXI.Graphics()
     let priceLabelContainer = new PIXI.Container()
     let priceLabelLine = new PIXI.Graphics()
+    //priceLabelLine.rotateTransform(45*Math.PI/180).rect(-40,-2,38,4).rotateTransform(-90*Math.PI/180).rect(-40,-2,38,4).rotateTransform(45*Math.PI/180)
     for(let i=0;i<100;i++) {
         priceLabelLine.rect(-20-i*25,-2,18,4)
         ownLabelLine.rect(-20-i*25,-2,18,4)
@@ -173,7 +174,10 @@ async function initGame() {
     priceLabelContainer.addChild(priceLabelLine)
     ownLabelLine.fill({color: 0xffff00,alpha:1})
     ownLabelContainer.addChild(ownLabelLine)
-    
+    let ownLabel = new PIXI.Text('5%',textStyle)
+    ownLabelContainer.addChild(ownLabel)
+    ownLabel.anchor.set(0,0.5)
+
     let priceLabel = new PIXI.Text("100$", textStyle);
     let maxPriceLabel =new PIXI.Text("150$", textStyle);
     let minPriceLabel =new PIXI.Text("200$", textStyle);
@@ -181,8 +185,8 @@ async function initGame() {
     maxPriceLabel.anchor.set(0,0)
     minPriceLabel.anchor.set(0,1)
     priceLabelContainer.addChild(priceLabel)
-    containerGraphsForeground.addChild(priceLabelContainer)
     containerGraphsForeground.addChild(ownLabelContainer)
+    containerGraphsForeground.addChild(priceLabelContainer)
     containerGraphsForeground.addChild(maxPriceLabel)
     containerGraphsForeground.addChild(minPriceLabel)
     priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 4*0.15
@@ -441,6 +445,11 @@ async function initGame() {
                         if (focusedCoinName !== coinButtons[i].to) {
                             focusedCoinName = coinButtons[i].to
                         } else {
+
+                            if (trades.length === 0 && yourCoinName === coinButtons[i].to) {
+                                yourCoins = yourCoins / coins[coinButtons[1-i].to].data[currentIndexInteger].price
+                                yourCoinName = coinButtons[1-i].to  
+                            }
                             doTrade(yourCoinName,coinButtons[i].to )
                         }
                     }
@@ -601,10 +610,16 @@ async function initGame() {
                 minPriceLabel.text = g.graph.minPriceLabel.text
                 maxPriceLabel.text = g.graph.maxPriceLabel.text
 
-              //  if (yourCoinName !== fiatName) {
-              ownLabelContainer.x = priceLabelContainer.x
-                    ownLabelContainer.y = priceLabelContainer+20
-               // }
+                ownLabelContainer.mask = graphBorderMask
+                ownLabelContainer.x = priceLabelContainer.x
+                if (yourCoinName !== fiatName) {
+                    ownLabelContainer.y = priceLabelContainer.y
+                } else {
+                    ownLabelContainer.y =trades.length < 1 ? priceLabelContainer.y: trades[trades.length-1].container.getGlobalPosition().y
+                }
+
+                if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}
+                if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height - Math.random()*10}
             
                 
             }
@@ -633,7 +648,7 @@ async function initGame() {
                     txt += `Choose wisely and\n`
                     txt += `Beat the HODler`
                 } else {
-                    txt += `--- Level ${options.name} ---\n\n\n`
+                    txt += `Level ${options.name}\n\n\n`
                     txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
                     txt += `a HODLer by trading.\n`
@@ -672,6 +687,8 @@ async function initGame() {
         
 
         bigtextContainer.visible = isFinalScreen || stopIndex === 0
+        ownLabelContainer.visible = !isFinalScreen
+        priceLabelContainer.visible = !isFinalScreen
         
         if (bigtextContainer.visible) {
             bigtextLabel.text = txt
