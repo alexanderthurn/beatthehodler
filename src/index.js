@@ -94,11 +94,15 @@ async function initGame() {
     const textStyleCentered = textStyle.clone()
     textStyleCentered.align = 'center'
 
+    const bigtextContainer = new PIXI.Container()
+    const bigTextBackground = new PIXI.Graphics()
     const bigtextLabel = new PIXI.Text('', textStyleCentered)
     bigtextLabel.anchor.set(0.5,0.5)
+    bigtextContainer.addChild(bigTextBackground)
+    bigtextContainer.addChild(bigtextLabel)
     const dateLabel = new PIXI.Text("", textStyle);
     containerForeground.addChild(dateLabel);
-    containerForeground.addChild(bigtextLabel);
+    containerForeground.addChild(bigtextContainer);
 
     await Promise.all(Object.keys(coins).map(async (key) => {
         coins[key].texture = await PIXI.Assets.load({
@@ -419,8 +423,6 @@ async function initGame() {
                 swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
                 coinButtonContainer.active = coinButtonContainer.visible && coinButtonContainer.getBounds().containsPoint(event.x,event.y)
                 let trade = trades.find(t => t.index === currentIndexInteger)
-        
-
                 if (coinButtonContainer.active && !trade) {
                     
                     let i = getCoinButtonIndex(event)
@@ -453,6 +455,7 @@ async function initGame() {
 
        
        
+        coinButtonContainer.active = stopImage.active = swapImage.active = false
 
        
     })
@@ -464,7 +467,7 @@ async function initGame() {
     
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
     
-    menu.visible = true
+    menu.visible = false
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
@@ -617,7 +620,7 @@ async function initGame() {
                     txt += `a HODLer by trading.\n`
                     txt += `Every percent counts!\n\n`
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
-                    txt += `1${formatCurrency(null,options.coinNames[1])} is ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, options.coinNames[1], coins[options.coinNames[1]].data[currentIndexInteger].digits)}\n\n...`
+                    txt += `1${formatCurrency(null,options.coinNames[1])} is ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, options.coinNames[1], coins[options.coinNames[1]].data[currentIndexInteger].digits)}`
                 }
                
             } 
@@ -649,10 +652,18 @@ async function initGame() {
         }
         
 
-        bigtextLabel.text = txt
-        bigtextLabel.visible = true
-        bigtextLabel.position.set(app.screen.width*0.5, app.screen.height*0.4)
-        bigtextLabel.scale.set(8*SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
+        bigtextContainer.visible = isFinalScreen || stopIndex === 0
+        
+        if (bigtextContainer.visible) {
+            bigtextLabel.text = txt
+            bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*0.5)
+            bigtextContainer.scale.set(8*0.75*SCALE_TEXT_BASE)
+            bigTextBackground.clear()
+            bigTextBackground.rect(-bigtextLabel.width/2, -bigtextLabel.height/2, bigtextLabel.width, bigtextLabel.height).fill(0x4d4d4d).stroke({color: 0xffffff, width: 2})
+            bigTextBackground.scale = 1.1
+        }
+       
+
 
         swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
         coinButtonContainerTitle.scale.set(8*0.75*SCALE_TEXT_BASE)
@@ -704,7 +715,9 @@ async function initGame() {
         swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * (1.0/3.0) * coinButtonContainer.cheight
         //swapImage.tint = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].colorInt
         
-        swapImage.texture = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].texture
+        swapLabel.text = (yourCoinName === coinButtons[0].to ? 'Buy' : 'Sell')
+        swapImage.texture = coins[coinButtons[1].to].texture
+        //swapImage.texture = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].texture
         stopImage.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight)
         stopLabel.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight-stopImage.height*0.75)
         
