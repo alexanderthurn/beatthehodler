@@ -118,7 +118,7 @@ async function initGame() {
     let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
 
     const stopContainer = new PIXI.Container()
-    const stopLabel = new PIXI.Text("Stop", textStyleCentered);
+    const stopLabel = new PIXI.Text("Pause", textStyleCentered);
     const stopImage = new PIXI.Sprite(textureBtnStop)
     stopLabel.anchor.set(0.5,0.5)
     stopImage.anchor.set(0.5,0.5)
@@ -161,9 +161,19 @@ async function initGame() {
     graphBorder.cwidth = 0
     containerGraphsForeground.addChild(graphBorder)
     containerGraphsForeground.addChild(graphBorderAreaRight)
+    let ownLabelContainer = new PIXI.Container()
+    let ownLabelLine =  new PIXI.Graphics()
     let priceLabelContainer = new PIXI.Container()
-    let priceLabelLine = new PIXI.Graphics().rect(-20,-2,18,4).fill({color: 0xffffff,alpha:1})
+    let priceLabelLine = new PIXI.Graphics()
+    for(let i=0;i<100;i++) {
+        priceLabelLine.rect(-20-i*25,-2,18,4)
+        ownLabelLine.rect(-20-i*25,-2,18,4)
+    }
+    priceLabelLine.fill({color: 0xffffff,alpha:1})
     priceLabelContainer.addChild(priceLabelLine)
+    ownLabelLine.fill({color: 0xffff00,alpha:1})
+    ownLabelContainer.addChild(ownLabelLine)
+    
     let priceLabel = new PIXI.Text("100$", textStyle);
     let maxPriceLabel =new PIXI.Text("150$", textStyle);
     let minPriceLabel =new PIXI.Text("200$", textStyle);
@@ -172,9 +182,10 @@ async function initGame() {
     minPriceLabel.anchor.set(0,1)
     priceLabelContainer.addChild(priceLabel)
     containerGraphsForeground.addChild(priceLabelContainer)
+    containerGraphsForeground.addChild(ownLabelContainer)
     containerGraphsForeground.addChild(maxPriceLabel)
     containerGraphsForeground.addChild(minPriceLabel)
-    priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 4*0.078
+    priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 4*0.15
  
     app.stage.addChild(containerBackground)
     app.stage.addChild(containerForeground)
@@ -572,6 +583,7 @@ async function initGame() {
             maxPriceLabel.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y)
             priceLabelContainer.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
             
+           
             graphBorderMask.clear()
             graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height*gscalet+graphBorder.cheight).fill({color: 0xff0000})
         
@@ -588,6 +600,13 @@ async function initGame() {
                 priceLabel.y = g.graph.priceLabel.y - g.graph.priceLabel.yOriginal
                 minPriceLabel.text = g.graph.minPriceLabel.text
                 maxPriceLabel.text = g.graph.maxPriceLabel.text
+
+              //  if (yourCoinName !== fiatName) {
+              ownLabelContainer.x = priceLabelContainer.x
+                    ownLabelContainer.y = priceLabelContainer+20
+               // }
+            
+                
             }
         })
 
@@ -620,7 +639,7 @@ async function initGame() {
                     txt += `a HODLer by trading.\n`
                     txt += `Every percent counts!\n\n`
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
-                    txt += `1${formatCurrency(null,options.coinNames[1])} is ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, options.coinNames[1], coins[options.coinNames[1]].data[currentIndexInteger].digits)}`
+                    txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}`
                 }
                
             } 

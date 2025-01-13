@@ -168,6 +168,10 @@ function createStockRectangles(dataPoints, rectWidth) {
 }
 
 function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndex, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible) {
+   
+   
+   
+   
     let parsedData = coins[graph.coinName].data
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
@@ -222,6 +226,12 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     }
   
+    /*const positions = graph.meshLines.geometry.getAttribute('aPosition').buffer;
+    for(let i=0;i<positions.data.length;i+=2) {
+        positions.data[i+1] = 400+(i % 4)*400
+    }*/
+
+
     graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
     graph.curve.scale.set(stepX, scaleY);
     graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
@@ -334,7 +344,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         indexBuffer: lines.indices
     });
 
-    
+   
     const geometryLinesBottom = new PIXI.Geometry({
         attributes: {
             aPosition: linesBottom.vertices,
