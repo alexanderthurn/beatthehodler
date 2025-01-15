@@ -252,6 +252,7 @@ async function initGame() {
     let trades = []
     let coinButtons = []
     let graphs = []
+    let ownPriceData = []
     let isFinalScreen = false
     let isStopScreen = false
     let canStopManually = false
@@ -323,6 +324,9 @@ async function initGame() {
         graphs.forEach(g => {
             containerGraphs.addChild(g.graph); 
         })
+
+
+        ownPriceData = new Array(coins['BTC'].data.length).fill(options.indexEnd)
 
         trades = []
 
@@ -601,7 +605,7 @@ async function initGame() {
 
         
         graphs.forEach(g => {
-            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible())
+            updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible(), ownPriceData)
             
             if (options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === g.graph.coinName) {
                 priceLabel.text = g.graph.priceLabel.text

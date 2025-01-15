@@ -24,6 +24,13 @@ function getFloatFromLocalStorage(key) {
     
 }
 
+function calculateNormal(xA, yA, xB, yB) {
+    const dx = xB - xA;
+    const dy = yB - yA;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    return { nx: -dy, ny: dx };
+}
+
 
 function hexToRGB(hex, a) {
     // Entfernt das # falls vorhanden
