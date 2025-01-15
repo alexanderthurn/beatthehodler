@@ -12,6 +12,7 @@ function createOwnLines(dataPoints, lineWidth, coin) {
     const indices = []
     const colors = []
     const pointIndices = []
+    const uvs = []
 
     for (let i = 1; i < dataPoints.length; i++) {
         const prevY = dataPoints[i - 1].price || 0;
@@ -22,34 +23,41 @@ function createOwnLines(dataPoints, lineWidth, coin) {
         // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
             prevX-halfWidth, prevY,                  // P1: Unten links
-            x-halfWidth, currentY,               // P2: Oben links
-            prevX+halfWidth, prevY,      // P3: Unten rechts
-            x+halfWidth, currentY    // P4: Oben rechts
+            prevX-halfWidth, currentY,               // P2: Oben links
+            x+halfWidth, currentY,      // P3: Unten rechts
+            x+halfWidth, prevY    // P4: Oben rechts
         );
+
+        uvs.push(0,0)
+        uvs.push(0,1)
+        uvs.push(1,1)
+        uvs.push(1,0)
+   
+
+
         for (let h = 0; h < 4; h++) {
             pointIndices.push(i-1)
         }
 
-
-       
         if (currentY < prevY) {
             indices.push(4*(i - 1)+0); 
             indices.push(4*(i - 1)+1); 
             indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+2); 
+            indices.push(4*(i - 1)+3); 
+            indices.push(4*(i - 1)+0); 
+        } else {
+            indices.push(4*(i - 1)+0); 
             indices.push(4*(i - 1)+3); 
             indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+1); 
-        } else {
             indices.push(4*(i - 1)+2); 
             indices.push(4*(i - 1)+1); 
             indices.push(4*(i - 1)+0); 
-            indices.push(4*(i - 1)+1); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+3); 
+
         }
        
         
-
+     
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
         const color = hexToRGB('#ff0000', 0.5)
         for (let j = 0; j < 4; j++) {
@@ -57,7 +65,7 @@ function createOwnLines(dataPoints, lineWidth, coin) {
         }
     }
 
-    return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
+    return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices), uv: new Float32Array(uvs) };
 
 }
 
@@ -408,7 +416,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
 }
 
-function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, textStyle) {
+function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader) {
     
     let parsedData = coins[coinName].data
 
@@ -439,7 +447,8 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         attributes: {
             aPosition: ownLines.vertices,
             aColor: ownLines.colors,
-            aIndex: ownLines.pointIndices
+            aIndex: ownLines.pointIndices,
+            aUV: ownLines.uv
         },
         indexBuffer: ownLines.indices
     });
@@ -469,6 +478,22 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         }
     });
 
+    const ownShader = new PIXI.Shader({
+        glProgram: new PIXI.GlProgram({ 
+            vertex: ownVertexShader, 
+            fragment: ownFragmentShader, 
+            }),
+        resources: {
+            uTexture: coins[coinName].texture,
+            graphUniforms: {
+                uCurrentIndex: {type: 'i32', value: 0},
+                uAlpha: {type: 'f32', value: 1.0},
+                uMaxVisiblePoints: {type: 'i32', value: 3},
+                uScale: { value: [1.0, 1.0], type: 'vec2<f32>' }
+            }
+        }
+    });
+
     const graph = new PIXI.Container()
 
     const graphRectsMesh = new PIXI.Mesh({
@@ -483,7 +508,8 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
 
     const graphOwnLinesMesh = new PIXI.Mesh({
         geometry: geometryOwnLines,
-        shader
+        shader: ownShader,
+        texture: coins[coinName].texture
     });
 
     const graphLinesBottomMesh = new PIXI.Mesh({
@@ -501,7 +527,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graphRectsMesh.state.culling = true;
     graphLinesMesh.state.culling = true;
     graphLinesBottomMesh.state.culling = true;
-    graphOwnLinesMesh.state.culling = false;
+    graphOwnLinesMesh.state.culling = true;
 
     graph.addChild(graphRectsMesh)
     graph.addChild(graphLinesBottomMesh)

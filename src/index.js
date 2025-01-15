@@ -36,6 +36,8 @@ async function initGame() {
 
     const graphVertexShader = await loadShader('./gfx/graph.vert')
     const graphFragmentShader = await loadShader('./gfx/graph.frag')
+    const ownVertexShader = await loadShader('./gfx/own.vert')
+    const ownFragmentShader = await loadShader('./gfx/own.frag')
     const backgroundVertexShader = await loadShader('./gfx/background.vert')
     const backgroundFragmentShader = await loadShader('./gfx/background.frag')
 
@@ -309,7 +311,7 @@ async function initGame() {
 
         graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
             let container = new PIXI.Container()
-            let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle)
+            let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader)
             container.addChild(graph)
         
             return {
