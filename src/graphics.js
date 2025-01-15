@@ -484,7 +484,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
             fragment: ownFragmentShader, 
             }),
         resources: {
-            uTexture: coins[coinName].texture,
+            uTexture: coins[coinName].texture.source,
             graphUniforms: {
                 uCurrentIndex: {type: 'i32', value: 0},
                 uAlpha: {type: 'f32', value: 1.0},
