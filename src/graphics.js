@@ -19,13 +19,12 @@ function createOwnLines(dataPoints, lineWidth, coin) {
         const currentY = dataPoints[i].price || 0;
         const x = (i - 1) * lineWidth;
         const prevX = (i - 2) * lineWidth;
-        const halfWidth = lineWidth * 0.5
         // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
-            prevX-halfWidth, prevY,                  // P1: Unten links
-            prevX-halfWidth, currentY,               // P2: Oben links
-            x+halfWidth, currentY,      // P3: Unten rechts
-            x+halfWidth, prevY    // P4: Oben rechts
+            prevX, prevY,                  // P1: Unten links
+            prevX, currentY,               // P2: Oben links
+            x, currentY,      // P3: Unten rechts
+            x, prevY    // P4: Oben rechts
         );
 
         uvs.push(0,0)
@@ -286,46 +285,26 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
 
     }
-  /*
+  
     const positions = graph.meshOwnLines.geometry.getAttribute('aPosition').buffer;
     const d = positions.data
     const lineWidth = 1
     for(let i=1;i<parsedData.length-1;i++) {
         
+        if (i % 30 > 10) continue;
+
         const ix = i*8
         let prevY = parsedData[i - 1].price || 0;
         let currentY = parsedData[i].price || 0;
-        let nextY = parsedData[i+1].price || 0
 
-        //if ((i-1) % 20 > 10) prevY = 800
-        //if (i % 20 > 10) currentY = 800
-        // if ((i+1) % 20 > 10) nextY = 800
+        prevY = 800
+        let height = stepX
+        d[ix + 1] = prevY - height
+        d[ix + 3] = prevY + height;
+        d[ix + 5] = prevY + height;
+        d[ix + 7] = prevY - height;
         
-        const x = (i - 1) * lineWidth;
-        const prevX = (i - 2) * lineWidth;
-        const nextX = (i) * lineWidth;
-
-        const n1 = calculateNormal(prevX, prevY, x, currentY)*lineWidth;
-        const n2 = calculateNormal(x, currentY,  nextX, nextY)*lineWidth;
-
-  // Skalierung der Normalen mit der Linienbreite
-  const n1Scaled = { nx: n1.nx * lineWidth, ny: n1.ny * lineWidth };
-  const n2Scaled = { nx: n2.nx * lineWidth, ny: n2.ny * lineWidth };
-
-  // Punkte berechnen
-  d[ix] = prevX + n1Scaled.nx;          // Linker Punkt unten
-  d[ix + 1] = prevY + n1Scaled.ny;
-
-  d[ix + 4] = prevX - n1Scaled.nx;      // Linker Punkt oben
-  d[ix + 5] = prevY - n1Scaled.ny;
-
-  d[ix + 2] = x + n2Scaled.nx;          // Rechter Punkt unten
-  d[ix + 3] = currentY + n2Scaled.ny;
-
-  d[ix + 6] = x - n2Scaled.nx;          // Rechter Punkt oben
-  d[ix + 7] = currentY - n2Scaled.ny;
-    }*/
-
+    }
 
     graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
     graph.curve.scale.set(stepX, scaleY);
@@ -527,7 +506,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graphRectsMesh.state.culling = true;
     graphLinesMesh.state.culling = true;
     graphLinesBottomMesh.state.culling = true;
-    graphOwnLinesMesh.state.culling = true;
+    graphOwnLinesMesh.state.culling = false;
 
     graph.addChild(graphRectsMesh)
     graph.addChild(graphLinesBottomMesh)
