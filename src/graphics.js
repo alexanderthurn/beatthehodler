@@ -273,22 +273,32 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
   
     const positions = graph.meshOwnLines.geometry.getAttribute('aPosition').buffer;
     const d = positions.data
-    const lineWidth = 1
-    for(let i=1;i<parsedData.length-1;i++) {
-        
-
+    let heightHalf = stepX/scaleY*0.5
+    for(let i=0;i<parsedData.length-1;i++) {
         const ix = i*8
         let y = parsedData[i].price || 0;
-        let heightHalf = stepX/scaleY*0.5
-        
-       // if (i % 30 > 10) y = parsedData[i+10 - i % 30].price ;
-        //prevY = 800
         d[ix + 1] = y - heightHalf
         d[ix + 3] = y + heightHalf
         d[ix + 5] = y + heightHalf
         d[ix + 7] = y-heightHalf;
-        
     }
+    let realTrades = trades.filter(trade => (trade.fromName !== trade.toName && (trade.toName === fiatName || trade.fromName === fiatName)))
+    realTrades.forEach((trade, i) => {
+        if (trade.toName === fiatName) {
+            let toIndex = i < realTrades.length-1 ? realTrades[i+1].index-1 : parsedData.length-1
+            for(let i=trade.index;i<toIndex;i++) {
+                const ix = i*8
+                let y = trade.fromPrice;
+                d[ix + 1] = y - heightHalf
+                d[ix + 3] = y + heightHalf
+                d[ix + 5] = y + heightHalf
+                d[ix + 7] = y-heightHalf;
+            }
+
+        }
+    })
+
+
     positions.update()
 
     graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
