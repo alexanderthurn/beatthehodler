@@ -622,7 +622,7 @@ async function initGame() {
                     ownLabelContainer.y = priceLabelContainer.y
                 } else {
                     let ts = trades.filter(t => t.toName !== t.fromName)
-                    ownLabelContainer.y =trades.length < 1 ? priceLabelContainer.y: ts[ts.length-1].container.getGlobalPosition().y
+                    ownLabelContainer.y =trades.length < 1 ? priceLabelContainer.y: ts[ts.length-1]?.container.getGlobalPosition().y
                 }
 
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}

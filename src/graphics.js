@@ -14,17 +14,16 @@ function createOwnLines(dataPoints, lineWidth, coin) {
     const pointIndices = []
     const uvs = []
 
-    for (let i = 1; i < dataPoints.length; i++) {
-        const prevY = dataPoints[i - 1].price || 0;
-        const currentY = dataPoints[i].price || 0;
-        const x = (i - 1) * lineWidth;
-        const prevX = (i - 2) * lineWidth;
+    for (let i = 0; i < dataPoints.length; i++) {
+        const y = dataPoints[i].price || 0;
+        const x = (i-1) * lineWidth;
+        const halfWidth = 0.5*lineWidth
         // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
-            prevX, prevY,                  // P1: Unten links
-            prevX, currentY,               // P2: Oben links
-            x, currentY,      // P3: Unten rechts
-            x, prevY    // P4: Oben rechts
+            x-halfWidth, y,                  // P1: Unten links
+            x-halfWidth, y+lineWidth,               // P2: Oben links
+            x-halfWidth+lineWidth, y+lineWidth,      // P3: Unten rechts
+            x-halfWidth+lineWidth, y    // P4: Oben rechts
         );
 
         uvs.push(0,0)
@@ -32,31 +31,17 @@ function createOwnLines(dataPoints, lineWidth, coin) {
         uvs.push(1,1)
         uvs.push(1,0)
    
-
-
         for (let h = 0; h < 4; h++) {
-            pointIndices.push(i-1)
+            pointIndices.push(i)
         }
 
-        if (currentY < prevY) {
-            indices.push(4*(i - 1)+0); 
-            indices.push(4*(i - 1)+1); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+3); 
-            indices.push(4*(i - 1)+0); 
-        } else {
-            indices.push(4*(i - 1)+0); 
-            indices.push(4*(i - 1)+3); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+2); 
-            indices.push(4*(i - 1)+1); 
-            indices.push(4*(i - 1)+0); 
-
-        }
-       
+        indices.push(4*i+0); 
+        indices.push(4*i+2); 
+        indices.push(4*i+1); 
+        indices.push(4*i+0); 
+        indices.push(4*i+3); 
+        indices.push(4*i+2); 
         
-     
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
         const color = hexToRGB('#ff0000', 0.5)
         for (let j = 0; j < 4; j++) {
@@ -291,20 +276,20 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     const lineWidth = 1
     for(let i=1;i<parsedData.length-1;i++) {
         
-        if (i % 30 > 10) continue;
 
         const ix = i*8
-        let prevY = parsedData[i - 1].price || 0;
-        let currentY = parsedData[i].price || 0;
-
-        prevY = 800
-        let height = stepX
-        d[ix + 1] = prevY - height
-        d[ix + 3] = prevY + height;
-        d[ix + 5] = prevY + height;
-        d[ix + 7] = prevY - height;
+        let y = parsedData[i].price || 0;
+        let heightHalf = stepX/scaleY*0.5
+        
+       // if (i % 30 > 10) y = parsedData[i+10 - i % 30].price ;
+        //prevY = 800
+        d[ix + 1] = y - heightHalf
+        d[ix + 3] = y + heightHalf
+        d[ix + 5] = y + heightHalf
+        d[ix + 7] = y-heightHalf;
         
     }
+    positions.update()
 
     graph.curve.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
     graph.curve.scale.set(stepX, scaleY);
@@ -320,10 +305,11 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.curve.shader.resources.graphUniforms.uniforms.uAlpha = graph.alpha
 
     graph.meshOwnLines.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
-    graph.meshOwnLines.scale.set(stepX, scaleY);
+    graph.meshOwnLines.scale.set(1, 1);
     graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
     graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
-
+    graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uScale = [stepX,scaleY]
+    
     graph.priceLabel.text = formatCurrency(price, fiatName,null, true)
     graph.maxPriceLabel.x  = graph.minPriceLabel.x  = graph.priceLabel.x = app.screen.width + diffCurrentIndexIntToFloat*stepX;
     graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*gscalebg-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale);
