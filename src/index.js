@@ -71,8 +71,24 @@ async function initGame() {
    const containerMenu = new PIXI.Container()
    let containerGraphs = new PIXI.Container()
   
+   containerForeground.visible = containerBackground.visible = containerMenu.visible = false
 
-    containerForeground.visible = containerBackground.visible = containerMenu.visible = false
+   await Promise.all(Object.keys(coins).map(async (key) => {
+    coins[key].texture = await PIXI.Assets.load({
+        src: coins[key].image,
+    });
+
+    coins[key].audio = PIXI.sound.Sound.from(coins[key].sound); 
+}))
+
+
+let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
+let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
+let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
+let texturePlayer = await PIXI.Assets.load({src: 'gfx/player.png'})
+let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
+
+
     PIXI.Assets.addBundle('fonts', {
         XoloniumBold: {
             src: './gfx/XoloniumBold-xKZO.ttf',
@@ -106,20 +122,14 @@ async function initGame() {
     containerForeground.addChild(dateLabel);
     containerForeground.addChild(bigtextContainer);
 
-    await Promise.all(Object.keys(coins).map(async (key) => {
-        coins[key].texture = await PIXI.Assets.load({
-            src: coins[key].image,
-        });
-
-        coins[key].audio = PIXI.sound.Sound.from(coins[key].sound); 
-    }))
+    
 
 
-    let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
-    let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
-    let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
-    let texturePlayer = await PIXI.Assets.load({src: 'gfx/player.png'})
-    let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
+    bigtextContainer.hodlerSprite = new PIXI.Sprite(textureHodler)
+    bigtextContainer.playerSprite = new PIXI.Sprite(texturePlayer)
+    bigtextContainer.playerSprite.scale = bigtextContainer.hodlerSprite.scale = 0.075
+    bigtextContainer.addChild(bigtextContainer.playerSprite, bigtextContainer.hodlerSprite)
+
 
     const stopContainer = new PIXI.Container()
     const stopLabel = new PIXI.Text("Pause", textStyleCentered);
@@ -444,6 +454,7 @@ async function initGame() {
         } else {
 
             if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
+                startNewGame(gameData.levels.find(level => level.name === 'menu'))
                 menu.visible = true
             } else if (isFinalScreen) {
                 if (yourFiat > options.fiatBTCHodler) {
@@ -508,7 +519,7 @@ async function initGame() {
     
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
     
-    menu.visible = false
+    menu.visible = true
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
@@ -700,7 +711,9 @@ async function initGame() {
                     txt += `Every percent counts!\n\n`
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
                     //txt += `You have 1${formatCurrency(null,options.coinNames[1])}\n\n`
-                    txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}`
+                    txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
+                    txt += `\n= YOU      \n`
+                    txt += `\n = HODLER`
                 }
                
             } 
@@ -708,6 +721,7 @@ async function initGame() {
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
             txt += " --- Game Over ---\n\n" 
+            txt += `Level ${options.name}\n\n\n`
             if (fiat > options.fiatBTCHodler) {
                 txt += "You won, nice!\n\n" 
                
@@ -719,11 +733,11 @@ async function initGame() {
             }
     
             if (fiat > options.fiatBTCHodler) {
-                txt += `You have ${res.toFixed(2)}% more\n`
+                txt += `You have ${res.toFixed(0)}% more\n`
+                txt += `then the HODLer.\n`
                 txt += `This is a new highscore!\n\n`
-                txt += `Try the next level?!\n`
             } else {
-                txt += `You have ${res.toFixed(2)}% less\n`
+                txt += `You have ${res.toFixed(0)}% less\n`
                 txt += "You have to make more than him\n\n" 
                 txt += "Try again?"
             }
@@ -737,11 +751,21 @@ async function initGame() {
         
         if (bigtextContainer.visible) {
             bigtextLabel.text = txt
-            bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*0.5)
+            bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*0.4)
             bigtextContainer.scale.set(8*0.75*SCALE_TEXT_BASE)
             bigTextBackground.clear()
             bigTextBackground.rect(-bigtextLabel.width/2, -bigtextLabel.height/2, bigtextLabel.width, bigtextLabel.height).fill(0x4d4d4d).stroke({color: 0xffffff, width: 2})
             bigTextBackground.scale = 1.1
+
+            if (stopIndex === 0) {
+                bigtextContainer.playerSprite.x = -0.6*bigtextContainer.width
+                bigtextContainer.hodlerSprite.x = -0.6*bigtextContainer.width
+                bigtextContainer.playerSprite.y = 0.52*bigtextContainer.height
+                bigtextContainer.hodlerSprite.y = 0.7*bigtextContainer.height
+                
+            }
+            //hodlerContainer.x = bigtextContainer.x + bigtextContainer.width*0.5
+           // hodlerContainer.y = bigtextContainer.y + bigtextContainer.height
         }
        
 
