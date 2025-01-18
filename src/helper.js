@@ -418,7 +418,6 @@ function parseGameData(jsonString, coins) {
         let pricesData = coins[dataCoinNames[0]].data
         level.canStopManually = level.canStopManually || true
         level.duration = level.duration || 30000
-        level.fiatStart = level.fiatStart || 1000
         level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].date
         level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].date
         level.stops = level.stops || 8
@@ -428,6 +427,8 @@ function parseGameData(jsonString, coins) {
         level.indexEnd = Math.max(0, findClosestDateIndex(pricesData, level.dateEnd))
         level.maxPrice = pricesData.filter((p,index) => index >= level.indexStart && index <= level.indexEnd).reduce((max, p) => Math.max(p.price, max),0)
         level.minPrice = pricesData.filter((p,index) => index >= level.indexStart && index <= level.indexEnd).reduce((max, p) => Math.min(p.price, max),Number.MAX_VALUE)
+        
+        level.fiatStart = pricesData[ level.indexStart].price || 1000
         if (typeof level.stops === 'number' && !isNaN(level.stops)) {
             level.stops = generateDatesBetween(level.dateStart, level.dateEnd, level.stops)
         } else if (Array.isArray(level.stops)) {

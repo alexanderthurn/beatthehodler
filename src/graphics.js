@@ -320,10 +320,10 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     for(let i=0;i<parsedData.length-1;i++) {
         const ix = i*8
         let y = parsedData[i].price || 0;
-        d[ix + 1] = y - heightHalf
-        d[ix + 3] = y + heightHalf
-        d[ix + 5] = y + heightHalf
-        d[ix + 7] = y-heightHalf;
+        d[ix + 1] = -100
+        d[ix + 3] =-100
+        d[ix + 5] = -100
+        d[ix + 7] = -100
     }
     let realTrades = trades.filter(trade => (trade.fromName !== trade.toName && (trade.toName === fiatName || trade.fromName === fiatName)))
     realTrades.forEach((trade, i) => {
@@ -432,11 +432,13 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     }
     graph.logoSprite.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = graph.priceLabel.visible = false
 
-
+    graph.stepX = stepX
+    graph.scaleY = scaleY
 
     return {
         maxPrice: maxPrice,
-        minPrice: minPrice
+        minPrice: minPrice,
+        price: price
     }
 
 }
