@@ -272,7 +272,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     const percentage = calculatePriceChange(price, lastPrice)
     let percentageText = percentage.text
     let percentageColor = percentage.color
-    for (let i = currentIndexInteger-maxVisiblePoints+1-100; i < currentIndexInteger+100; i++) {
+    for (let i = currentIndexInteger-maxVisiblePoints+1-100; i < currentIndexInteger; i++) {
         if (i >= 0 && 1 <= parsedData.length) {
             if (parsedData[i].price > maxPrice) {
                 maxPrice = parsedData[i].price
