@@ -721,7 +721,7 @@ let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
             txt += " --- Game Over ---\n\n" 
-            txt += `Level ${options.name}\n\n\n`
+            txt += `Level ${options.name}\n`
             if (fiat > options.fiatBTCHodler) {
                 txt += "You won, nice!\n\n" 
                
@@ -734,11 +734,14 @@ let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
     
             if (fiat > options.fiatBTCHodler) {
                 txt += `You have ${res.toFixed(0)}% more\n`
-                txt += `then the HODLer.\n`
+                txt += `than the HODLer.\n`
                 txt += `This is a new highscore!\n\n`
             } else {
                 txt += `You have ${res.toFixed(0)}% less\n`
-                txt += "You have to make more than him\n\n" 
+                txt += `than the HODLer.\n\n`
+                txt += "Don't worry:\n" 
+                txt += "HODLing is an easy way,\n" 
+                txt += "to make money\n\n" 
                 txt += "Try again?"
             }
           
@@ -763,6 +766,8 @@ let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
                 bigtextContainer.playerSprite.y = 0.52*bigtextContainer.height
                 bigtextContainer.hodlerSprite.y = 0.7*bigtextContainer.height
                 
+            } else {
+                bigtextContainer.hodlerSprite.x = bigtextContainer.playerSprite.x = app.screen.width*2
             }
             //hodlerContainer.x = bigtextContainer.x + bigtextContainer.width*0.5
            // hodlerContainer.y = bigtextContainer.y + bigtextContainer.height
