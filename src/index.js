@@ -87,6 +87,7 @@ let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
 let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
 let texturePlayer = await PIXI.Assets.load({src: 'gfx/player.png'})
 let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
+let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
 
 
     PIXI.Assets.addBundle('fonts', {
@@ -226,7 +227,7 @@ let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
-    const menu = await createMenu(gameData, app, coins, textStyle, textStyleCentered)
+    const menu = await createMenu(gameData, app, coins, textStyle, textStyleCentered, textureHodlerMirror, texturePlayer)
     containerMenu.addChild(menu)
 
     function isMenuVisible() {

@@ -5,7 +5,7 @@ const MENU_STATE_HELP = 3
 
 
 
-async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
+async function createMenu(gameData, app, coins, textStyle, textStyleCentered, textureHodler, texturePlayer) {
 
 
     let menu = new PIXI.Container()
@@ -43,6 +43,13 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered) {
     .rect(0, 0, 1024, 1024)
     .fill({ color: 0xf4b400 });
 
+    menu.spriteHodler = new PIXI.Sprite(textureHodler)
+    menu.spritePlayer = new PIXI.Sprite(texturePlayer)
+    menu.spriteHodler.anchor.set(0.5,1)
+    menu.spritePlayer.anchor.set(0.5,1)
+    menu.addChild(menu.spriteHodler)
+    menu.addChild(menu.spritePlayer)
+    
     menu.title = new PIXI.Text('Beat the Hodler', menu.textStyleTitle)
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
@@ -178,6 +185,10 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     menu.finaltitle.scale.set(4*scaleToFullHD*0.25)
     menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
 
+    menu.spritePlayer.height = menu.spriteHodler.height = app.screen.height*0.5
+    menu.spritePlayer.width = menu.spriteHodler.width = app.screen.height*0.5
+    menu.spriteHodler.x = app.screen.width
+    menu.spritePlayer.y = menu.spriteHodler.y = app.screen.height
     if (menu.state === MENU_STATE_INTRO) {
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
         menu.clickTitle.visible = true
