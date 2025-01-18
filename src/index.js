@@ -165,14 +165,16 @@ async function initGame() {
     containerGraphsForeground.addChild(graphBorderAreaRight)
     let ownLabelContainer = new PIXI.Container()
     let ownLabelLine =  new PIXI.Graphics()
+    ownLabelLine.visible = false
     let priceLabelContainer = new PIXI.Container()
     let priceLabelLine = new PIXI.Graphics()
     //priceLabelLine.rotateTransform(45*Math.PI/180).rect(-40,-2,38,4).rotateTransform(-90*Math.PI/180).rect(-40,-2,38,4).rotateTransform(45*Math.PI/180)
     for(let i=0;i<100;i++) {
-        priceLabelLine.rect(-20-i*25,-2,18,4)
+        priceLabelLine.rect(-100-20-i*25,-2,18,4)
         ownLabelLine.rect(-20-i*25,-2,18,4)
     }
     priceLabelLine.fill({color: 0xffffff,alpha:1})
+    priceLabelLine.visible = false
     priceLabelContainer.addChild(priceLabelLine)
     ownLabelLine.fill({color: 0xffff00,alpha:1})
     ownLabelContainer.addChild(ownLabelLine)
@@ -183,9 +185,9 @@ async function initGame() {
     let priceLabel = new PIXI.Text("100$", textStyle);
     let maxPriceLabel =new PIXI.Text("150$", textStyle);
     let minPriceLabel =new PIXI.Text("200$", textStyle);
-    priceLabel.anchor.set(0,0.5)
-    maxPriceLabel.anchor.set(0,0)
-    minPriceLabel.anchor.set(0,1)
+    priceLabel.anchor.set(1.1,0.5)
+    maxPriceLabel.anchor.set(1.1,0)
+    minPriceLabel.anchor.set(1.1,1)
     priceLabelContainer.addChild(priceLabel)
     containerGraphsForeground.addChild(ownLabelContainer)
     containerGraphsForeground.addChild(priceLabelContainer)
@@ -593,10 +595,12 @@ async function initGame() {
             graphBorderAreaRight.cheight = graphBorder.cheight
             graphBorderAreaRight.cwidth = 100
             graphBorderAreaRight.clear()
-            graphBorderAreaRight.rect(-10,graphBorder.cheight-4,10,4).rect(-10,0,10,4).rect(-4,0,4,graphBorderAreaRight.cheight).fill({color: 0xffffff,alpha:1}).rect(0,0,graphBorderAreaRight.cwidth,graphBorderAreaRight.cheight).fill({color: 0x4d4d4d, alpha: 0.0})
-            minPriceLabel.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight)
-            maxPriceLabel.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y)
-            priceLabelContainer.position.set(graphBorderAreaRight.position.x+1, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
+            //graphBorderAreaRight.rect(-10,graphBorder.cheight-4,10,4).rect(-10,0,10,4).rect(-4,0,4,graphBorderAreaRight.cheight).fill({color: 0xffffff,alpha:1}).rect(0,0,graphBorderAreaRight.cwidth,graphBorderAreaRight.cheight).fill({color: 0x4d4d4d, alpha: 0.0})
+            graphBorderAreaRight.rect(graphBorderAreaRight.cwidth-10,graphBorder.cheight-4,10,4).rect(graphBorderAreaRight.cwidth -10,0,10,4).rect(graphBorderAreaRight.cwidth -4,0,4,graphBorderAreaRight.cheight).fill({color: 0xffffff,alpha:1})
+            
+            minPriceLabel.position.set(app.screen.width+1, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight)
+            maxPriceLabel.position.set(app.screen.width+1, graphBorderAreaRight.position.y)
+            priceLabelContainer.position.set(app.screen.width, graphBorderAreaRight.position.y+graphBorderAreaRight.cheight*0.5)
             
            
             graphBorderMask.clear()
@@ -617,7 +621,7 @@ async function initGame() {
                 maxPriceLabel.text = g.graph.maxPriceLabel.text
 
                 ownLabelContainer.mask = graphBorderMask
-                ownLabelContainer.x = priceLabelContainer.x
+                ownLabelContainer.x = graphBorderAreaRight.x
                 if (yourCoinName !== fiatName) {
                     ownLabelContainer.y = priceLabelContainer.y
                 } else {
@@ -759,8 +763,8 @@ async function initGame() {
         //swapImage.tint = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].colorInt
         
         swapLabel.text = (yourCoinName === coinButtons[0].to ? 'Buy' : 'Sell')
-        swapImage.texture = coins[coinButtons[1].to].texture
-        //swapImage.texture = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].texture
+        //swapImage.texture = coins[coinButtons[1].to].texture
+        swapImage.texture = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].texture
         stopImage.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight)
         stopLabel.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight-stopImage.height*0.75)
         

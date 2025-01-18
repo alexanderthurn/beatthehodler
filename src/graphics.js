@@ -43,7 +43,7 @@ function createOwnLines(dataPoints, lineWidth, coin) {
         indices.push(4*i+2); 
         
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
-        const color = hexToRGB('#ff0000', 0.5)
+        const color = hexToRGB('#ffffff', 0.5)
         for (let j = 0; j < 4; j++) {
             colors.push(...color);
         }
@@ -159,6 +159,48 @@ function createStockBottomLines(dataPoints, lineWidth, coin) {
 }
 
 
+function createStockBottomRectangles(dataPoints, rectWidth) {
+    const vertices = []
+    const indices = []
+    const colors = []
+    const pointIndices = []
+
+    for (let i = 1; i < dataPoints.length; i++) {
+        const prevY = dataPoints[i - 1].price;
+        const currentY = dataPoints[i].price;
+        const x = (i - 1) * rectWidth;
+        const halfWidth = rectWidth * 0.5
+        // Punkte für Triangle Strip: P1, P2, P3, P4
+        const lowerY = prevY < currentY ? prevY : currentY
+        vertices.push(
+            x-halfWidth, 0,                  // P1: Unten links
+            x-halfWidth, lowerY,               // P2: Oben links
+            x+halfWidth, 0,      // P3: Unten rechts
+            x+halfWidth, lowerY    // P4: Oben rechts
+        );
+        for (let h = 0; h < 4; h++) {
+            pointIndices.push(i-1)
+        }
+
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+1); 
+        indices.push(4*(i - 1)+0); 
+        indices.push(4*(i - 1)+1); 
+        indices.push(4*(i - 1)+2); 
+        indices.push(4*(i - 1)+3);     
+       
+        const color = hexToRGB('#4d4d4d', 1.0)
+
+        for (let j = 0; j < 4; j++) {
+            colors.push(...color);
+        }
+    }
+
+    return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
+
+}
+
+
 function createStockRectangles(dataPoints, rectWidth) {
     const vertices = []
     const indices = []
@@ -201,8 +243,8 @@ function createStockRectangles(dataPoints, rectWidth) {
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
         const color = currentY < prevY 
-            ? [1.0, 0.0, 0.0, 1.0] // Rot (RGBA: 1, 0, 0, 1)
-            : [0.0, 1.0, 0.0, 1.0]; // Grün (RGBA: 0, 1, 0, 1)
+            ? [1.0,1.0,1.0, 1.0] // Rot (RGBA: 1, 0, 0, 1)
+            : [1.0,1.0,1.0, 1.0]; // Grün (RGBA: 0, 1, 0, 1)
 
         for (let j = 0; j < 4; j++) {
             colors.push(...color);
@@ -230,8 +272,8 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     const percentage = calculatePriceChange(price, lastPrice)
     let percentageText = percentage.text
     let percentageColor = percentage.color
-    for (let i = currentIndexInteger-maxVisiblePoints+1; i < currentIndexInteger; i++) {
-        if (i >= 0) {
+    for (let i = currentIndexInteger-maxVisiblePoints+1-100; i < currentIndexInteger+100; i++) {
+        if (i >= 0 && 1 <= parsedData.length) {
             if (parsedData[i].price > maxPrice) {
                 maxPrice = parsedData[i].price
                 maxPriceIndex = i
@@ -253,27 +295,28 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     
     if (graph.coinName === 'BTC2') {
         graph.curve = graph.meshRects
+        graph.curveBottom = graph.meshRectsBottom
         graph.meshLines.visible = false
+        graph.meshLinesBottom.visible =false
         graph.meshOwnLines.visible = false
         graph.curve.visible = true
     } else {
         graph.curve = graph.meshLines
+        graph.curveBottom = graph.meshLinesBottom
         graph.meshRects.visible = false
-        graph.curve.visible = true
-        graph.meshOwnLines.visible = true
-        graph.meshLinesBottom.visible =true
-        graph.meshLinesBottom.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
-        graph.meshLinesBottom.scale.set(stepX, scaleY);
-        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
-        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
-        graph.meshLinesBottom.shader.resources.graphUniforms.uniforms.uAlpha = 0.5
-
-
+        graph.meshRectsBottom.visible = false
     }
-  
+
+    graph.curve.visible = true
+    graph.curveBottom.visible = true
+    graph.curveBottom.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
+    graph.curveBottom.scale.set(stepX, scaleY);
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uCurrentIndex = 0
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
+
     const positions = graph.meshOwnLines.geometry.getAttribute('aPosition').buffer;
     const d = positions.data
-    let heightHalf = stepX/scaleY*0.5
+    let heightHalf = stepX/scaleY*0.1
     for(let i=0;i<parsedData.length-1;i++) {
         const ix = i*8
         let y = parsedData[i].price || 0;
@@ -285,15 +328,19 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     let realTrades = trades.filter(trade => (trade.fromName !== trade.toName && (trade.toName === fiatName || trade.fromName === fiatName)))
     realTrades.forEach((trade, i) => {
         if (trade.toName === fiatName) {
-            let toIndex = i < realTrades.length-1 ? realTrades[i+1].index-1 : parsedData.length-1
-            for(let i=trade.index;i<toIndex;i++) {
+            let toIndex = i < realTrades.length-1 ? realTrades[i+1].index : parsedData.length-1
+            
+            let y = trade.fromPrice;
+            let y2 = i < realTrades.length-1 ? realTrades[i+1].toPrice : parsedData[parsedData.length-1].price
+
+            for(let i=trade.index;i<=toIndex;i++) {
                 const ix = i*8
-                let y = trade.fromPrice;
                 d[ix + 1] = y - heightHalf
                 d[ix + 3] = y + heightHalf
                 d[ix + 5] = y + heightHalf
                 d[ix + 7] = y-heightHalf;
             }
+           
 
         }
     })
@@ -305,6 +352,14 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.curve.scale.set(stepX, scaleY);
     graph.curve.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
     graph.curve.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
+    
+    graph.meshOwnLines.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
+    graph.meshOwnLines.scale.set(1, 1);
+    graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
+    graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
+    graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uScale = [stepX,scaleY]
+    
+    
     graph.logo.x = (1.0-diffCurrentIndexIntToFloat)*((currentIndexInteger - (currentIndexInteger-maxVisiblePoints+2)) * stepX) + (diffCurrentIndexIntToFloat)*(((currentIndexInteger+1) - (currentIndexInteger-maxVisiblePoints+2)) * stepX);
     graph.logo.y = (1.0-diffCurrentIndexIntToFloat)*(app.renderer.height*gscalebg-(price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale) + (diffCurrentIndexIntToFloat)*(app.renderer.height*gscalebg-(pricePriorIndex-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale);
     if (price <= 0) {
@@ -314,12 +369,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.alpha = options.coinNames.length < 3 || focusedCoinName === fiatName || !focusedCoinName || focusedCoinName === graph.coinName ? 1.0 : 0.0
     graph.curve.shader.resources.graphUniforms.uniforms.uAlpha = graph.alpha
 
-    graph.meshOwnLines.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
-    graph.meshOwnLines.scale.set(1, 1);
-    graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uCurrentIndex = currentIndexInteger
-    graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
-    graph.meshOwnLines.shader.resources.graphUniforms.uniforms.uScale = [stepX,scaleY]
-    
+
     graph.priceLabel.text = formatCurrency(price, fiatName,null, true)
     graph.maxPriceLabel.x  = graph.minPriceLabel.x  = graph.priceLabel.x = app.screen.width + diffCurrentIndexIntToFloat*stepX;
     graph.priceLabel.y = 0.9*graph.priceLabel.y +0.1*(app.renderer.height*gscalebg-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale);
@@ -356,7 +406,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         trade.container.y = app.renderer.height*gscalebg-  ((trade.fromName === graph.coinName ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;
         if (trade.sprite) {
-            trade.sprite.height = trade.sprite.width = app.renderer.width*0.04
+            trade.sprite.height = trade.sprite.width = app.renderer.width*0.02
         }
         
         if (trade.index > currentIndexInteger - maxVisiblePoints) {  
@@ -399,6 +449,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     let lines = createStockLines(parsedData,1, coins[coinName])
     let ownLines = createOwnLines(parsedData,1, coins[coinName])
     let linesBottom = createStockBottomLines(parsedData, 1, coins[coinName])
+    let rectsBottom = createStockBottomRectangles(parsedData, 1, coins[coinName])
 
     const geometryRects = new PIXI.Geometry({
         attributes: {
@@ -436,6 +487,16 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
             aIndex: linesBottom.pointIndices
         },
         indexBuffer: linesBottom.indices
+    });
+
+    
+    const geometryRectsBottom = new PIXI.Geometry({
+        attributes: {
+            aPosition: rectsBottom.vertices,
+            aColor: rectsBottom.colors,
+            aIndex: rectsBottom.pointIndices
+        },
+        indexBuffer: rectsBottom.indices
     });
 
     const shader = new PIXI.Shader({
@@ -492,6 +553,11 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         shader
     });
 
+    const graphRectsBottomMesh = new PIXI.Mesh({
+        geometry: geometryRectsBottom,
+        shader
+    });
+
 
     const logo = new PIXI.Container()
     const logoSprite = new PIXI.Sprite(coins[coinName].texture);
@@ -502,19 +568,23 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graphRectsMesh.state.culling = true;
     graphLinesMesh.state.culling = true;
     graphLinesBottomMesh.state.culling = true;
+    graphRectsBottomMesh.state.culling = true;
     graphOwnLinesMesh.state.culling = false;
 
     graph.addChild(graphRectsMesh)
     graph.addChild(graphLinesBottomMesh)
+    graph.addChild(graphRectsBottomMesh)
     graph.addChild(graphLinesMesh)
     graph.addChild(graphOwnLinesMesh)
 
     graph.addChild(logo);
     graph.curve = graphLinesMesh
+    graph.curveBottom = graphLinesBottomMesh
     graph.meshRects = graphRectsMesh
     graph.meshLines = graphLinesMesh
     graph.meshOwnLines = graphOwnLinesMesh
     graph.meshLinesBottom = graphLinesBottomMesh
+    graph.meshRectsBottom = graphRectsBottomMesh
     graph.logo = logo
     graph.logoSprite = logoSprite
 
