@@ -187,13 +187,14 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
 
     menu.spritePlayer.width = menu.spriteHodler.width = menu.spritePlayer.height = menu.spriteHodler.height = Math.min(app.screen.height, app.screen.width)*0.5
 
-    menu.spriteHodler.x = app.screen.width 
     menu.spritePlayer.y = app.screen.height + Math.cos(deltaTime.lastTime*0.002)*app.screen.height*0.02
     menu.spriteHodler.y = app.screen.height + Math.sin(deltaTime.lastTime*0.001)*app.screen.height*0.01
     if (menu.state === MENU_STATE_INTRO) {
+        menu.spriteHodler.x = app.screen.width 
+        menu.spritePlayer.x = 0
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
         menu.clickTitle.visible = true
-        menu.clickTitle.scale.set(4*0.05)
+        menu.clickTitle.scale.set(4*0.05*app.screen.width/320)
         menu.clickTitle.position.set(app.screen.width*0.5, app.screen.height)
         menu.clickTitle.alpha =  deltaTime.lastTime % 3000 > 500 ? 1.0 : 0.0
         menu.clickTitle.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
@@ -205,6 +206,9 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
        // menu.subtitle.rotation = menu.title.rotation = -10*Math.PI/360
 
     } else if (menu.state === MENU_STATE_LEVELS) {
+        menu.spriteHodler.x = 0.9* menu.spriteHodler.x + 0.1*app.screen.width*1.1 
+        menu.spritePlayer.x = 0.9*menu.spritePlayer.x + 0.1*-app.screen.width*0.1
+
         menu.clickTitle.alpha*=0.92
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
         menu.subtitle.alpha*=0.92
