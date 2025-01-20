@@ -859,17 +859,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         stopContainer.visible =  !isFinalScreen  && stopIndex < 0
         coinButtonContainer.visible = !isFinalScreen && !stopContainer.visible && stopIndex > -1 && !trade
 
-        if (isStopScreen && (stopIndex === 0 || isFinalScreen)) {
-            //containerGraphs.visible = false
-            backgroundImage.visible = false
-           // dateLabel.fontStyle = textStyleCentered
-            //dateLabel.position.set(0.5*app.screen.width, 0.5*app.screen.height)
-            //dateLabel.anchor.set(0.5,0.5)
-        } else {
-            //containerGraphs.visible = true
-            backgroundImage.visible = true
-            //dateLabel.anchor.set(0.0,0.0)
-        }
+       
         btnMenuSprite.scale = 0.3*(Math.max(640,app.screen.width)/640.0)*0.5
         btnMenuSprite.alpha = (btnMenuSprite.active ? 1.0 : 0.7)
         btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
