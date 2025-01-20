@@ -8,6 +8,19 @@ function getBooleanFromLocalStorage(key) {
     return false
 }
 
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.type = 'text/javascript';
+        script.async = true;
+
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Script load error: ${url}`));
+
+        document.head.appendChild(script);
+    });
+}
 
 function getFloatFromLocalStorage(key) {
     const value = localStorage.getItem(key);

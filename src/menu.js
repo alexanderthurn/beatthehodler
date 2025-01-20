@@ -136,7 +136,7 @@ function menuPointerMoveEvent(menu, event) {
 
 }
 
-function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
+function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
     if (menu.state === MENU_STATE_INTRO) {
         menu.state = MENU_STATE_LEVELS
     } else {
@@ -145,7 +145,7 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute) {
                 if (!entry.active ) {
                     entry.active = true
                 } else {
-                    menu.visible = false
+                    showMenu(false)
                     startNewGame(entry.level) 
                     entry.active = false
     

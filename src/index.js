@@ -1,3 +1,6 @@
+
+
+
 const coins = {
     USD: { color: '#85BB65', colorInt: 0x85BB65, image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
     BTC: { color: '#F7931B', colorInt: 0xF7931B,image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
@@ -7,32 +10,60 @@ const coins = {
     SOL: { color: '#BD3EF3', colorInt: 0xBD3EF3,image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', csv: 'data/sol-usd-max.csv',  digits: 2},
 }
 
-function playBuySound(key) {
-    if (coins[key].audio) {
-        coins[key].audio.currentTime = 0
-        coins[key].audio.play()
-    }
-}
 const SCALE_TEXT_BASE = 1.0/16.0*1.5
 const gscale = 0.5 // how much screen height does the graph take
 const gscalet = 0.2 // how much screen height space on top
 const gscaleb = 1.0 - gscale - gscalet
 const gscalebg = 1.0 - gscaleb // bottom percentage where graph ends
 
+const SoundManager = {
+    isInit: false,
+    musicName: null,
+    sounds: {},
+    muted: false,
+
+    muteAll: () => {
+        PIXI.sound?.muteAll()
+        SoundManager.muted= true
+    },
+
+    unmuteAll: () => {
+        PIXI.sound?.unmuteAll()
+        SoundManager.muted = false
+    },
+
+    play: (soundName) => {
+        PIXI.sound?.play(soundName)
+    },
+    playSound: (sound) => {
+        if (sound) {
+            sound.play()
+        } else {
+
+        }
+    },
+    playMusic: (musicname) => {
+        PIXI.sound?.stopAll();
+        PIXI.sound?.play(musicname, {loop: true})
+        SoundManager.musicName = musicname
+    },
+    init: function() {
+        Promise.all(Object.keys(coins).map(async (key) => {
+            PIXI.sound.add(key,coins[key].sound )
+        }))
+        
+        PIXI.sound.add('music_menu', 'sfx/song1.mp3')
+        PIXI.sound.add('music_game1', 'sfx/song3.mp3')
+        PIXI.sound.add('music_game2', 'sfx/song2.mp3')
+        if (SoundManager.musicName) {
+            SoundManager.playMusic(SoundManager.musicName)
+        } 
+    }
+}
+
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
 
-    let music = PIXI.sound.Sound.from({
-        url: 'sfx/song1.mp3',
-        autoPlay: true,
-        complete: function() {
-            console.log('Sound finished');
-        }
-    });
-    /*let music = {
-        volume: 0,
-        speed: 0
-    }*/
 
     const graphVertexShader = await loadShader('./gfx/graph.vert')
     const graphFragmentShader = await loadShader('./gfx/graph.frag')
@@ -78,7 +109,7 @@ async function initGame() {
         src: coins[key].image,
     });
 
-    coins[key].audio = PIXI.sound.Sound.from(coins[key].sound); 
+  
 }))
 
 
@@ -236,16 +267,26 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         return menu.visible
     }
 
+    function showMenu(value) {
+        if (!menu.visible && value) {
+            menu.visible = true
+            SoundManager.playMusic('music_menu')
+        } else if (menu.visible && !value) {
+            menu.visible = false
+            SoundManager.playMusic('music_game1')
+        }
+    }
+
     let localStorageCache = {}
 
     function setMute(value) {
         localStorageCache['mute'] = value
         localStorage.setItem('mute', value)
         if (value) {
-            PIXI.sound.muteAll()
+            SoundManager.muteAll()
         } else {
 
-            PIXI.sound.unmuteAll()
+            SoundManager.unmuteAll()
         }
     }
 
@@ -404,7 +445,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             trade.sprite.height = trade.sprite.width = 0
             trade.container.addChildAt(trade.sprite, 0)
 
-            playBuySound(trade.toName)
+            SoundManager.play(trade.toName)
         }
 
 
@@ -449,19 +490,29 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         
     });
 
+    app.stage.once('pointerup', (event) => {
+        loadScript('lib/pixi-sound.js')
+        .then(() => {
+            SoundManager.init()
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+
+    })
 
      app.stage.addEventListener('pointerup', (event) => {
 
         if (isMenuVisible()) {
-            menuPointerUpEvent(menu, event, startNewGame,getMute, setMute)
+            menuPointerUpEvent(menu, event, startNewGame,getMute, setMute, showMenu)
         } else {
 
             if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                menu.visible = true
+                showMenu(true)
             } else if (isFinalScreen) {
                 if (yourFiat > options.fiatBTCHodler) {
-                    menu.visible = true
+                    showMenu(true)
                 } else {
                     startNewGame(options)
                 }
@@ -522,7 +573,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
     
-    menu.visible = true
+    menu.visible = false
+    showMenu(!menu.visible)
     app.ticker.add((deltaTime) => {
         updateMenu(menu, app, deltaTime, getMute, getWin)
 
@@ -561,9 +613,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             }
         }
 
-        music.speed = paused > 0 ? Math.max(0.75,music.speed*0.9) : Math.min(1.0,music.speed*1.1)
-        music.volume = paused > 0 ? Math.max(0.5,music.volume*0.9) : Math.min(1.0,music.volume*1.1)
-
+      
         if (currentIndexFloat > options.indexEnd) {
             currentIndexFloat = options.indexEnd
         }
