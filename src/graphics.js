@@ -333,7 +333,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
             let y = trade.fromPrice;
             let y2 = i < realTrades.length-1 ? realTrades[i+1].toPrice : parsedData[parsedData.length-1].price
 
-            for(let i=trade.index;i<=toIndex;i++) {
+            for(let i=trade.index;i<toIndex;i++) {
                 const ix = i*8
                 d[ix + 1] = y - heightHalf
                 d[ix + 3] = y + heightHalf
