@@ -911,7 +911,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
         
-        hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(16,stepX))*0.2
+        hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
 
     });
 }
