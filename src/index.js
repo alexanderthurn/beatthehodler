@@ -88,6 +88,7 @@ let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
 let texturePlayer = await PIXI.Assets.load({src: 'gfx/player.png'})
 let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
 let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
+let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
     PIXI.Assets.addBundle('fonts', {
@@ -180,11 +181,11 @@ let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
     let hodlerContainer = new PIXI.Container()
     let hodlerSprite = new PIXI.Sprite(textureHodler)
     hodlerSprite.scale = 0.05
-    hodlerSprite.anchor.set(0.5,0.5)
+    hodlerSprite.anchor.set(0.5,0.8)
     hodlerContainer.addChild(hodlerSprite)
     let ownSprite = new PIXI.Sprite(texturePlayer)
     ownSprite.scale = 0.05
-    ownSprite.anchor.set(0.5,0.5)
+    ownSprite.anchor.set(0.5,0.8)
     let ownLabelLine =  new PIXI.Graphics()
     ownLabelLine.visible = false
     let priceLabelContainer = new PIXI.Container()
@@ -203,7 +204,8 @@ let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
     let ownLabel = new PIXI.Text('+ 400%',textStyle)
     ownLabelContainer.addChild(ownLabel)
     ownLabel.anchor.set(1,1)
-    ownLabel.x = -30
+    ownLabel.x = -40
+    ownLabel.y = -20
 
     let priceLabel = new PIXI.Text("100$", textStyle);
     let maxPriceLabel =new PIXI.Text("150$", textStyle);
@@ -337,7 +339,7 @@ let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
 
         graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
             let container = new PIXI.Container()
-            let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader)
+            let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader, textureCloud)
             container.addChild(graph)
         
             return {
@@ -906,6 +908,10 @@ let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
          
            
         }       
+
+
+        
+        hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(16,stepX))*0.2
 
     });
 }

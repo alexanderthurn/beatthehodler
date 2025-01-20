@@ -22,8 +22,8 @@ function createOwnLines(dataPoints, lineWidth, coin) {
         vertices.push(
             x-halfWidth, y,                  // P1: Unten links
             x-halfWidth, y+lineWidth,               // P2: Oben links
-            x-halfWidth+lineWidth, y+lineWidth,      // P3: Unten rechts
-            x-halfWidth+lineWidth, y    // P4: Oben rechts
+            x-halfWidth+lineWidth*2, y+lineWidth,      // P3: Unten rechts
+            x-halfWidth+lineWidth*2, y    // P4: Oben rechts
         );
 
         uvs.push(0,0)
@@ -316,7 +316,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     const positions = graph.meshOwnLines.geometry.getAttribute('aPosition').buffer;
     const d = positions.data
-    let heightHalf = stepX/scaleY*0.1
+    let heightHalf = stepX/scaleY
     for(let i=0;i<parsedData.length-1;i++) {
         const ix = i*8
         let y = parsedData[i].price || 0;
@@ -443,7 +443,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
 }
 
-function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader) {
+function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader,textureCloud) {
     
     let parsedData = coins[coinName].data
 
@@ -522,7 +522,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
             fragment: ownFragmentShader, 
             }),
         resources: {
-            uTexture: coins[coinName].texture.source,
+            uTexture: textureCloud.source,
             graphUniforms: {
                 uCurrentIndex: {type: 'i32', value: 0},
                 uAlpha: {type: 'f32', value: 1.0},
@@ -547,7 +547,8 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     const graphOwnLinesMesh = new PIXI.Mesh({
         geometry: geometryOwnLines,
         shader: ownShader,
-        texture: coins[coinName].texture
+        texture: textureCloud,
+        blendMode: 'screen'
     });
 
     const graphLinesBottomMesh = new PIXI.Mesh({
