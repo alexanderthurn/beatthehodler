@@ -36,6 +36,15 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     });
 
 
+    menu.textStyleClick = new PIXI.TextStyle({
+        fontFamily: 'Xolonium',
+        fontStyle: 'Bold',
+        fontSize: 32,
+        fill: '#fff',
+        stroke: {color: '#4d4d4d', width: 2},
+        wordWrap: true,
+        wordWrapWidth: app.screen.width,
+    });
 
     menu.background = new PIXI.Graphics();
     menu.addChild(menu.background)
@@ -62,7 +71,10 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.finaltitle.anchor.set(0.5,1.0)
     menu.addChild(menu.finaltitle)
 
-    menu.clickTitle =  new PIXI.Text('A "Hodler" holds, no matter what!', menu.textStyleTitle) 
+    menu.clickTitle = new PIXI.Text('A "Hodler" holds, no matter what!', menu.textStyleClick) 
+    menu.clickTitle.textMobile = 'A "Hodler" holds,\n no matter what!'
+    menu.clickTitle.textDesktop = 'A "Hodler" holds, no matter what!'
+
     menu.clickTitle.anchor.set(0.5,1.5)
     menu.addChild(menu.clickTitle)
 
@@ -194,7 +206,13 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
         menu.spritePlayer.x = 0
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
         menu.clickTitle.visible = true
-        menu.clickTitle.scale.set(4*0.05*app.screen.width/320)
+        menu.textStyleClick.wordWrapWidth = app.screen.width*0.75*2
+        if (app.screen.width < 1280) {
+            menu.clickTitle.text = menu.clickTitle.textMobile
+        } else {
+            menu.clickTitle.text = menu.clickTitle.textDesktop
+        }
+        menu.clickTitle.scale = 0.5
         menu.clickTitle.position.set(app.screen.width*0.5, app.screen.height)
         menu.clickTitle.alpha =  deltaTime.lastTime % 3000 > 500 ? 1.0 : 0.0
         menu.clickTitle.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
