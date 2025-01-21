@@ -12,7 +12,7 @@ void main() {
     vec4 baseColor = vColor;
     vec4 topColor =vec4(uR, uG, uB, uA); 
 
-    float distSun = distance(vPosition, uSun);
+    float distSun = distance(vPosition, uSun)*1.3;
     float clampedDist = clamp(distSun, 0.0, 1.0);
     baseColor = mix(topColor,baseColor, clampedDist);
      gl_FragColor = baseColor;

@@ -144,7 +144,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     stopContainer.addChild(swapLabel);
     containerForeground.addChild(stopContainer);
 
-    const backgroundImage = new PIXI.Sprite({blendMode: 'screen'});
+    const backgroundImage = new PIXI.Sprite({blendMode: 'normal'}); //screen
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
 
 
@@ -878,8 +878,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         backgroundImage.scale.set(0.2*(Math.min(app.screen.width,1080)/1080))
         backgroundImage.alpha = 1;
-        backgroundImage.x = app.renderer.width-100-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.001)*0.1*(app.renderer.width-100);
-        backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.001)*app.renderer.height / 8;
+        backgroundImage.x = app.renderer.width-50-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100);
+        backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16;
 
         if (isMenuVisible()){
            // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)

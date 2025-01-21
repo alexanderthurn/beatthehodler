@@ -135,6 +135,33 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.addChild(menu.helpButtonSprite)
     menu.helpButtonSprite.scale =  0.20
 
+    const particleCount = 21
+    menu.particles = new Array()
+    menu.particleContainer = new PIXI.ParticleContainer({ 
+        dynamicProperties: {
+            position: true,  // Allow dynamic position changes (default)
+            scale: false,    // Static scale for extra performance
+            rotation: false, // Static rotation
+            color: false     // Static color
+        }
+    })
+
+    for (let i=0;i<particleCount;i++) {
+        let particle = new PIXI.Particle({
+            texture: coins['BTC'].texture,
+            x: Math.random() * 800,
+            y: Math.random() * 600,
+            scaleX:0.01,
+            scaleY:0.01,
+            anchorX: 0.5,
+            anchorY: 0.5
+        })
+        menu.particleContainer.addParticle(particle)
+        menu.particles.push(particle)
+    }
+
+    menu.addChild(menu.particleContainer)
+    
     return menu
 }
 
@@ -286,4 +313,56 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     
     
 
+    menu.particles.forEach((p,i) => {
+     /*   p.x = Math.random() * app.screen.width
+        p.y = Math.random() * app.screen.height
+        const centerX = app.screen.width / 2;
+        const centerY = app.screen.height / 2;
+        const faceWidth = app.screen.width * 0.5;
+        const faceHeight = app.screen.height * 0.5;
+    
+        if (i === 0) {
+            // Linkes Auge
+            p.baseX = centerX - faceWidth * 0.2;
+            p.baseY = centerY - faceHeight * 0.25;
+        } else if (i === 1) {
+            // Rechtes Auge
+            p.baseX = centerX + faceWidth * 0.2;
+            p.baseY = centerY - faceHeight * 0.25;
+        } else {
+            // Mund (Parabel)
+            const mouthWidth = faceWidth * 0.5; // Mundbreite
+            const mouthHeight = faceHeight * 0.1; // Krümmung
+            const t = (i - 2) / (menu.particles.length - 3); // Normierung [0, 1]
+            const offsetX = mouthWidth * (t - 0.5); // X relativ zum Mund
+            const offsetY = -Math.pow(offsetX / mouthWidth * 2, 2) * mouthHeight; // Parabel
+    
+            p.baseX = centerX + offsetX;
+            p.baseY = centerY + offsetY + faceHeight * 0.2; // Unterhalb der Augen
+        }
+    
+        // Zufällige Bewegung initialisieren
+        p.offsetX = Math.random() * 2 - 1;
+        p.offsetY = Math.random() * 2 - 1;
+    
+        // Berechne aktuelle Position
+        p.x = p.baseX + Math.sin(Date.now() * 0.002 + p.offsetX) * 5; // Bewegung in X
+        p.y = p.baseY + Math.cos(Date.now() * 0.002 + p.offsetY) * 5; // Bewegung in Y
+    */
+
+        const followOffset = i * 180; // Abstand zwischen den Partikeln
+        const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
+
+        // Berechnung der Lemniskate (Unendlichkeitszeichen)
+        const A = Math.min(app.screen.height*0.2, app.screen.width*0.4); // Horizontale Ausdehnung
+        const B = A*0.5; // Vertikale Ausdehnung
+        const centerX = app.screen.width / 2;
+        const centerY = app.screen.height / 6 * 5;
+
+        // Position der Partikel entlang der Lemniskate
+        p.x = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
+        p.y = centerY + B * Math.sin(2 * t*0.0010) / 2;        
+  
+
+    })
 }

@@ -307,7 +307,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.curveBottom.scale.set(stepX, scaleY);
     graph.curveBottom.shader.resources.graphUniforms.uniforms.uCurrentIndex = 0
     graph.curveBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
-    graph.curveBottom.shader.resources.graphUniforms.uniforms.uSun = [(sunPos.x)/app.screen.width-0.5,(sunPos.y)/app.screen.height-0.5]
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uSun = [(sunPos.x)/app.screen.width-0.5,0.5-(sunPos.y)/app.screen.height]
     
     graph.curveBottom.shader.resources.graphUniforms.uniforms.uR = color[0];
     graph.curveBottom.shader.resources.graphUniforms.uniforms.uG = color[1];
