@@ -43,7 +43,7 @@ void main() {
     baseColor = mix(vec4(1.0,0.0,0.0,1.0), baseColor, distSun);
 
       if (gl_FragCoord.y > uResolution[1]-uMenuTop[1]) {
-         baseColor = vec4(0.3,0.3,0.3,1.0);
+         baseColor = mix(baseColor, vec4(0.3,0.3,0.3,0.5), 0.5);
     }
     if (vPosition.y > 0.995) {
          if (vPosition.x < uPercentage) {
