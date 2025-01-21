@@ -12,7 +12,7 @@ const coins = {
 
 const SCALE_TEXT_BASE = 1.0/16.0*1.5
 const gscale = 0.5 // how much screen height does the graph take
-const gscalet = 0.2 // how much screen height space on top
+const gscalet = 0.25 // how much screen height space on top
 const gscaleb = 1.0 - gscale - gscalet
 const gscalebg = 1.0 - gscaleb // bottom percentage where graph ends
 
@@ -586,6 +586,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         isFinalScreen = currentDate >= options.dateEnd
         isStopScreen = isFinalScreen || (stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
+        let color = hexToRGB(coins[yourCoinName].color, 1.0)
+        if (isMenuVisible()) {
+            color = hexToRGB(coins['BTC'].color, 1.0)
+        }
 
         if (isMenuVisible()) {
             isStopScreen = false
@@ -635,14 +639,17 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
            
             graphBorderMask.clear()
-            graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height*gscalet+graphBorder.cheight).fill({color: 0xff0000})
+            graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height).fill({color: 0xff0000})
         
             containerGraphs.cmask = graphBorderMask
         }
 
-        
+        let sunPos = backgroundImage.position
+        if (!isMenuVisible()) {
+            sunPos.y-=100
+        }
         graphs.forEach(g => {
-            let graphResult = updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible(), ownPriceData)
+            let graphResult = updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible(), ownPriceData,sunPos , color)
             
             if (options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === g.graph.coinName) {
                 priceLabel.text = g.graph.priceLabel.text
@@ -785,10 +792,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
         coinButtonContainerTitle.scale.set(8*0.75*SCALE_TEXT_BASE)
 
-        let color = hexToRGB(coins[yourCoinName].color, 1.0)
-        if (isMenuVisible()) {
-            color = hexToRGB(coins['BTC'].color, 1.0)
-        }
+       
         background.shader.resources.backgroundUniforms.uniforms.uR = color[0];
         background.shader.resources.backgroundUniforms.uniforms.uG = color[1];
         background.shader.resources.backgroundUniforms.uniforms.uB = color[2];
@@ -797,6 +801,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         background.shader.resources.backgroundUniforms.uniforms.uPercentage = (currentIndexFloat-options.indexStart) / (options.indexEnd - options.indexStart)
         background.shader.resources.backgroundUniforms.uniforms.uSun = [(backgroundImage.x)/app.screen.width,(-backgroundImage.y)/app.screen.height]
+        background.shader.resources.backgroundUniforms.uniforms.uResolution = [app.screen.width,app.screen.height]
+        background.shader.resources.backgroundUniforms.uniforms.uMenuTop = isMenuVisible() ? 0: [app.screen.width,dateLabel.height*1.25+dateLabel.position.y]
         
         //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${stops.length-1}` : 'What do you want ?' 
         
@@ -872,8 +878,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         backgroundImage.scale.set(0.2*(Math.min(app.screen.width,1080)/1080))
         backgroundImage.alpha = 1;
-        backgroundImage.x = app.renderer.width-100-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.01)*0.1*(app.renderer.width-100);
-        backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.01)*app.renderer.height / 16;
+        backgroundImage.x = app.renderer.width-100-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.001)*0.1*(app.renderer.width-100);
+        backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.001)*app.renderer.height / 8;
 
         if (isMenuVisible()){
            // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
@@ -885,22 +891,20 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
            // backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
        
         } else {
-           /* containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,0.0)
-            graphBorder.visible = true
-            backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
-            backgroundImage.x = app.renderer.width*0.5 + Math.sin(deltaTime.lastTime*0.0001)*app.renderer.width / 16;
-            backgroundImage.y = app.renderer.height*0.5 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-            */
 
+            /*
             containerGraphs.mask = containerGraphs.cmask
             containerGraphsForeground.visible = true
-            //containerGraphs.scale = 0.9
             containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
-         
             graphBorder.visible = true
-            //graphBorder.position.set(0,0) 
-         
+         */
            
+            backgroundImage.y += (1.0-gscalebg)*app.screen.height
+            containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
+            graphBorder.visible = false
+            containerGraphsForeground.visible = true
+            containerGraphs.mask = containerGraphs.cmask
+
         }       
 
 

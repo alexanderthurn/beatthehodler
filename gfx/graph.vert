@@ -26,5 +26,5 @@ void main() {
     mat3 mvp = uProjectionMatrix * uWorldTransformMatrix * uTransformMatrix;
     gl_Position = vec4((mvp * vec3(scaledPosition, 1.0)).xy, 0.0, 1.0);
     vColor = vec4(aColor.rgb, aColor.a * uAlpha);
-    vPosition = aPosition;
+    vPosition = gl_Position.xy;
 }

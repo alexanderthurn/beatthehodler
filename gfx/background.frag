@@ -10,6 +10,8 @@ uniform float uG;           // color
 uniform float uB;           // color
 uniform float uA;           // color
 uniform vec2 uSun;
+uniform vec2 uResolution; // Bildschirmauflösung (width, height)
+uniform vec2 uMenuTop; // Bildschirmauflösung (width, height)
 
 void main() {
     vec4 topColor = vec4(0.957, 0.706, 0.0, 1.0);  
@@ -36,6 +38,13 @@ void main() {
     }
 
     vec4 baseColor = mix(bottomColor, topColor, mixFactor);
+  
+    float distSun = distance(vPosition, uSun);
+    baseColor = mix(vec4(1.0,0.0,0.0,1.0), baseColor, distSun);
+
+      if (gl_FragCoord.y > uResolution[1]-uMenuTop[1]) {
+         baseColor = vec4(0.3,0.3,0.3,1.0);
+    }
     if (vPosition.y > 0.995) {
          if (vPosition.x < uPercentage) {
             baseColor = vec4(1.0,0.0,0.0,1.0);
@@ -43,8 +52,7 @@ void main() {
             baseColor = vec4(1.0,1.0,1.0,0.0);
         }
     }
-    float distSun = distance(vPosition, uSun);
-    baseColor = mix(vec4(1.0,0.0,0.0,1.0), baseColor, distSun);
+
     gl_FragColor = baseColor;
 
 }

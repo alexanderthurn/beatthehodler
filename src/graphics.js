@@ -126,8 +126,8 @@ function createStockBottomLines(dataPoints, lineWidth, coin) {
         vertices.push(
             prevX+halfWidth, prevY,                  // P1: Unten links
             x+halfWidth, currentY,               // P2: Oben links
-            prevX+halfWidth, 0,      // P3: Unten rechts
-            x+halfWidth, 0    // P4: Oben rechts
+            prevX+halfWidth, -10000,      // P3: Unten rechts
+            x+halfWidth, -10000    // P4: Oben rechts
         );
         for (let h = 0; h < 4; h++) {
             pointIndices.push(i-1)
@@ -255,13 +255,12 @@ function createStockRectangles(dataPoints, rectWidth) {
 
 }
 
-function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndex, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible, ownPriceData) {
+function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndex, coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible, ownPriceData, sunPos, color) {
     let parsedData = coins[graph.coinName].data
     let maxPrice = parsedData[currentIndexInteger].price
     let minPrice = parsedData[currentIndexInteger].price
     let maxPriceIndex = currentIndexInteger
     let minPriceIndex = currentIndexInteger
-    
  
 
     const price = parsedData[currentIndexInteger].price
@@ -286,11 +285,6 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         }
     }
 
-    if (maxPrice === minPrice) {
-        maxPrice=Math.max(100, parsedData[currentIndexInteger].price*2)
-        minPrice=0
-    }
-
     var scaleY = -app.renderer.height*gscale/(maxPrice-minPrice)
     
     if (graph.coinName === 'BTC2') {
@@ -307,12 +301,18 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         graph.meshRectsBottom.visible = false
     }
 
-    graph.curve.visible = true
+    graph.curve.visible = false
     graph.curveBottom.visible = true
     graph.curveBottom.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
     graph.curveBottom.scale.set(stepX, scaleY);
     graph.curveBottom.shader.resources.graphUniforms.uniforms.uCurrentIndex = 0
     graph.curveBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uSun = [(sunPos.x)/app.screen.width-0.5,(sunPos.y)/app.screen.height-0.5]
+    
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uR = color[0];
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uG = color[1];
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uB = color[2];
+    graph.curveBottom.shader.resources.graphUniforms.uniforms.uA = color[3];
 
     const positions = graph.meshOwnLines.geometry.getAttribute('aPosition').buffer;
     const d = positions.data
@@ -512,6 +512,11 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
                 uAlpha: {type: 'f32', value: 1.0},
                 uMaxVisiblePoints: {type: 'i32', value: 3},
                 uScale: { value: [1.0, 1.0], type: 'vec2<f32>' },
+                uSun: { value: [1.0, 1.0], type: 'vec2<f32>' },
+                uR: {type: 'f32', value: 0.0},
+                uG: {type: 'f32', value: 0.0},
+                uB: {type: 'f32', value: 0.0},
+                uA: {type: 'f32', value: 0.0},
             }
         }
     });
@@ -641,7 +646,9 @@ function createBackground(vertexShader, fragmentShader)  {
                 uTime: {type: 'f32', value: 0.0},
                 uCurveStrength: {type: 'f32', value: 1.5},
                 uPercentage: {type: 'f32', value: 0.5},
-                uSun: { value: [1.0, 1.0], type: 'vec2<f32>' }
+                uSun: { value: [1.0, 1.0], type: 'vec2<f32>' },
+                uResolution: { value: [1.0, 1.0], type: 'vec2<f32>' },
+                uMenuTop: { value: [1.0, 1.0], type: 'vec2<f32>' },
             }
         }
     });
