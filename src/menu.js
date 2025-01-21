@@ -199,8 +199,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
 
     menu.spritePlayer.width = menu.spriteHodler.width = menu.spritePlayer.height = menu.spriteHodler.height = Math.min(app.screen.height, app.screen.width)*0.5
 
-    menu.spritePlayer.y = app.screen.height + Math.cos(deltaTime.lastTime*0.002)*app.screen.height*0.02
-    menu.spriteHodler.y = app.screen.height + Math.sin(deltaTime.lastTime*0.001)*app.screen.height*0.01
+    menu.spritePlayer.y = app.screen.height*0.75 + Math.cos(deltaTime.lastTime*0.002)*app.screen.height*0.02
+    menu.spriteHodler.y = app.screen.height*0.75 + Math.sin(deltaTime.lastTime*0.001)*app.screen.height*0.01
     if (menu.state === MENU_STATE_INTRO) {
         menu.spriteHodler.x = app.screen.width*0.75
         menu.spritePlayer.x = app.screen.width*0.25
