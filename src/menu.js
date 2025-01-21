@@ -202,8 +202,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
     menu.spritePlayer.y = app.screen.height + Math.cos(deltaTime.lastTime*0.002)*app.screen.height*0.02
     menu.spriteHodler.y = app.screen.height + Math.sin(deltaTime.lastTime*0.001)*app.screen.height*0.01
     if (menu.state === MENU_STATE_INTRO) {
-        menu.spriteHodler.x = app.screen.width 
-        menu.spritePlayer.x = 0
+        menu.spriteHodler.x = app.screen.width*0.75
+        menu.spritePlayer.x = app.screen.width*0.25
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
         menu.clickTitle.visible = true
         menu.textStyleClick.wordWrapWidth = app.screen.width*0.75*2
