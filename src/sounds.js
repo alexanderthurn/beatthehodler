@@ -19,6 +19,7 @@ const SoundManager = {
         PIXI.sound?.play(soundName)
     },
     playSound: (sound) => {
+        if (SoundManager.muted) {return}
         if (sound) {
             sound.play()
         } else {
@@ -26,9 +27,11 @@ const SoundManager = {
         }
     },
     playMusic: (musicname) => {
+        SoundManager.musicName = musicname
+        if (SoundManager.muted) {return}
+
         PIXI.sound?.stopAll();
         PIXI.sound?.play(musicname, {loop: true})
-        SoundManager.musicName = musicname
     },
     initSafe: function(app) {
         app.stage.once('pointerup', (event) => {
