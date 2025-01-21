@@ -796,7 +796,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         background.shader.resources.backgroundUniforms.uniforms.uPercentage = (currentIndexFloat-options.indexStart) / (options.indexEnd - options.indexStart)
-
+        background.shader.resources.backgroundUniforms.uniforms.uSun = [(backgroundImage.x)/app.screen.width,(-backgroundImage.y)/app.screen.height]
         
         //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${stops.length-1}` : 'What do you want ?' 
         
@@ -872,8 +872,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         backgroundImage.scale.set(0.2*(Math.min(app.screen.width,1080)/1080))
         backgroundImage.alpha = 1;
-        backgroundImage.x = app.renderer.width-100-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100);
-        backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+        backgroundImage.x = app.renderer.width-100-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.01)*0.1*(app.renderer.width-100);
+        backgroundImage.y = app.renderer.height*0.3 + Math.cos(deltaTime.lastTime*0.01)*app.renderer.height / 16;
 
         if (isMenuVisible()){
            // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)

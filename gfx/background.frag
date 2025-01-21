@@ -9,6 +9,7 @@ uniform float uR;           // color
 uniform float uG;           // color
 uniform float uB;           // color
 uniform float uA;           // color
+uniform vec2 uSun;
 
 void main() {
     vec4 topColor = vec4(0.957, 0.706, 0.0, 1.0);  
@@ -42,6 +43,8 @@ void main() {
             baseColor = vec4(1.0,1.0,1.0,0.0);
         }
     }
+    float distSun = distance(vPosition, uSun);
+    baseColor = mix(vec4(1.0,0.0,0.0,1.0), baseColor, distSun);
     gl_FragColor = baseColor;
 
 }

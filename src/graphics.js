@@ -641,6 +641,7 @@ function createBackground(vertexShader, fragmentShader)  {
                 uTime: {type: 'f32', value: 0.0},
                 uCurveStrength: {type: 'f32', value: 1.5},
                 uPercentage: {type: 'f32', value: 0.5},
+                uSun: { value: [1.0, 1.0], type: 'vec2<f32>' }
             }
         }
     });
