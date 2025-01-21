@@ -16,50 +16,6 @@ const gscalet = 0.2 // how much screen height space on top
 const gscaleb = 1.0 - gscale - gscalet
 const gscalebg = 1.0 - gscaleb // bottom percentage where graph ends
 
-const SoundManager = {
-    isInit: false,
-    musicName: null,
-    sounds: {},
-    muted: false,
-
-    muteAll: () => {
-        PIXI.sound?.muteAll()
-        SoundManager.muted= true
-    },
-
-    unmuteAll: () => {
-        PIXI.sound?.unmuteAll()
-        SoundManager.muted = false
-    },
-
-    play: (soundName) => {
-        PIXI.sound?.play(soundName)
-    },
-    playSound: (sound) => {
-        if (sound) {
-            sound.play()
-        } else {
-
-        }
-    },
-    playMusic: (musicname) => {
-        PIXI.sound?.stopAll();
-        PIXI.sound?.play(musicname, {loop: true})
-        SoundManager.musicName = musicname
-    },
-    init: function() {
-        Promise.all(Object.keys(coins).map(async (key) => {
-            PIXI.sound.add(key,coins[key].sound )
-        }))
-        
-        PIXI.sound.add('music_menu', 'sfx/song1.mp3')
-        PIXI.sound.add('music_game1', 'sfx/song3.mp3')
-        PIXI.sound.add('music_game2', 'sfx/song2.mp3')
-        if (SoundManager.musicName) {
-            SoundManager.playMusic(SoundManager.musicName)
-        } 
-    }
-}
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
@@ -85,6 +41,14 @@ async function initGame() {
         resizeTo: window
     });
 
+    SoundManager.initSafe(app)
+    Promise.all(Object.keys(coins).map(async (key) => {
+        SoundManager.add(key,coins[key].sound )
+    }))
+    SoundManager.add('music_menu', 'sfx/song1.mp3')
+    SoundManager.add('music_game1', 'sfx/song3.mp3')
+    SoundManager.add('music_game2', 'sfx/song2.mp3')
+    
     document.body.appendChild(app.canvas);
     app.canvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
@@ -490,16 +454,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         
     });
 
-    app.stage.once('pointerup', (event) => {
-        loadScript('lib/pixi-sound.js')
-        .then(() => {
-            SoundManager.init()
-        })
-        .catch((error) => {
-            console.error(error);
-        });
-
-    })
 
      app.stage.addEventListener('pointerup', (event) => {
 
