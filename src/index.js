@@ -127,11 +127,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
     const bigtextContainer = new PIXI.Container()
     const bigTextBackground = new PIXI.Graphics()
-    const bigtextLabel = new PIXI.Text('', textStyleCentered)
+    const bigtextLabel = new PIXI.Text({text: '', style: textStyleCentered})
     bigtextLabel.anchor.set(0.5,0.5)
     bigtextContainer.addChild(bigTextBackground)
     bigtextContainer.addChild(bigtextLabel)
-    const dateLabel = new PIXI.Text("", textStyle);
+    const dateLabel = new PIXI.Text({text: '', style: textStyle});
     containerForeground.addChild(dateLabel);
     containerForeground.addChild(bigtextContainer);
 
@@ -145,14 +145,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
     const stopContainer = new PIXI.Container()
-    const stopLabel = new PIXI.Text("Pause", textStyleCentered);
+    const stopLabel = new PIXI.Text({text: "Pause", style: textStyleCentered} );
     const stopImage = new PIXI.Sprite(textureBtnStop)
     stopLabel.anchor.set(0.5,0.5)
     stopImage.anchor.set(0.5,0.5)
     stopContainer.addChild(stopImage)
     stopContainer.addChild(stopLabel);
 
-    const swapLabel = new PIXI.Text("Swap", textStyleCentered);
+    const swapLabel = new PIXI.Text({text: "Swap", style: textStyleCentered});
     const swapImage = new PIXI.Sprite(textureBtnTrade)
     swapLabel.anchor.set(0.5,0.5)
     swapImage.anchor.set(0.5,0.5)
@@ -168,7 +168,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
     const coinButtonContainer = new PIXI.Container()
-    let coinButtonContainerTitle = new PIXI.Text('', textStyleCentered)
+    let coinButtonContainerTitle = new PIXI.Text({text: "", style: textStyleCentered})
     coinButtonContainerTitle.anchor.set(0.5,0.)
     coinButtonContainer.addChild(coinButtonContainerTitle)
     containerForeground.addChild(coinButtonContainer)
@@ -212,15 +212,15 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     ownLabelLine.fill({color: 0xffff00,alpha:1})
     ownLabelContainer.addChild(ownLabelLine)
     ownLabelContainer.addChild(ownSprite)
-    let ownLabel = new PIXI.Text('+ 400%',textStyleBorder)
+    let ownLabel = new PIXI.Text({text: "+ 400%", style: textStyleBorder})
     ownLabelContainer.addChild(ownLabel)
     ownLabel.anchor.set(1,1)
     ownLabel.x = -40
     ownLabel.y = -20
 
-    let priceLabel = new PIXI.Text("100$", textStyle);
-    let maxPriceLabel =new PIXI.Text("150$", textStyle);
-    let minPriceLabel =new PIXI.Text("200$", textStyle);
+    let priceLabel = new PIXI.Text({text: "100$", style: textStyle});
+    let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyle});
+    let minPriceLabel =new PIXI.Text({text: "200$", style: textStyle});
     priceLabel.anchor.set(1.1,0.5)
     maxPriceLabel.anchor.set(1.1,0)
     minPriceLabel.anchor.set(1.1,1)
@@ -459,9 +459,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
       
 
      
-        trade.labelPrice = new PIXI.Text(formatCurrency(trade.toName !== fiatName ? trade.toPrice : trade.fromPrice, fiatName,null, true) , textStyle)
+        trade.labelPrice = new PIXI.Text( {text: formatCurrency(trade.toName !== fiatName ? trade.toPrice : trade.fromPrice, fiatName,null, true), style: textStyle})
         trade.labelPrice.anchor.set(0.5,1.5)
-  
+      
         trade.container.addChild(trade.labelPrice)
         if (from === to) {
             trade.labelPrice.scale.set(8*1.0)
@@ -482,8 +482,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         let tradesDifferent = trades.filter(t => t.fromName !== t.toName && t.toName === trade.fromName)
         if (tradesDifferent.length > 0 && trade.fromName === fiatName && trade.toName !== trade.fromName) {
             trade.tradeBefore = tradesDifferent[tradesDifferent.length-1]
-            trade.labelPercentage = new PIXI.Text('', textStyleBorder)
-            trade.labelPercentage.anchor.set(0.5,1.2)
+            trade.labelPercentage = new PIXI.Text({text: "", style: textStyleBorder})
+            trade.labelPercentage.anchor.set(0.5,1.2)  
             trade.container.addChild(trade.labelPercentage)
 
             let res = (100*(trade.tradeBefore.fiatPrice / trade.fiatPrice))-100

@@ -610,19 +610,19 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graph.logo = logo
     graph.logoSprite = logoSprite
 
-    graph.priceLabel = new PIXI.Text("", textStyle);
+    graph.priceLabel = new PIXI.Text({text: "", style: textStyle});
     graph.addChild(graph.priceLabel);
     graph.priceLabel.visible = false
     graph.priceLabel.anchor.set(10.5,0.5)
     graph.priceLabel.yOriginal = 0
     
 
-    graph.maxPriceLabel = new PIXI.Text("", textStyle);
+    graph.maxPriceLabel = new PIXI.Text({text: "", style: textStyle});
     graph.addChild(graph.maxPriceLabel);
     graph.maxPriceLabel.visible = false
     graph.maxPriceLabel.anchor.set(1,1)
 
-    graph.minPriceLabel = new PIXI.Text("", textStyle);
+    graph.minPriceLabel = new PIXI.Text({text: "", style: textStyle});
     graph.addChild(graph.minPriceLabel);
     graph.minPriceLabel.visible = false
     graph.minPriceLabel.anchor.set(1,0)

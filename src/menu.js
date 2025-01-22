@@ -59,19 +59,19 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.addChild(menu.spriteHodler)
     menu.addChild(menu.spritePlayer)
     
-    menu.title = new PIXI.Text('Beat the Hodler', menu.textStyleTitle)
+    menu.title = new PIXI.Text({text: 'Beat the Hodler', style: menu.textStyleTitle})
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
 
-    menu.subtitle = new PIXI.Text('Can you win by trading?', menu.textStyleTitle)
+    menu.subtitle = new PIXI.Text({text: 'Can you win by trading?', style: menu.textStyleTitle })
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
 
-    menu.finaltitle = new PIXI.Text('by Alexander Thurn', menu.textStyleTitle)
+    menu.finaltitle = new PIXI.Text({text: 'by Alexander Thurn', style: menu.textStyleTitle })
     menu.finaltitle.anchor.set(0.5,1.0)
     menu.addChild(menu.finaltitle)
 
-    menu.clickTitle = new PIXI.Text('A "Hodler" holds, no matter what!', menu.textStyleClick) 
+    menu.clickTitle = new PIXI.Text({text: 'A "Hodler" holds, no matter what!', style: menu.textStyleClick }) 
     menu.clickTitle.textMobile = 'A "Hodler" holds,\n no matter what!'
     menu.clickTitle.textDesktop = 'A "Hodler" holds, no matter what!'
 
@@ -83,10 +83,10 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
 
     menu.levelGroups = gameData.groups.map(group => {
         let e = new PIXI.Container()
-        e.title = new PIXI.Text(group.name, textStyle)
+        e.title = new PIXI.Text({text: 'group.name', style: textStyle })
         e.title.anchor.set(0,0.0)
         e.addChild(e.title)
-        e.name = group.name
+        e.label = group.name
         e.levelEntries = []
         e.title.visible = false
         e.levels = new PIXI.Container()
@@ -100,12 +100,12 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         e.group = e.level.group
      
         e.index = new PIXI.Container()
-        e.indexText = new PIXI.Text(e.level.name, menu.textStylePreview)
-        e.indexSubText = new PIXI.Text('0%', menu.textStylePreviewSub)
+        e.indexText = new PIXI.Text( {text: e.level.name, style: menu.textStylePreview})
+        e.indexSubText = new PIXI.Text({text: '0%', style: menu.textStylePreviewSub})
         e.indexSubText.value = 0.0
         e.indexBackgroundRadius = 512
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
-        e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
+        e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill({color: 0xF7931B, alpha: 1}).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
         
         e.index.addChild(e.indexBackground)
         e.index.addChild(e.indexText)
@@ -115,7 +115,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         e.addChild(e.index)
 
 
-        let group = menu.levelGroups.find(group => group.name === e.level.group)
+        let group = menu.levelGroups.find(group => group.label === e.level.group)
         group.levels.addChild(e)
         group.levelEntries.push(e)
         return e
