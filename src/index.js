@@ -794,7 +794,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 
                 
                     
-                } else if (stopIndex < 0 && !isFinalScreen) {
+                } else if (stopIndex < 0 && !isFinalScreen && !isMenuVisible()) {
                     let ts = trades.filter(t => t.toName !== t.fromName)
                     ownLabelContainer.y = trades.length < 1 ? priceLabelContainer.y: ts[ts.length-1]?.container.getGlobalPosition().y
                     let tp = trades.length < 1 ? graphResult.price : ts[ts.length-1]?.fromPrice
