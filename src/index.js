@@ -58,9 +58,11 @@ async function initGame() {
     SoundManager.add('trade_lost3', 'sfx/lost3.wav')
     SoundManager.add('trade_lost4', 'sfx/lost4.wav')
     SoundManager.add('trade_lost5', 'sfx/lost5.wav')
-    SoundManager.add('game_lost', 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3')
-    SoundManager.add('game_won', 'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3')
-    
+    SoundManager.add('shepard_up', 'sfx/ascending-tones-168471.mp3')
+    SoundManager.add('shepard_down', 'sfx/descending-tones-168472.mp3')
+    SoundManager.add('game_lost', {url: 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3', preload: true})
+    SoundManager.add('game_won',  {url: 'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3', preload: true})
+
     document.body.appendChild(app.canvas);
     app.canvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
@@ -72,6 +74,9 @@ async function initGame() {
 
     app.stage.eventMode = 'static'
     app.stage.hitArea = app.screen
+
+    let shepardSoundUp
+    let shepardSoundDown
 
    const containerForeground = new PIXI.Container()
    const containerBackground = new PIXI.Container()
@@ -428,6 +433,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
  
     
     const doTrade = (from, to, options) => {
+
         if ((coins[to].csv && !coins[to].data[currentIndexInteger].price) || (coins[from].csv && !coins[from].data[currentIndexInteger].price)) {
             console.log('trade not possible null data', from, to, currentIndexInteger)
             return
@@ -778,7 +784,17 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 if (yourCoinName !== fiatName) {
                     ownLabelContainer.y = priceLabelContainer.y   
                     ownLabel.visible = false
-                } else {
+                    if (shepardSoundDown) {
+                        shepardSoundDown.muted = true
+                    }
+
+                    if (shepardSoundUp) {
+                        shepardSoundUp.muted = true
+                    }
+                
+                
+                    
+                } else if (stopIndex < 0 && !isFinalScreen) {
                     let ts = trades.filter(t => t.toName !== t.fromName)
                     ownLabelContainer.y = trades.length < 1 ? priceLabelContainer.y: ts[ts.length-1]?.container.getGlobalPosition().y
                     let tp = trades.length < 1 ? graphResult.price : ts[ts.length-1]?.fromPrice
@@ -794,6 +810,44 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                  //   ownLabel.x = -20+20 * Math.sin(deltaTime.lastTime*0.001);                 // X-Wert der Kurve
                   //  ownLabel.y = -20+20 * Math.sin(2 * deltaTime.lastTime*0.0010) / 2;    
                     ownLabel.scale = 0.8;
+
+                    if (ownLabel.oldRes !== res) {
+                        //shepardSound?.stop()
+
+
+                        if (!shepardSoundUp || !shepardSoundDown) {
+                            
+                            Promise.resolve(SoundManager.play('shepard_up', {loop: true, singleInstance : true, muted: true})).then(instance => {
+                                shepardSoundUp = instance
+                            })
+                            Promise.resolve(SoundManager.play('shepard_down', {loop: true, singleInstance : true, muted: true})).then(instance => {
+                                shepardSoundDown = instance
+                            })
+
+                       } else {
+                        if (res < 0) {
+                            shepardSoundDown.muted = false
+                            shepardSoundUp.muted = true
+                        } else {
+                            shepardSoundDown.muted = true
+                            shepardSoundUp.muted = false
+                        }
+                       }
+                        
+                      
+                 
+                       
+                    }
+                    
+                } else {
+                    
+                    if (shepardSoundDown) {
+                        shepardSoundDown.muted = true
+                    }
+
+                    if (shepardSoundUp) {
+                        shepardSoundUp.muted = true
+                    }
                 }
 
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}

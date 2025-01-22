@@ -31,19 +31,10 @@ const SoundManager = {
         SoundManager.muted = false
     },
 
-    play: (soundName) => {
-        if (SoundManager.muted) {return}
-        PIXI.sound?.play(soundName)
+    play: (soundName, options = {}) => {
+        return PIXI.sound?.play(soundName, {...options, muted: SoundManager.muted})
     },
 
-    playSound: (sound) => {
-        if (SoundManager.muted) {return}
-        if (sound) {
-            sound.play()
-        } else {
-
-        }
-    },
     playMusic: (musicname) => {
         SoundManager.musicName = musicname
         
