@@ -43,7 +43,7 @@ const SoundManager = {
         }
 
         if (PIXI.sound) {
-            Promise.resolve(PIXI.sound?.play(musicname, {loop: true, muted: SoundManager.mutedMusic})).then((instance) => {
+            Promise.resolve(PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic})).then((instance) => {
                 SoundManager.musicInstance = instance
             })
         }

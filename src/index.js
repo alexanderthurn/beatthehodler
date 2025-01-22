@@ -817,10 +817,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                         if (!shepardSoundUp || !shepardSoundDown) {
                             
-                            Promise.resolve(SoundManager.play('shepard_up', {loop: true, singleInstance : true, muted: true})).then(instance => {
+                            Promise.resolve(SoundManager.play('shepard_up', {volume: 0.1, loop: true, singleInstance : true, muted: true})).then(instance => {
                                 shepardSoundUp = instance
                             })
-                            Promise.resolve(SoundManager.play('shepard_down', {loop: true, singleInstance : true, muted: true})).then(instance => {
+                            Promise.resolve(SoundManager.play('shepard_down', {volume: 0.1, loop: true, singleInstance : true, muted: true})).then(instance => {
                                 shepardSoundDown = instance
                             })
 
