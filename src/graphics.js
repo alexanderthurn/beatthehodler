@@ -110,18 +110,24 @@ function createStockLines(dataPoints, lineWidth, coin) {
 
 
 function createStockBottomLines(dataPoints, lineWidth, coin) {
+    const prices = []
     const vertices = []
     const indices = []
     const colors = []
     const pointIndices = []
 
     for (let i = 1; i < dataPoints.length; i++) {
+       
         const prevY = dataPoints[i - 1].price || 0;
         const currentY = dataPoints[i].price || 0;
         const x = (i - 1) * lineWidth;
         const prevX = (i - 2) * lineWidth;
         const halfWidth = lineWidth * 0.5
 
+        prices.push(prevY)
+        prices.push(currentY)
+        prices.push(-10000)
+        prices.push(-10000)
         // Punkte für Triangle Strip: P1, P2, P3, P4
         vertices.push(
             prevX+halfWidth, prevY,                  // P1: Unten links
@@ -154,7 +160,7 @@ function createStockBottomLines(dataPoints, lineWidth, coin) {
         }
     }
 
-    return { vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
+    return { prices: new Float32Array(prices), vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
 
 }
 
@@ -492,10 +498,12 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
         attributes: {
             aPosition: linesBottom.vertices,
             aColor: linesBottom.colors,
-            aIndex: linesBottom.pointIndices
+            aIndex: linesBottom.pointIndices,
         },
         indexBuffer: linesBottom.indices
     });
+
+    geometryLinesBottom.addAttribute('aPrice', linesBottom.prices, 1)
 
     
     const geometryRectsBottom = new PIXI.Geometry({
