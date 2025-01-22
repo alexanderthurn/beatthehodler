@@ -5,7 +5,7 @@ const MENU_STATE_HELP = 3
 
 
 
-async function createMenu(gameData, app, coins, textStyle, textStyleCentered, textureHodler, texturePlayer) {
+async function createMenu(gameData, app, coins, textStyle, textStyleCentered, textureHodler, texturePlayer, particles) {
 
 
     let menu = new PIXI.Container()
@@ -135,33 +135,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.addChild(menu.helpButtonSprite)
     menu.helpButtonSprite.scale =  0.20
 
-    const particleCount = 21
-    menu.particles = new Array()
-    menu.particleContainer = new PIXI.ParticleContainer({ 
-        dynamicProperties: {
-            position: true,  // Allow dynamic position changes (default)
-            scale: false,    // Static scale for extra performance
-            rotation: false, // Static rotation
-            color: false     // Static color
-        }
-    })
-
-    for (let i=0;i<particleCount;i++) {
-        let particle = new PIXI.Particle({
-            texture: coins['BTC'].texture,
-            x: Math.random() * 800,
-            y: Math.random() * 600,
-            scaleX:0.01,
-            scaleY:0.01,
-            anchorX: 0.5,
-            anchorY: 0.5
-        })
-        menu.particleContainer.addParticle(particle)
-        menu.particles.push(particle)
-    }
-
-    menu.addChild(menu.particleContainer)
-    
+    menu.pointer = {x: app.screen.width/2, y:app.screen.height / 6 * 5}
     return menu
 }
 
@@ -173,9 +147,15 @@ function menuPointerMoveEvent(menu, event) {
     menu.audioButtonSprite.active = menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)   
     menu.helpButtonSprite.active = menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)
 
+    menu.pointer.x = event.x
+    menu.pointer.y = event.y
 }
 
 function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
+    
+    menu.pointer.x = event.x
+    menu.pointer.y = event.y
+
     if (menu.state === MENU_STATE_INTRO) {
         menu.state = MENU_STATE_LEVELS
     } else {
@@ -206,7 +186,7 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
 
 }
 
-function updateMenu(menu, app, deltaTime, getMute, getWin) {
+function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.background.scale.set(app.screen.width / 1024, app.screen.height / 1024)
     menu.background.alpha = 0.0
     menu.audioButtonSprite.alpha = (menu.audioButtonSprite.active ? 1.0 : 0.7)
@@ -311,10 +291,28 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
    
     
     
-    
+  
 
-    menu.particles.forEach((p,i) => {
-     /*   p.x = Math.random() * app.screen.width
+    // Berechnung der Lemniskate (Unendlichkeitszeichen)
+    const A = (menu.state !== MENU_STATE_INTRO ? 5.0 : 1.0)*Math.min(app.screen.height*0.2, app.screen.width*0.4); // Horizontale Ausdehnung
+    const B = (menu.state !== MENU_STATE_INTRO ? 0.1 : 1.0)*A*0.5; // Vertikale Ausdehnung
+    const centerX = (menu.state !== MENU_STATE_INTRO ?-100 : app.screen.width/2);
+    const centerY = (menu.state !== MENU_STATE_INTRO ? -100 : app.screen.height / 6 * 5) 
+
+    particles.forEach((p,i) => {
+     
+        const followOffset = i * 180; // Abstand zwischen den Partikeln
+        const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
+
+        // Position der Partikel entlang der Lemniskate
+        p.xTarget = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
+        p.yTarget = centerY + B * Math.sin(2 * t*0.0010) / 2;        
+  
+
+    })
+}
+
+/*   p.x = Math.random() * app.screen.width
         p.y = Math.random() * app.screen.height
         const centerX = app.screen.width / 2;
         const centerY = app.screen.height / 2;
@@ -349,20 +347,3 @@ function updateMenu(menu, app, deltaTime, getMute, getWin) {
         p.x = p.baseX + Math.sin(Date.now() * 0.002 + p.offsetX) * 5; // Bewegung in X
         p.y = p.baseY + Math.cos(Date.now() * 0.002 + p.offsetY) * 5; // Bewegung in Y
     */
-
-        const followOffset = i * 180; // Abstand zwischen den Partikeln
-        const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
-
-        // Berechnung der Lemniskate (Unendlichkeitszeichen)
-        const A = Math.min(app.screen.height*0.2, app.screen.width*0.4); // Horizontale Ausdehnung
-        const B = A*0.5; // Vertikale Ausdehnung
-        const centerX = app.screen.width / 2;
-        const centerY = app.screen.height / 6 * 5;
-
-        // Position der Partikel entlang der Lemniskate
-        p.x = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
-        p.y = centerY + B * Math.sin(2 * t*0.0010) / 2;        
-  
-
-    })
-}

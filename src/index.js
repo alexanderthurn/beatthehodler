@@ -232,7 +232,36 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerGraphsForeground.addChild(minPriceLabel)
     ownLabel.scale = priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 0.6
  
+   
+
+    const particleCount = 21
+    const particles = new Array()
+    const containerParticles = new PIXI.ParticleContainer({ 
+        dynamicProperties: {
+            position: true,  // Allow dynamic position changes (default)
+            scale: false,    // Static scale for extra performance
+            rotation: false, // Static rotation
+            color: false     // Static color
+        }
+    })
+    for (let i=0;i<particleCount;i++) {
+        let particle = new PIXI.Particle({
+            texture: coins['BTC'].texture,
+            x: 0,
+            y: 0,
+            xTarget:0,
+            yTarget:0,
+            scaleX:0.01,
+            scaleY:0.01,
+            anchorX: 0.5,
+            anchorY: 0.5
+        })
+        containerParticles.addParticle(particle)
+        particles.push(particle)
+    }
+
     app.stage.addChild(containerBackground)
+    app.stage.addChild(containerParticles)
     app.stage.addChild(containerForeground)
     app.stage.addChild(containerMenu)
 
@@ -320,6 +349,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         yourCoins = yourFiat
         yourCoinName = fiatName
         paused = Number.MAX_VALUE
+        options.duration = getQueryParam('fast') ? 5000 : options.duration
         gameDurationMilliseconds = options.duration
         factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
         currentIndexFloat = options.indexStart; // Zeitverfolgung
@@ -463,6 +493,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             } else {
                 trade.labelPercentage.text  = `+ ${res.toFixed(0)}%`
                 !options?.silent && SoundManager.play('trade_won' + sfxIndex)
+
+                particles.forEach((p,i) => { 
+                    p.x =  ownLabelContainer.x
+                    p.y = ownLabelContainer.y
+                    p.xTarget = -1000  + Math.random()*2000;                 // X-Wert der Kurve
+                    p.yTarget = -1000;        
+                })
             }
 
 
@@ -581,7 +618,12 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     menu.visible = false
     showMenu(!menu.visible)
     app.ticker.add((deltaTime) => {
-        updateMenu(menu, app, deltaTime, getMute, getWin)
+
+        particles.forEach((p,i) => {
+            p.x = 0.9*p.x + 0.1*p.xTarget
+            p.y = 0.9*p.y + 0.1*p.yTarget
+        })
+        updateMenu(menu, app, deltaTime, getMute, getWin, particles)
 
 
         if (isMenuVisible()) {
@@ -651,7 +693,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
             if (!trade && isFinalScreen) {
                 doTrade(yourCoinName, yourCoinName, {silent: true})
-
+                SoundManager.stopAll(9)
                 if (yourFiat > options.fiatBTCHodler) {
                     SoundManager.play('game_won')
                 } else {
@@ -976,6 +1018,27 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         
         hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
+
+
+        if (isFinalScreen) {
+
+            const A = app.screen.width*0.2; // Horizontale Ausdehnung
+            const B = Math.min(A*0.5,0.4*(app.screen.height*(1.0-gscalebg))); // Vertikale Ausdehnung
+            const centerX = app.screen.width*0.5
+            const centerY = app.screen.height*gscalebg + 0.5*(app.screen.height*(1.0-gscalebg))
+
+            particles.forEach((p,i) => {
+
+                const followOffset = i * 360; // Abstand zwischen den Partikeln
+                const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
+        
+                // Position der Partikel entlang der Lemniskate
+                p.x = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
+                p.y = centerY + B * Math.sin(2 * t*0.001) / 2;        
+  
+                
+            })
+        }
 
     });
 }

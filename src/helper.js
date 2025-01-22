@@ -467,6 +467,13 @@ async function fetchGameData(coins) {
         return {};
     }
 }
+
+
+
+function getQueryParam(key) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key); // Gibt den Wert des Parameters oder null zurück
+}
      /* DO NOOT DELETE !!!!!
         priceLabel.x = app.renderer.width*1
         priceLabel.y = app.renderer.height*0.8
