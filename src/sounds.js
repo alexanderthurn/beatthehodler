@@ -16,8 +16,10 @@ const SoundManager = {
     },
 
     play: (soundName) => {
+        if (SoundManager.muted) {return}
         PIXI.sound?.play(soundName)
     },
+    
     playSound: (sound) => {
         if (SoundManager.muted) {return}
         if (sound) {

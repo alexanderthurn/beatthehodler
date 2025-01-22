@@ -48,6 +48,18 @@ async function initGame() {
     SoundManager.add('music_menu', 'sfx/song1.mp3')
     SoundManager.add('music_game1', 'sfx/song3.mp3')
     SoundManager.add('music_game2', 'sfx/song2.mp3')
+    SoundManager.add('trade_won1', 'sfx/coin1.wav')
+    SoundManager.add('trade_won2', 'sfx/coin2.wav')
+    SoundManager.add('trade_won3', 'sfx/coin3.wav')
+    SoundManager.add('trade_won4', 'sfx/coin4.wav')
+    SoundManager.add('trade_won5', 'sfx/coin5.wav')
+    SoundManager.add('trade_lost1', 'sfx/lost1.wav')
+    SoundManager.add('trade_lost2', 'sfx/lost2.wav')
+    SoundManager.add('trade_lost3', 'sfx/lost3.wav')
+    SoundManager.add('trade_lost4', 'sfx/lost4.wav')
+    SoundManager.add('trade_lost5', 'sfx/lost5.wav')
+    SoundManager.add('game_lost', 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3')
+    SoundManager.add('game_won', 'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3')
     
     document.body.appendChild(app.canvas);
     app.canvas.addEventListener('contextmenu', (e) => {
@@ -374,7 +386,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
  
     
-    const doTrade = (from, to) => {
+    const doTrade = (from, to, options) => {
         if ((coins[to].csv && !coins[to].data[currentIndexInteger].price) || (coins[from].csv && !coins[from].data[currentIndexInteger].price)) {
             console.log('trade not possible null data', from, to, currentIndexInteger)
             return
@@ -418,7 +430,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             trade.sprite.height = trade.sprite.width = 0
             trade.container.addChildAt(trade.sprite, 0)
 
-            SoundManager.play(trade.toName)
         }
 
 
@@ -434,13 +445,29 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             trade.container.addChild(trade.labelPercentage)
 
             let res = (100*(trade.tradeBefore.fiatPrice / trade.fiatPrice))-100
+            let resAbs = Math.abs(res)
+            let sfxIndex = 1
+            if (resAbs > 75) {
+                sfxIndex = 5
+            } else if (resAbs > 50) {
+                sfxIndex = 4
+            } else if (resAbs > 25) {
+                sfxIndex = 3
+            } else if (resAbs > 9) {
+                sfxIndex = 2
+            }
+
             if (res < 0) {
                 trade.labelPercentage.text  = `- ${-res.toFixed(0)}%`
+                !options?.silent && SoundManager.play('trade_lost' + sfxIndex)
             } else {
                 trade.labelPercentage.text  = `+ ${res.toFixed(0)}%`
+                !options?.silent && SoundManager.play('trade_won' + sfxIndex)
             }
 
 
+        } else {
+            !options?.silent && SoundManager.play(trade.toName)
         }
         trades.push(trade)
         containerGraphs.addChild(trade.container)
@@ -623,7 +650,15 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (stopIndex > -1) {
             
             if (!trade && isFinalScreen) {
-                doTrade(yourCoinName, yourCoinName)
+                doTrade(yourCoinName, yourCoinName, {silent: true})
+
+                if (yourFiat > options.fiatBTCHodler) {
+                    SoundManager.play('game_won')
+                } else {
+                    SoundManager.play('game_lost')
+                }
+
+
             }
             
             if (!trade) {
@@ -760,6 +795,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                
             } 
         } else {
+            
+
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
             txt += " --- Game Over ---\n\n" 
