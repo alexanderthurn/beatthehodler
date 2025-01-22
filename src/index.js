@@ -109,6 +109,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     const textStyleCentered = textStyle.clone()
     textStyleCentered.align = 'center'
 
+    const textStyleBorder = textStyle.clone()
+    textStyleBorder.stroke = {color: '#4d4d4d', width: 2}
+
+
     const bigtextContainer = new PIXI.Container()
     const bigTextBackground = new PIXI.Graphics()
     const bigtextLabel = new PIXI.Text('', textStyleCentered)
@@ -196,7 +200,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     ownLabelLine.fill({color: 0xffff00,alpha:1})
     ownLabelContainer.addChild(ownLabelLine)
     ownLabelContainer.addChild(ownSprite)
-    let ownLabel = new PIXI.Text('+ 400%',textStyle)
+    let ownLabel = new PIXI.Text('+ 400%',textStyleBorder)
     ownLabelContainer.addChild(ownLabel)
     ownLabel.anchor.set(1,1)
     ownLabel.x = -40
@@ -425,7 +429,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
        
         if (trades.length > 0 && trade.fromName === fiatName) {
             trade.tradeBefore = trades[trades.length-1]
-            trade.labelPercentage = new PIXI.Text('', textStyle)
+            trade.labelPercentage = new PIXI.Text('', textStyleBorder)
             trade.labelPercentage.anchor.set(0.5,1.2)
             trade.container.addChild(trade.labelPercentage)
 
@@ -697,6 +701,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     }
                     
                     ownLabel.visible = true
+                   
+                 //   ownLabel.x = -20+20 * Math.sin(deltaTime.lastTime*0.001);                 // X-Wert der Kurve
+                  //  ownLabel.y = -20+20 * Math.sin(2 * deltaTime.lastTime*0.0010) / 2;    
+                    ownLabel.scale = 0.8;
                 }
 
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}
