@@ -214,7 +214,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerGraphsForeground.addChild(priceLabelContainer)
     containerGraphsForeground.addChild(maxPriceLabel)
     containerGraphsForeground.addChild(minPriceLabel)
-    ownLabel.scale = priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 4*0.15
+    ownLabel.scale = priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 0.6
  
     app.stage.addChild(containerBackground)
     app.stage.addChild(containerForeground)
@@ -379,6 +379,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         let trade =  {
             index: currentIndexInteger, 
 
+            percentage: null,
+            tradeBefore: null,
+            fiat: -1,
+            fiatPrice: from === fiatName ? (to === fiatName ? yourCoins : coins[to].data[currentIndexInteger].price) : coins[from].data[currentIndexInteger].price,
             fromPrice: from === fiatName ? 1 : coins[from].data[currentIndexInteger].price,
             fromName: yourCoinName,
             fromCoins: yourCoins,
@@ -394,12 +398,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         
         trade.toCoins = (trade.fromCoins * trade.fromPrice) / trade.toPrice
-
+        
       
 
      
         trade.labelPrice = new PIXI.Text(formatCurrency(trade.toName !== fiatName ? trade.toPrice : trade.fromPrice, fiatName,null, true) , textStyle)
         trade.labelPrice.anchor.set(0.5,1.5)
+  
         trade.container.addChild(trade.labelPrice)
         if (from === to) {
             trade.labelPrice.scale.set(8*1.0)
@@ -418,6 +423,21 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         yourCoins = trade.toCoins
         yourCoinName = trade.toName
        
+        if (trades.length > 0 && trade.fromName === fiatName) {
+            trade.tradeBefore = trades[trades.length-1]
+            trade.labelPercentage = new PIXI.Text('', textStyle)
+            trade.labelPercentage.anchor.set(0.5,1.2)
+            trade.container.addChild(trade.labelPercentage)
+
+            let res = (100*(trade.tradeBefore.fiatPrice / trade.fiatPrice))-100
+            if (res < 0) {
+                trade.labelPercentage.text  = `- ${-res.toFixed(0)}%`
+            } else {
+                trade.labelPercentage.text  = `+ ${res.toFixed(0)}%`
+            }
+
+
+        }
         trades.push(trade)
         containerGraphs.addChild(trade.container)
         paused = buyPaused
@@ -902,7 +922,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
            
             backgroundImage.y += (1.0-gscalebg)*app.screen.height
             containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
-            graphBorder.visible = false
+            graphBorder.visible = true
             containerGraphsForeground.visible = true
             containerGraphs.mask = containerGraphs.cmask
 

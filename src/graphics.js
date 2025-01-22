@@ -415,6 +415,12 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
             trade.labelPrice.position.set(0,0)
         }
 
+        if (trade.labelPercentage) { 
+            trade.labelPercentage.scale = 0.6
+            trade.labelPercentage.y = trade.tradeBefore.container.y - trade.container.y
+            trade.labelPercentage.x = (trade.tradeBefore.container.x - trade.container.x)*0.5
+        }
+
         trade.labelPrice.visible = false
 
         trade.labelPrice.scale = SCALE_TEXT_BASE
