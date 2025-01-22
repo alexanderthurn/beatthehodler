@@ -14,35 +14,23 @@ uniform vec2 uResolution; // Bildschirmauflösung (width, height)
 uniform vec2 uMenuTop; // Bildschirmauflösung (width, height)
 
 void main() {
-    vec4 topColor = vec4(0.957, 0.706, 0.0, 1.0);  
-   // topColor = vec4(0.522, 0.733, 0.396, 1.0);  
-    vec4 bottomColor = vec4(1.0,1.0,1.0, 1.0); 
-    
- 
-  //  topColor = vec4(0.5,0.5,0.5, 0.0);
-   // bottomColor = vec4(0.957, 0.706, 0.0, 1.0);  
-
-
-    topColor =vec4(uR, uG, uB, uA); 
-    bottomColor = vec4(1.0,1.0,1.0, 1.0);  
-
-
-    float modifiedCurveStrength = uCurveStrength * (1.0 + sin(uTime * 0.005) * 0.25);
+    vec4 topColor = vec4(uR, uG, uB, uA); 
+    vec4 bottomColor = vec4(1.0,1.0,1.0, 1.0);  
+    float distSun = distance(vPosition, uSun);
+    float brightness = 1.5;
     float xFactor = 0.1-distance(vPosition.x,uPercentage);
     float adjustedThreshold = uThreshold * xFactor;
-    float mixFactor;
-
-    mixFactor = smoothstep(adjustedThreshold - 0.1, adjustedThreshold + 0.1, vPosition.y);
+    float mixFactor = smoothstep(adjustedThreshold - 0.1, adjustedThreshold + 0.1, vPosition.y);
     if (vPosition.x < uPercentage) {
         bottomColor = mix(bottomColor, topColor, 1.2-distance(uPercentage, vPosition.x));
     }
 
     vec4 baseColor = mix(bottomColor, topColor, mixFactor);
-  
-    float distSun = distance(vPosition, uSun);
-    baseColor = mix(vec4(1.0,0.0,0.0,1.0), baseColor, distSun);
+    vec4 brightColor = vec4(topColor.rgb * brightness, topColor.a);
+    brightColor.rgb = clamp(brightColor.rgb, 0.0, 1.0);
+    baseColor = mix(brightColor, baseColor, distSun);
 
-      if (gl_FragCoord.y > uResolution[1]-uMenuTop[1]) {
+    if (gl_FragCoord.y > uResolution[1]-uMenuTop[1]) {
          baseColor = mix(baseColor, vec4(0.0,0.0,0.0,0.5), 0.1);
     }
     if (vPosition.y > 0.995) {

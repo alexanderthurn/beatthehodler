@@ -800,7 +800,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         
         background.shader.resources.backgroundUniforms.uniforms.uTime = deltaTime.lastTime
         background.shader.resources.backgroundUniforms.uniforms.uPercentage = (currentIndexFloat-options.indexStart) / (options.indexEnd - options.indexStart)
-        background.shader.resources.backgroundUniforms.uniforms.uSun = [(backgroundImage.x)/app.screen.width,(-backgroundImage.y)/app.screen.height]
+        background.shader.resources.backgroundUniforms.uniforms.uSun =[(sunPos.x)/app.screen.width,1.0-(sunPos.y)/app.screen.height]
+    
         background.shader.resources.backgroundUniforms.uniforms.uResolution = [app.screen.width,app.screen.height]
         //background.shader.resources.backgroundUniforms.uniforms.uMenuTop = isMenuVisible() ? 0: [app.screen.width,dateLabel.height*1.4+dateLabel.position.y]
         
