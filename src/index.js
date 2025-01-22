@@ -288,22 +288,33 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
     let localStorageCache = {}
 
-    function setMute(value) {
-        localStorageCache['mute'] = value
-        localStorage.setItem('mute', value)
-        if (value) {
-            SoundManager.muteAll()
+    function setMute(value, type = '') {
+        localStorageCache['mute'+type] = value
+        localStorage.setItem('mute'+type, value)
+        
+        if (type === 'music') {
+            if (value) {
+                SoundManager.muteMusic()
+            } else {
+                SoundManager.unmuteMusic()
+            }
         } else {
-
-            SoundManager.unmuteAll()
+            if (value) {
+                SoundManager.muteAll()
+            } else {
+    
+                SoundManager.unmuteAll()
+            }
         }
+       
     }
 
-    function getMute() {
-        return localStorageCache['mute'] ?? getBooleanFromLocalStorage('mute')
+    function getMute(type = '') {
+        return localStorageCache['mute'+type] ?? getBooleanFromLocalStorage('mute'+type)
     }
 
     setMute(getMute())
+    setMute(getMute('music'),'music')
 
     function setWin(level, value) {
         if (localStorageCache['l'+level] !== value) {
@@ -468,8 +479,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         yourCoins = trade.toCoins
         yourCoinName = trade.toName
        
-        if (trades.length > 0 && trade.fromName === fiatName) {
-            trade.tradeBefore = trades[trades.length-1]
+        let tradesDifferent = trades.filter(t => t.fromName !== t.toName && t.toName === trade.fromName)
+        if (tradesDifferent.length > 0 && trade.fromName === fiatName && trade.toName !== trade.fromName) {
+            trade.tradeBefore = tradesDifferent[tradesDifferent.length-1]
             trade.labelPercentage = new PIXI.Text('', textStyleBorder)
             trade.labelPercentage.anchor.set(0.5,1.2)
             trade.container.addChild(trade.labelPercentage)
