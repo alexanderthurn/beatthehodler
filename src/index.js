@@ -539,14 +539,21 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
                 swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
                  let trade = trades.find(t => t.index === currentIndexInteger)
+                 let stopIndex = stopIndizes.indexOf(currentIndexInteger)
                 if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
-                    stopIndizes.push(currentIndexInteger)
-                    stopIndizes.sort()
-                    stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
-                    stops.sort()
+                    
+                    if (stopIndex < 0) {
+                        stopIndizes.push(currentIndexInteger)
+                        stopIndizes.sort()
+                        stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
+                        stops.sort()
+                    }
+                  
                     
                     if (swapImage.active) {
                         doTrade(yourCoinName, yourCoinName === 'USD' ? 'BTC' : 'USD')
+                    } else if (stopImage.active && stopIndex > -1)   {
+                        doTrade(yourCoinName, yourCoinName)
                     }
                 }
             }
@@ -789,8 +796,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}
                 if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height - Math.random()*10}
             
-                hodlerContainer.x = graphBorderAreaRight.x - 10
-                hodlerContainer.y = priceLabelContainer.y
+                if (isFinalScreen) {
+                    hodlerContainer.x = graphBorderAreaRight.x - 10
+                    hodlerContainer.y = priceLabelContainer.y
+                } else {
+                    hodlerContainer.x = 0.1*app.screen.width
+                    hodlerContainer.y = gscalet*app.screen.height
+                }
+          
 
                
             }
@@ -892,8 +905,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             } else {
                 bigtextContainer.hodlerSprite.x = bigtextContainer.playerSprite.x = app.screen.width*2
             }
-            //hodlerContainer.x = bigtextContainer.x + bigtextContainer.width*0.5
-           // hodlerContainer.y = bigtextContainer.y + bigtextContainer.height
         }
        
 
@@ -917,7 +928,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         stopImage.height = stopImage.width = (stopImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
         swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
  
-        swapLabel.text = (yourCoinName === 'USD' ? 'Buy' : 'Sell')
+        swapLabel.text = (stopIndex > -1 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
+        stopLabel.text = (stopIndex > -1 ? yourCoinName : 'Pause')
+        stopImage.texture = (stopIndex > -1 ? coins[yourCoinName].texture : textureBtnStop) 
         swapImage.texture = coins[yourCoinName === 'USD' ? 'BTC' : 'USD'].texture
         stopImage.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height)
         stopLabel.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height-stopImage.height*0.75)
