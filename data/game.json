@@ -20,7 +20,8 @@
             "dateEnd": "2025-01-01 00:00:00 UTC",
             "stops": 2,
             "canStopManually": false,
-            "coinNames": ["USD","BTC"]
+            "coinNames": ["USD","BTC"],
+            "music": "music_game2"
         },
         {
             "name":"22",

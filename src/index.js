@@ -282,10 +282,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     function showMenu(value) {
         if (!menu.visible && value) {
             menu.visible = true
-            SoundManager.playMusic('music_menu')
         } else if (menu.visible && !value) {
             menu.visible = false
-            SoundManager.playMusic('music_game1')
         }
     }
 
@@ -353,6 +351,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     let stops = []
     let stopIndizes = []
     const startNewGame = (level) => {
+        SoundManager.playMusic(level.music)
         options = level
         stops = [...options.stops]
         stopIndizes = [...options.stopIndizes]
@@ -407,7 +406,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
     }
 
-    startNewGame(gameData.levels.find(level => level.name === 'menu'))
  
     
     const doTrade = (from, to, options) => {
@@ -578,6 +576,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 showMenu(true)
             } else if (isFinalScreen) {
                 if (yourFiat > options.fiatBTCHodler) {
+                    startNewGame(gameData.levels.find(level => level.name === 'menu'))
                     showMenu(true)
                 } else {
                     startNewGame(options)
@@ -627,6 +626,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
     
     menu.visible = false
+    startNewGame(gameData.levels.find(level => level.name === 'menu'))
     showMenu(!menu.visible)
     app.ticker.add((deltaTime) => {
 
@@ -817,10 +817,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                         if (!shepardSoundUp || !shepardSoundDown) {
                             
-                            Promise.resolve(SoundManager.play('shepard_up', {volume: 0.1, loop: true, singleInstance : true, muted: true})).then(instance => {
+                            Promise.resolve(SoundManager.play('shepard_up', {volume: 0.15, loop: true, singleInstance : true, muted: true})).then(instance => {
                                 shepardSoundUp = instance
                             })
-                            Promise.resolve(SoundManager.play('shepard_down', {volume: 0.1, loop: true, singleInstance : true, muted: true})).then(instance => {
+                            Promise.resolve(SoundManager.play('shepard_down', {volume: 0.05, loop: true, singleInstance : true, muted: true})).then(instance => {
                                 shepardSoundDown = instance
                             })
 
