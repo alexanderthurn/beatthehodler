@@ -725,7 +725,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 
                
                 if (yourCoinName !== fiatName) {
-                    ownLabelContainer.y = priceLabelContainer.y   
+
+
+                    let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
+
+                    //ownLabelContainer.y = priceLabelContainer.y 
+                    ownLabelContainer.x = p.x
+                    ownLabelContainer.y = p.y
+                    
                     ownLabel.visible = false
                     if (shepardSoundDown) {
                         shepardSoundDown.muted = true

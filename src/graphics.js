@@ -148,6 +148,9 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     graph.currentIndexInteger = currentIndexInteger
     graph.diffCurrentIndexIntToFloat = diffCurrentIndexIntToFloat
     graph.scaleY = scaleY
+    graph.price = price
+    graph.minPrice = minPrice
+    graph.maxPrice = maxPrice
     
     graph.curveBottom.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
     graph.curveBottom.scale.set(stepX, scaleY);
@@ -409,10 +412,14 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
 }
 
 
-function getGraphXYForIndexAndPrice (graph, index, price) {
+function getGraphXYForIndexAndPrice (graph, index, price = null) {
+    if (price === null) {
+        price = graph.price
+    }
     let result = {x: 0, y:0}
-    result.x =  (index - (graph.currentIndexInteger-graph.maxVisiblePoints+2)) * graph.stepX;
+    result.x =  (index - (graph.currentIndexInteger-graph.maxVisiblePoints+2+graph.diffCurrentIndexIntToFloat)) * graph.stepX;
     result.y = graph.app.renderer.height*gscalebg-(price-graph.minPrice)/(graph.maxPrice-graph.minPrice)*graph.app.renderer.height*gscale;
+    return result
 }
 
 function createBackground(vertexShader, fragmentShader)  {
