@@ -1,5 +1,8 @@
-
-
+const hodlerActivities = [
+    "slept", "read a book", "went hiking", "learned to cook", "meditated", "spent time with family", "played guitar", "watched the stars", "tended his garden", "took a road trip", "painted a masterpiece", "built a birdhouse", "wrote poetry", "practiced yoga", "volunteered at a shelter", "explored nature", "mastered a new skill", "relaxed by the beach", "baked fresh bread", "planned his future", "created art", "danced in the rain", "laughed with friends",
+    "enjoyed a sunset", "wrote a journal", "went birdwatching", "visited a museum", "rode a bicycle", "crafted furniture", "hosted a dinner party", "learned a new language", "explored a new city", "practiced mindfulness", "played chess", "watched a documentary", "went camping", "played with his pet", "studied philosophy", "planted trees", "designed a website", "built a puzzle", "ran a marathon", "taught a class", "organized his home", "wrote a novel", "restored old furniture", "enjoyed silence", "tried a new sport", "sketched in a notebook", "joined a community event",
+    "fixed his car", "started a podcast", "climbed a mountain", "crafted a sculpture", "had a picnic", "explored a cave", "stargazed in the desert", "learned calligraphy", "collected rare coins", "created a time capsule", "watched a play", "learned woodworking", "decorated his home", "took photographs", "attended a workshop", "kayaked on a river", "tried rock climbing", "visited a farm", "wrote a screenplay", "danced at home", "created digital art", "tried new recipes", "observed wildlife", "mentored someone", "researched history", "built a greenhouse", "read ancient texts", "sewed a quilt", "rested in a hammock", "practiced a musical instrument", "trained for a triathlon", "sang karaoke", "taught his children", "designed a garden", "ran a charity event", "binge-watched his favorite series", "bought local crafts", "read poetry aloud", "wrote thank-you notes", "crafted a scrapbook", "went fishing", "practiced tai chi", "restored a classic car", "learned to dance", "watched a sunrise", "explored an abandoned building", "read about astronomy", "helped a neighbor", "attended a retreat", "designed a board game", "hosted a movie night", "planted flowers", "listened to classical music", "trained a dog", "tried pottery", "wrote a blog", "played board games", "visited a library", "disconnected from technology"
+];
 
 const coins = {
     USD: { color: '#85BB65', colorInt: 0x85BB65, image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
@@ -921,19 +924,21 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             } else {
                 txt += "Oh no, you lost\n\n" 
             }
-    
+
+            const word = hodlerActivities[Math.floor((deltaTime.lastTime * 0.0005) % hodlerActivities.length)];
+             
             if (fiat > options.fiatBTCHodler) {
                 txt += `You have ${res.toFixed(0)}% more\n`
-                txt += `than the HODLer.\n`
-                txt += `This is a new highscore!\n\n`
+                txt += `than the HODLer.\n\n`
             } else {
                 txt += `You have ${-res.toFixed(0)}% less\n`
                 txt += `than the HODLer.\n\n`
-                txt += "He slept,\n" 
-                txt += "while you lost.\n" 
-                txt += "Was it worth it?\n\n"  
-                txt += "Try again?"
             }
+
+            txt += `By the way:\n`;
+            txt += `The HODLer\n${word},\n`;
+            txt += "while you traded.\n\n" 
+            txt += "Was it worth\nthe risk and time?"
           
         }
         
