@@ -144,6 +144,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
 }
 
 
+
 function menuPointerMoveEvent(menu, event) {
     menu.levelEntries.filter(entry =>  true || entry.isCompletedLevelBefore ).forEach((entry,index2) => {
         entry.active = entry.getBounds().containsPoint(event.x,event.y)
@@ -156,6 +157,65 @@ function menuPointerMoveEvent(menu, event) {
 
     menu.pointer.x = event.x
     menu.pointer.y = event.y
+}
+
+function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
+    if (menu.state === MENU_STATE_INTRO) {
+        menu.state = MENU_STATE_LEVELS
+    } else {
+        let entry = menu.levelEntries.find(entry => entry.active)
+        switch (event.key) {
+            case 'w':
+            case 'ArrowUp':
+                if (!entry) {
+                    menu.levelEntries[0].active = true
+                } else {
+                    entry.active = false
+                    entry.up.active = true
+                }
+            break;
+            case 'd':
+            case 'ArrowRight':
+                if (!entry) {
+                    menu.levelEntries[0].active = true
+                } else {
+                    entry.active = false
+                    entry.right.active = true
+                }    
+            break;
+            case 'a':
+            case 'ArrowLeft':
+                if (!entry) {
+                    menu.levelEntries[0].active = true
+                } else {
+                    entry.active = false
+                    entry.left.active = true
+                }
+                break;
+            case 's':
+            case 'ArrowDown':
+                if (!entry) {
+                    menu.levelEntries[0].active = true
+                } else {
+                    entry.active = false
+                    entry.down.active = true
+                }
+                break;
+            case 'Tab':
+            case 'Escape':
+                if (menu.state === MENU_STATE_LEVELS) {
+                    menu.state = MENU_STATE_INTRO
+                }
+                break;
+            case 'Enter':    
+            case ' ':
+                if (entry) {
+                    startNewGame(entry.level) 
+                    entry.active = false
+                }
+                break;
+        }
+    }
 }
 
 function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
@@ -266,7 +326,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         colh = Math.min(colw, colh)
         ch = colh * rows
         menu.levelGroupsContainer.position.set(0.5*(app.screen.width - cw), 20+menu.subtitle.position.y - menu.subtitle.height*menu.subtitle.anchor.y + menu.subtitle.height + (app.screen.height*0.9 - menu.levelGroupsContainer.position.y -ch)*0.5)
-        
+        menu.cols = cols
+        menu.rows = rows
         menu.levelGroups.forEach((group,index) => {
             group.levelEntries.forEach((entry,index2) => {
                 entry.indexText.scale.set(0.4* (Math.max(640, app.screen.width)/640) * (entry.active ? 1.1 : 1.0))
@@ -276,10 +337,14 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                 let score = getWin(entry.level.name)
                 entry.isCompleted = score > 0
                 entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
-                entry.position.set((index2 % cols) * colw + colw*0.5,Math.floor(index2 / cols)*colh + colh*0.5)
-    
+                entry.col = (index2 % cols)
+                entry.row = Math.floor(index2 / cols)
+                entry.position.set(entry.col * colw + colw*0.5,entry.row*colh + colh*0.5)
+                entry.right = group.levelEntries[entry.col < menu.cols-1 ? index2+1 : index2-entry.col]
+                entry.left =  group.levelEntries[entry.col > 0 ? index2-1 : index2+menu.cols-1]
+                entry.up =  group.levelEntries[entry.row > 0 ? index2-cols : group.levelEntries.length-(menu.cols-entry.col)]
+                entry.down =  group.levelEntries[(index2+cols) % group.levelEntries.length]
                 entry.indexBackground.scale = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * Math.min(colw / (entry.indexBackgroundRadius*2), colh / (entry.indexBackgroundRadius))
-                //entry.index.rotation = 0
                 entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
     
                 if (entry.indexSubText.value !== score)  {
@@ -291,14 +356,6 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                     }
                 }
 
-                if (entry.isCompleted) {
-                  //  entry.index.rotation = 0
-                  //  entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 15000 > 5000 ? 1.0 : 1.0 
-              
-                } else if (entry.isCompletedLevelBefore){
-                   // entry.index.alpha = entry.active ? 1.0 : (deltaTime.lastTime - (1000/group.levelEntries.length)*index2) % 1000 > 500 ? 1.0 : 0.5 
-                    //entry.index.rotation = Math.sin(deltaTime.lastTime*0.01- (10000/group.levelEntries.length)*index2)*0.01
-                }
             })
         })
 

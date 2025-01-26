@@ -53,16 +53,29 @@ const SoundManager = {
         PIXI.sound?.stopAll();
     },
     initSafe: function(app) {
-        app.stage.once('pointerup', (event) => {
-            loadScript('lib/pixi-sound.js')
-            .then(() => {
-                SoundManager.init()
-            })
-            .catch((error) => {
-                console.error(error);
-            });
         
+        let loadAndInit = () => {
+            if (!SoundManager.isInit) {
+                SoundManager.isInit = true
+                loadScript('lib/pixi-sound.js')
+                .then(() => {
+                    SoundManager.init()
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+            }
+        }
+
+        app.stage.once('pointerup', (event) => {
+            loadAndInit()
         })
+
+
+        window.addEventListener('keyup', function handleKeyUpOnce(event) {
+            loadAndInit()
+            window.removeEventListener('keyup', handleKeyUpOnce);
+        });
     },
     add: function(name, url) {
         if (PIXI.sound) {

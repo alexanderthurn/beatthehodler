@@ -490,8 +490,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 particles.forEach((p,i) => { 
                     p.x =  ownLabelContainer.x
                     p.y = ownLabelContainer.y
-                    p.xTarget = -1000  + Math.random()*2000;                 // X-Wert der Kurve
-                    p.yTarget = -1000;        
+                    p.xTarget = Math.random()*app.screen.width;                 // X-Wert der Kurve
+                    p.yTarget = -150;        
                 })
             }
 
@@ -513,6 +513,53 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
             swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
         }
+        
+    });
+
+    // Event-Listener für keyup hinzufügen
+    window.addEventListener('keyup', (event) => {
+        if (isMenuVisible()) {
+            menuKeyUpEvent(menu, event, startNewGame,getMute, setMute, showMenu)
+        } else {
+            let trade = trades.find(t => t.index === currentIndexInteger)
+            let stopIndex = stopIndizes.indexOf(currentIndexInteger)
+    
+            switch (event.key) {
+                case ' ':
+                case 'w':
+                case 'ArrowUp':
+                case 'd':
+                case 'ArrowRight':
+                    if (!trade) {
+                        doTrade(yourCoinName, yourCoinName === 'USD' ? 'BTC' : 'USD')
+                    }
+                    break;
+                case 'Escape':
+                    startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                    showMenu(true)
+                    break;
+                case 'Enter':
+                case 'p':
+                case 'P': 
+                case 'a':
+                case 'ArrowLeft':
+                case 's':
+                case 'ArrowDown':
+                        if (stopIndex < 0) {
+                            stopIndizes.push(currentIndexInteger)
+                            stopIndizes.sort()
+                            stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
+                            stops.sort()
+                        } else {
+                            doTrade(yourCoinName, yourCoinName)
+                        }
+                    break;
+                case 'Tab':
+                    console.log('Tab');
+                    break;
+            }
+        }
+
         
     });
 
