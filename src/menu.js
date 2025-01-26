@@ -220,7 +220,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.finaltitle.scale.set(4*scaleToFullHD*0.25)
     menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
 
-    menu.spritePlayer.scale = menu.spriteHodler.scale = 0.4
+    menu.spritePlayer.scale = menu.spriteHodler.scale = 0.25*(Math.min(1080,Math.max(640,app.screen.width))/640.0)
     menu.spritePlayer.y = app.screen.height*0.8 + Math.cos(deltaTime.lastTime*0.002)*app.screen.height*0.02
     menu.spriteHodler.y = app.screen.height*0.8 + Math.sin(deltaTime.lastTime*0.001)*app.screen.height*0.01
     if (menu.state === MENU_STATE_INTRO) {
