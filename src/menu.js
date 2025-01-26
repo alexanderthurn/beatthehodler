@@ -210,6 +210,7 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
             case 'Enter':    
             case ' ':
                 if (entry) {
+                    showMenu(false)
                     startNewGame(entry.level) 
                     entry.active = false
                 }

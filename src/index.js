@@ -927,11 +927,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 txt += `than the HODLer.\n`
                 txt += `This is a new highscore!\n\n`
             } else {
-                txt += `You have ${res.toFixed(0)}% less\n`
+                txt += `You have ${-res.toFixed(0)}% less\n`
                 txt += `than the HODLer.\n\n`
-                txt += "Don't worry:\n" 
-                txt += "HODLing is an easy way,\n" 
-                txt += "to make money\n\n" 
+                txt += "He slept,\n" 
+                txt += "while you lost.\n" 
+                txt += "Was it worth it?\n\n"  
                 txt += "Try again?"
             }
           
