@@ -121,9 +121,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     const priceNextIndex = currentIndexInteger+1 < parsedData.length ? parsedData[currentIndexInteger+1].price : price
     const lastPriceIndex = trades.length > 0 ? trades[trades.length-1].index : (currentIndexInteger-maxVisiblePoints > 0 ? currentIndexInteger-maxVisiblePoints : 0)
     const lastPrice = parsedData[lastPriceIndex].price || price
-    const percentage = calculatePriceChange(price, lastPrice)
-    let percentageText = percentage.text
-    let percentageColor = percentage.color
+   // const percentage = calculatePriceChange(price, lastPrice)
     for (let i = currentIndexInteger-maxVisiblePoints+1-100; i < currentIndexInteger; i++) {
         if (i >= 0 && 1 <= parsedData.length) {
             if (parsedData[i].price > maxPrice) {
@@ -138,8 +136,19 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         }
     }
 
+    
+
+
     var scaleY = -app.renderer.height*gscale/(maxPrice-minPrice)
-   
+
+    graph.parsedData = parsedData
+    graph.maxVisiblePoints = maxVisiblePoints
+    graph.stepX = stepX
+    graph.app = app
+    graph.currentIndexInteger = currentIndexInteger
+    graph.diffCurrentIndexIntToFloat = diffCurrentIndexIntToFloat
+    graph.scaleY = scaleY
+    
     graph.curveBottom.position.set(- (currentIndexInteger-maxVisiblePoints+1)*stepX, app.renderer.height*gscalebg-minPrice*scaleY);
     graph.curveBottom.scale.set(stepX, scaleY);
     graph.curveBottom.shader.resources.graphUniforms.uniforms.uMaxVisiblePoints = isMenuVisible ? 10000 : maxVisiblePoints
@@ -395,7 +404,15 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     graph.minPriceLabel.anchor.set(1,0)
 
     graph.coinName = coinName
+
     return graph
+}
+
+
+function getGraphXYForIndexAndPrice (graph, index, price) {
+    let result = {x: 0, y:0}
+    result.x =  (index - (graph.currentIndexInteger-graph.maxVisiblePoints+2)) * graph.stepX;
+    result.y = graph.app.renderer.height*gscalebg-(price-graph.minPrice)/(graph.maxPrice-graph.minPrice)*graph.app.renderer.height*gscale;
 }
 
 function createBackground(vertexShader, fragmentShader)  {

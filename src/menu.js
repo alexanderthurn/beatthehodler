@@ -131,16 +131,13 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
 
     menu.audioButtonSprite = new PIXI.Sprite(menu.audioOnTexture);
     menu.addChild(menu.audioButtonSprite)
-    menu.audioButtonSprite.scale =  0.20
 
     
     menu.musicButtonSprite = new PIXI.Sprite(menu.musicOnTexture);
     menu.addChild(menu.musicButtonSprite)
-    menu.musicButtonSprite.scale =  0.20
 
     menu.helpButtonSprite = new PIXI.Sprite(menu.helpTexture);
     menu.addChild(menu.helpButtonSprite)
-    menu.helpButtonSprite.scale =  0.20
 
     menu.pointer = {x: app.screen.width/2, y:app.screen.height / 6 * 5}
     return menu
@@ -154,6 +151,8 @@ function menuPointerMoveEvent(menu, event) {
     menu.audioButtonSprite.active = menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)   
     menu.musicButtonSprite.active = menu.musicButtonSprite.getBounds().containsPoint(event.x,event.y)   
     menu.helpButtonSprite.active = menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)
+    menu.spritePlayer.active = menu.spritePlayer.getBounds().containsPoint(event.x,event.y)
+    menu.spriteHodler.active = menu.spriteHodler.getBounds().containsPoint(event.x,event.y)
 
     menu.pointer.x = event.x
     menu.pointer.y = event.y
@@ -201,16 +200,16 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
 function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.background.scale.set(app.screen.width / 1024, app.screen.height / 1024)
     menu.background.alpha = 0.0
-    menu.audioButtonSprite.alpha = (menu.audioButtonSprite.active ? 1.0 : 0.7)
+    menu.audioButtonSprite.scale = (menu.audioButtonSprite.active ? 1.1 : 1.0) * 0.2
     menu.audioButtonSprite.position.set(app.screen.width - menu.audioButtonSprite.width * 1.2, app.screen.height -menu.audioButtonSprite.height * 1.2 )
     menu.audioButtonSprite.texture = getMute() ? menu.audioOffTexture : menu.audioOnTexture
 
-    menu.musicButtonSprite.alpha = (menu.musicButtonSprite.active ? 1.0 : 0.7)
+    menu.musicButtonSprite.scale = (menu.musicButtonSprite.active ? 1.1 : 1.0) * 0.2
     menu.musicButtonSprite.position.set(app.screen.width - menu.musicButtonSprite.width * 2.5, app.screen.height -menu.musicButtonSprite.height * 1.2 )
     menu.musicButtonSprite.texture = getMute('music') ? menu.musicOffTexture : menu.musicOnTexture
 
 
-    menu.helpButtonSprite.alpha = (menu.helpButtonSprite.active ? 1.0 : 0.7)
+    menu.helpButtonSprite.scale = (menu.helpButtonSprite.active ? 1.1 : 1.0) * 0.2
     menu.helpButtonSprite.position.set(menu.helpButtonSprite.width * 0.2, app.screen.height -menu.helpButtonSprite.height * 1.2 )
    
 
@@ -221,8 +220,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.finaltitle.scale.set(4*scaleToFullHD*0.25)
     menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
 
-    menu.spritePlayer.width = menu.spriteHodler.width = menu.spritePlayer.height = menu.spriteHodler.height = Math.min(app.screen.height, app.screen.width)*0.5
-
+    menu.spritePlayer.scale = menu.spriteHodler.scale = 0.4
     menu.spritePlayer.y = app.screen.height*0.8 + Math.cos(deltaTime.lastTime*0.002)*app.screen.height*0.02
     menu.spriteHodler.y = app.screen.height*0.8 + Math.sin(deltaTime.lastTime*0.001)*app.screen.height*0.01
     if (menu.state === MENU_STATE_INTRO) {
@@ -248,8 +246,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
        // menu.subtitle.rotation = menu.title.rotation = -10*Math.PI/360
 
     } else if (menu.state === MENU_STATE_LEVELS) {
-        menu.spriteHodler.x = 0.9* menu.spriteHodler.x + 0.1*app.screen.width*1.1 
-        menu.spritePlayer.x = 0.9*menu.spritePlayer.x + 0.1*-app.screen.width*0.1
+        menu.spriteHodler.x = 0.9* menu.spriteHodler.x + 0.1*app.screen.width*1.05 
+        menu.spritePlayer.x = 0.9*menu.spritePlayer.x + 0.1*-app.screen.width*0.05
 
         menu.clickTitle.alpha*=0.92
         menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
@@ -271,8 +269,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         
         menu.levelGroups.forEach((group,index) => {
             group.levelEntries.forEach((entry,index2) => {
-                entry.indexText.scale.set(0.4* (Math.max(640, app.screen.width)/640))
-                entry.indexSubText.scale.set(0.3* (Math.max(640, app.screen.width)/640)) 
+                entry.indexText.scale.set(0.4* (Math.max(640, app.screen.width)/640) * (entry.active ? 1.1 : 1.0))
+                entry.indexSubText.scale.set(0.3* (Math.max(640, app.screen.width)/640)* (entry.active ? 1.1 : 1.0)) 
                 entry.indexSubText.position.set(0,  entry.indexText.height/2)
                 entry.indexText.position.set(0,  -entry.indexText.height/2)
                 let score = getWin(entry.level.name)

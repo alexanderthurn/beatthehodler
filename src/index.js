@@ -182,7 +182,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
     
     btnMenuSprite = new PIXI.Sprite(textureBtnMenu);
-    btnMenuSprite.anchor.set(1.1,-0.1)
+    btnMenuSprite.anchor.set(1.1,-0.2)
     containerForeground.addChild(btnMenuSprite)
 
     let containerGraphsForeground = new PIXI.Container()
@@ -877,7 +877,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         dateLabel.text = txt
         dateLabel.visible = true
         dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.005)
-        dateLabel.scale.set(8*SCALE_TEXT_BASE*(Math.max(640,app.screen.width)/640.0)*0.5)
+        dateLabel.scale.set(8*SCALE_TEXT_BASE*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5)
 
         txt = ''
         if (!isFinalScreen) { 
@@ -1043,9 +1043,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         stopContainer.visible =  !isFinalScreen  && stopIndex < 0
         coinButtonContainer.visible = !isFinalScreen && !stopContainer.visible && stopIndex > -1 && !trade
 
-       
-        btnMenuSprite.scale = 0.3*(Math.max(640,app.screen.width)/640.0)*0.5
-        btnMenuSprite.alpha = (btnMenuSprite.active ? 1.0 : 0.7)
+
+        btnMenuSprite.scale = (btnMenuSprite.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
         btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
        
         backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
