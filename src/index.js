@@ -11,10 +11,10 @@ const coins = {
 }
 
 const SCALE_TEXT_BASE = 1.0/16.0*1.5
-const gscale = 0.5 // how much screen height does the graph take
 const gscalet = 0.25 // how much screen height space on top
-const gscaleb = 1.0 - gscale - gscalet
-const gscalebg = 1.0 - gscaleb // bottom percentage where graph ends
+const gscale = 0.5 // how much screen height does the graph take
+const gscaleb = 1.0 - gscale - gscalet // how much screen height does the bottom menu take
+const gscalebg = 1.0 - gscaleb // bottom in absolute percentage where graph ends
 
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
@@ -172,11 +172,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
-    const coinButtonContainer = new PIXI.Container()
-    let coinButtonContainerTitle = new PIXI.Text({text: "", style: textStyleCentered})
-    coinButtonContainerTitle.anchor.set(0.5,0.)
-    coinButtonContainer.addChild(coinButtonContainerTitle)
-    containerForeground.addChild(coinButtonContainer)
     const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
     containerBackground.addChildAt(background,0);
 
@@ -346,7 +341,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     let focusedCoinName
     let isMultiCoin 
     let trades = []
-    let coinButtons = []
     let graphs = []
     let ownPriceData = []
     let isFinalScreen = false
@@ -374,10 +368,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         isMultiCoin = options.coinNames.length > 2
         canStopManually = options.canStopManually
         currentDate = null
-        coinButtons.forEach(b => {
-            coinButtonContainer.removeChild(b.container)
-        })
-
+       
         graphs.forEach(g => {
             containerGraphs.removeChild(g.graph); 
         })
@@ -386,24 +377,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             containerGraphs.removeChild(trade.container); 
         })
 
-        coinButtons = options.coinNames.map((c,i) => {
-            let container = new PIXI.Container()
-            let sprite = new PIXI.Sprite(coins[c].texture);
-            sprite.anchor.set(0.5,0.5)
-            container.addChild(sprite)
-            return {
-                to: c,
-                index: i,
-                container: container,
-                sprite: sprite
-            }
-        })
+       
     
-    
-        coinButtons.forEach(b => {
-            coinButtonContainer.addChild(b.container)
-        })
-
         graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
             let container = new PIXI.Container()
             let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader, textureCloud)
@@ -530,13 +505,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     }
 
 
-    
-
-    function getCoinButtonIndex(event) {
-        return coinButtons.findIndex(b => b.container.getBounds().containsPoint(event.x,event.y))
-    }
-   
-
     app.stage.addEventListener('pointermove', (event) => {
         if (isMenuVisible()) {
             menuPointerMoveEvent(menu, event)
@@ -544,18 +512,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
             stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
             swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
-            coinButtonContainer.active = coinButtonContainer.visible && coinButtonContainer.getBounds().containsPoint(event.x,event.y)
-            let trade = trades.find(t => t.index === currentIndexInteger)
-          
-            if (coinButtonContainer.active && !trade) {
-                let i = getCoinButtonIndex(event)
-                if (i >= 0 && i < coinButtons.length && coinButtons[i].active) {
-                    focusedCoinName = coinButtons[i].to
-                 } else {
-                     focusedCoinName = null
-                 }
-            }
-
         }
         
     });
@@ -582,35 +538,15 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
                 stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
                 swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
-                coinButtonContainer.active = coinButtonContainer.visible && coinButtonContainer.getBounds().containsPoint(event.x,event.y)
-                let trade = trades.find(t => t.index === currentIndexInteger)
-                if (coinButtonContainer.active && !trade) {
-                    
-                    let i = getCoinButtonIndex(event)
-                    if (i >= 0 && i < coinButtons.length) {
-                        if (focusedCoinName !== coinButtons[i].to) {
-                            focusedCoinName = coinButtons[i].to
-                        } else {
-
-                            if (trades.length === 0 && yourCoinName === coinButtons[i].to) {
-                                yourCoins = yourCoins / coins[coinButtons[1-i].to].data[currentIndexInteger].price
-                                yourCoinName = coinButtons[1-i].to  
-                            }
-                            doTrade(yourCoinName,coinButtons[i].to )
-                        }
-                    }
-                } else if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
+                 let trade = trades.find(t => t.index === currentIndexInteger)
+                if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
                     stopIndizes.push(currentIndexInteger)
                     stopIndizes.sort()
                     stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
                     stops.sort()
                     
                     if (swapImage.active) {
-                        if (yourCoinName === coinButtons[0].to) {
-                            doTrade(coinButtons[0].to, coinButtons[1].to)
-                        } else {
-                            doTrade(coinButtons[1].to, coinButtons[0].to)
-                        }
+                        doTrade(yourCoinName, yourCoinName === 'USD' ? 'BTC' : 'USD')
                     }
                 }
             }
@@ -621,7 +557,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
        
        
-        coinButtonContainer.active = stopImage.active = swapImage.active = false
+        stopImage.active = swapImage.active = false
 
        
     })
@@ -963,7 +899,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
         swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
-        coinButtonContainerTitle.scale.set(8*0.75*SCALE_TEXT_BASE)
 
        
         background.shader.resources.backgroundUniforms.uniforms.uR = color[0];
@@ -977,72 +912,20 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
         background.shader.resources.backgroundUniforms.uniforms.uResolution = [app.screen.width,app.screen.height]
         //background.shader.resources.backgroundUniforms.uniforms.uMenuTop = isMenuVisible() ? 0: [app.screen.width,dateLabel.height*1.4+dateLabel.position.y]
-        
-        //coinButtonContainerTitle.text = deltaTime.lastTime % 4000 > 2000 ? `Trade ${stopIndex+1}/${stops.length-1}` : 'What do you want ?' 
-        
-        if (canStopManually) {
-            coinButtonContainerTitle.text = `What do you want ?` 
-        } else {
-            coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${stops.length-1}\nWhat do you want ?` 
-        }
-       
-        coinButtons.forEach(b => {
-            b.active = !coins[b.to].data || coins[b.to].data[currentIndexInteger]?.price ? true : false
-        })
 
-
-        coinButtonContainer.y = gscalebg*app.renderer.height
-        coinButtonContainer.cheight = app.renderer.height-coinButtonContainer.y
-        coinButtonContainerTitle.x =app.renderer.width*0.5 
-        coinButtonContainerTitle.y = coinButtonContainer.cheight*1.0/3.0
-        coinButtonContainerTitle.rotation = Math.sin(deltaTime.lastTime*0.005)*0.05
-        let maxButtonHeight = 0
-        coinButtons.forEach(b => {
-            b.sprite.height = b.sprite.width = (focusedCoinName && b.to === focusedCoinName ? 1.1 : 1.0)*(1.0/3.0) * coinButtonContainer.cheight
-            b.container.x = (app.renderer.width / coinButtons.length)*(b.index+0.5)
-            b.container.y = 2.0/3.0 * coinButtonContainer.cheight
-            b.sprite.rotation = focusedCoinName && b.to === focusedCoinName ? Math.sin(deltaTime.lastTime*0.01- (1000/coinButtons.length)*b.index)*0.1 : 0.0
-            b.sprite.alpha = 1
-            b.sprite.alpha = (!coins[b.to].csv || b.active) ? b.sprite.alpha : 0.0
-            maxButtonHeight = Math.max(maxButtonHeight, b.sprite.height)
-           
-        })
-        stopContainer.y = coinButtonContainer.y
-        stopImage.height = stopImage.width = (stopImage.active ? 1.1 : 1.0) * (1.0/3.0) * coinButtonContainer.cheight
-        swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * (1.0/3.0) * coinButtonContainer.cheight
-        //swapImage.tint = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].colorInt
+        stopContainer.y = gscalebg*app.renderer.height
+        stopImage.height = stopImage.width = (stopImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
+        swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
+ 
+        swapLabel.text = (yourCoinName === 'USD' ? 'Buy' : 'Sell')
+        swapImage.texture = coins[yourCoinName === 'USD' ? 'BTC' : 'USD'].texture
+        stopImage.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height)
+        stopLabel.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height-stopImage.height*0.75)
         
-        swapLabel.text = (yourCoinName === coinButtons[0].to ? 'Buy' : 'Sell')
-        //swapImage.texture = coins[coinButtons[1].to].texture
-        swapImage.texture = coins[(yourCoinName === coinButtons[0].to ? coinButtons[1].to : coinButtons[0].to)].texture
-        stopImage.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight)
-        stopLabel.position.set(app.renderer.width*0.25, 2.0/3.0 * coinButtonContainer.cheight-stopImage.height*0.75)
+        swapImage.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height)
+        swapLabel.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height-swapImage.height*0.75)
         
-        swapImage.position.set(app.renderer.width*0.75, 2.0/3.0 * coinButtonContainer.cheight)
-        swapLabel.position.set(app.renderer.width*0.75, 2.0/3.0 * coinButtonContainer.cheight-swapImage.height*0.75)
-        
-        //stopLabel.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
-        //stopContainer.scale=((stopContainer.active ? 0.2 : 0.0) + 1+Math.cos(deltaTime.lastTime*0.01)*0.01)
-        
-
-        if (stopIndex > -1 && !isFinalScreen && !trade) {
-            if (focusedCoinName) {
-                let fromPrice = yourCoinName === fiatName ? 1 : coins[yourCoinName].data[currentIndexInteger].price
-                let toPrice = focusedCoinName === fiatName ? 1 : coins[focusedCoinName].data[currentIndexInteger].price
-                let toCoins = (yourCoins * fromPrice) / toPrice
-                if (canStopManually) {
-                    coinButtonContainerTitle.text = `Please confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
-                } else {
-                    coinButtonContainerTitle.text = `Trade ${stopIndex+1}/${stops.length-1}\nPlease confirm: \n` + formatCurrency(toCoins, focusedCoinName, coins[focusedCoinName].digits)
-                }
-            }
-        } else {
-            coinButtonContainerTitle.text = ''
-        }
-
-        stopContainer.visible =  !isFinalScreen  && stopIndex < 0
-        coinButtonContainer.visible = !isFinalScreen && !stopContainer.visible && stopIndex > -1 && !trade
-
+        stopContainer.visible =  !isFinalScreen&& !trade
 
         btnMenuSprite.scale = (btnMenuSprite.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
         btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
