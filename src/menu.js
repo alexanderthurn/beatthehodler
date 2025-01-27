@@ -175,6 +175,7 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
             case 'Gamepads0':
             case 'Enter':    
             case ' ': 
+            menu.levelEntries[0].active = true
             menu.state = MENU_STATE_LEVELS
             break;
         }

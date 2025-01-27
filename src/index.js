@@ -882,11 +882,17 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height - Math.random()*10}
             
                 if (isFinalScreen) {
+                    hodlerContainer.visible = true
+                    ownLabelContainer.visible = false
                     hodlerContainer.x = graphBorderAreaRight.x - 10
                     hodlerContainer.y = priceLabelContainer.y
                 } else {
-                    hodlerContainer.x = 0.1*app.screen.width
-                    hodlerContainer.y = gscalet*app.screen.height
+                    hodlerContainer.visible = yourCoinName !== fiatName
+                    ownLabelContainer.visible = yourCoinName === fiatName
+                    //hodlerContainer.x = 0.1*app.screen.width
+                    //hodlerContainer.y = gscalet*app.screen.height
+                    hodlerContainer.x = ownLabelContainer.x
+                    hodlerContainer.y = ownLabelContainer.y
                 }
           
 
@@ -931,8 +937,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
                     //txt += `You have 1${formatCurrency(null,options.coinNames[1])}\n\n`
                     txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
-                    txt += `\n= YOU      \n`
-                    txt += `\n = HODLER`
+                    txt += `\n= YOU HAVE $\n`
+                    txt += `\n = YOU HAVE ${formatCurrency(null,options.coinNames[1])}`
                 }
                
             } 
@@ -971,7 +977,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         
 
         bigtextContainer.visible = isFinalScreen || stopIndex === 0
-        ownLabelContainer.visible = !isFinalScreen
         priceLabelContainer.visible = !isFinalScreen
         
         if (bigtextContainer.visible) {
