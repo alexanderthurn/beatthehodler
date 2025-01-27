@@ -139,6 +139,14 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.helpButtonSprite = new PIXI.Sprite(menu.helpTexture);
     menu.addChild(menu.helpButtonSprite)
 
+    menu.helpButtonSprite.right = menu.musicButtonSprite
+    menu.helpButtonSprite.left = menu.audioButtonSprite
+    menu.musicButtonSprite.left = menu.helpButtonSprite
+    menu.musicButtonSprite.right = menu.audioButtonSprite
+    menu.audioButtonSprite.left = menu.musicButtonSprite
+    menu.audioButtonSprite.right = menu.helpButtonSprite
+
+
     menu.pointer = {x: app.screen.width/2, y:app.screen.height / 6 * 5}
     return menu
 }
@@ -164,6 +172,15 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
         menu.state = MENU_STATE_LEVELS
     } else {
         let entry = menu.levelEntries.find(entry => entry.active)
+        if (!entry && menu.helpButtonSprite.active) {
+            entry = menu.helpButtonSprite
+        }
+        if (!entry && menu.musicButtonSprite.active) {
+            entry = menu.musicButtonSprite
+        }
+        if (!entry && menu.audioButtonSprite.active) {
+            entry = menu.audioButtonSprite
+        }
         switch (event.key) {
             case 'w':
             case 'ArrowUp':
@@ -210,9 +227,18 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
             case 'Enter':    
             case ' ':
                 if (entry) {
-                    showMenu(false)
-                    startNewGame(entry.level) 
-                    entry.active = false
+                    if (entry === menu.audioButtonSprite) {
+                        setMute(!getMute())
+                    } else if (entry === menu.musicButtonSprite) {
+                        setMute(!getMute('music') ,'music')
+                    } else if (entry === menu.helpButtonSprite) {
+                        //setMute(!getMute())
+                    } else {
+                        showMenu(false)
+                        startNewGame(entry.level) 
+                        entry.active = false
+                    }
+
                 }
                 break;
         }
@@ -273,6 +299,10 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.helpButtonSprite.scale = (menu.helpButtonSprite.active ? 1.1 : 1.0) * 0.2
     menu.helpButtonSprite.position.set(menu.helpButtonSprite.width * 0.2, app.screen.height -menu.helpButtonSprite.height * 1.2 )
    
+
+    menu.helpButtonSprite.up = menu.musicButtonSprite.up = menu.audioButtonSprite.up = menu.levelEntries[menu.levelEntries.length-1]
+    menu.helpButtonSprite.down = menu.musicButtonSprite.down = menu.audioButtonSprite.down = menu.levelEntries[0]
+
 
     let scaleToFullHD = app.screen.width/1920
 
@@ -345,6 +375,15 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                 entry.left =  group.levelEntries[entry.col > 0 ? index2-1 : index2+menu.cols-1]
                 entry.up =  group.levelEntries[entry.row > 0 ? index2-cols : group.levelEntries.length-(menu.cols-entry.col)]
                 entry.down =  group.levelEntries[(index2+cols) % group.levelEntries.length]
+                
+                if (entry.row === 0) {
+                    entry.up = menu.helpButtonSprite
+                }
+
+                if (entry.row === menu.rows-1) {
+                    entry.down = menu.helpButtonSprite
+                }
+
                 entry.indexBackground.scale = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * Math.min(colw / (entry.indexBackgroundRadius*2), colh / (entry.indexBackgroundRadius))
                 entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
     
