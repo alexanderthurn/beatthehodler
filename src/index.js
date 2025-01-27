@@ -49,8 +49,8 @@ async function initGame() {
         SoundManager.add(key,coins[key].sound )
     }))
     SoundManager.add('music_menu', 'sfx/song1.mp3')
-    SoundManager.add('music_game1', 'sfx/song3.mp3')
-    SoundManager.add('music_game2', 'sfx/song2.mp3')
+    SoundManager.add('music_game1', 'sfx/song2.mp3')
+    SoundManager.add('music_about', 'sfx/song3.mp3')
     SoundManager.add('trade_won1', 'sfx/coin1.wav')
     SoundManager.add('trade_won2', 'sfx/coin2.wav')
     SoundManager.add('trade_won3', 'sfx/coin3.wav')
@@ -498,7 +498,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
         } else {
-            !options?.silent && SoundManager.playSFX(trade.toName)
+            !options?.silent && trade.toName !== trade.fromName && SoundManager.playSFX(trade.toName)
         }
         trades.push(trade)
         containerGraphs.addChild(trade.container)
@@ -533,6 +533,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
             switch (key) {
                 case 'Gamepads9':
+                case 'Gamepads1':
                 case 'Escape':
                     startNewGame(gameData.levels.find(level => level.name === 'menu'))
                     showMenu(true)
@@ -564,8 +565,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 case 'ArrowLeft':
                 case 's':
                 case 'Gamepads2':
-                    if (isFinalScreen) {
-                        startNewGame(options)
+                    if (isFinalScreen) {                
+                        if (yourFiat > options.fiatBTCHodler) {
+                            startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                            showMenu(true)
+                        } else {
+                            startNewGame(options)
+                        }
                         break;
                     }
                 case 'ArrowDown':
@@ -726,7 +732,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
             if (!trade && isFinalScreen) {
                 doTrade(yourCoinName, yourCoinName, {silent: true})
-                SoundManager.stopAll()
+                SoundManager.stopMusic()
                 if (yourFiat > options.fiatBTCHodler) {
                     SoundManager.playSFX('game_won')
                 } else {

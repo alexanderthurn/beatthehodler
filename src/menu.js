@@ -171,7 +171,13 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
     let key = event.detail.key
 
     if (menu.state === MENU_STATE_INTRO) {
-        menu.state = MENU_STATE_LEVELS
+        switch (key) {
+            case 'Gamepads0':
+            case 'Enter':    
+            case ' ': 
+            menu.state = MENU_STATE_LEVELS
+            break;
+        }
     } else {
         let entry = menu.levelEntries.find(entry => entry.active)
         if (!entry && menu.helpButtonSprite.active) {
@@ -228,6 +234,7 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                     entry.down.active = true
                 }
                 break;
+            case 'Gamepads1':
             case 'Gamepads9':
             case 'Tab':
             case 'Escape':

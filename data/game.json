@@ -21,7 +21,7 @@
             "stops": 2,
             "canStopManually": false,
             "coinNames": ["USD","BTC"],
-            "music": "music_game2"
+            "music": "music_menu"
         },
         {
             "name":"22",

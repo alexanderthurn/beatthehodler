@@ -64,8 +64,11 @@ const SoundManager = {
         }
 
     },
-    stopAll: () => {
-        PIXI.sound?.stopAll();
+    stopMusic: () => {
+        SoundManager.musicName = null
+        if (PIXI.sound) {
+            SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.stop())
+        }
     },
     initSafe: function(app) {
         
