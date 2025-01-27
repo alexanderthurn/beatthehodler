@@ -318,8 +318,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     let scaleToFullHD = app.screen.width/1920
 
     menu.title.scale.set(4*scaleToFullHD*0.5)
-    menu.subtitle.scale.set(4*scaleToFullHD*0.25)
-    menu.finaltitle.scale.set(4*scaleToFullHD*0.25)
+    menu.subtitle.scale.set(scaleToFullHD)
+    menu.finaltitle.scale.set(scaleToFullHD)
     menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
 
     menu.spritePlayer.scale = menu.spriteHodler.scale = 0.25*(Math.min(1080,Math.max(640,app.screen.width))/640.0)
