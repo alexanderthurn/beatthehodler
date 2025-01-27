@@ -403,7 +403,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                     if (score === true || score === null) {
                         entry.indexSubText.text = ''
                     } else {
-                        entry.indexSubText.text =  score > 0 ? '+' + (500*score).toFixed(0) + '%' : score.toFixed(0) + '%'
+                        entry.indexSubText.text =  score > 0 ? '+' + (score).toFixed(0) + '%' : score.toFixed(0) + '%'
                     }
                 }
 

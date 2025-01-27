@@ -63,8 +63,8 @@ async function initGame() {
     SoundManager.add('trade_lost5', 'sfx/lost5.wav')
     SoundManager.add('shepard_up', 'sfx/ascending-tones-168471.mp3')
     SoundManager.add('shepard_down', 'sfx/descending-tones-168472.mp3')
-    SoundManager.add('game_lost', {url: 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3', preload: true})
-    SoundManager.add('game_won',  {url: 'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3', preload: true})
+    SoundManager.add('game_lost', 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3')
+    SoundManager.add('game_won',  'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3')
 
     document.body.appendChild(app.canvas);
     app.canvas.addEventListener('contextmenu', (e) => {
@@ -532,20 +532,29 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             let stopIndex = stopIndizes.indexOf(currentIndexInteger)
     
             switch (key) {
+                case 'Gamepads9':
+                case 'Escape':
+                    startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                    showMenu(true)
+                    break;
                 case ' ':
                 case 'w':
                 case 'Gamepads0':
+                    if (isFinalScreen) {                
+                        if (yourFiat > options.fiatBTCHodler) {
+                            startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                            showMenu(true)
+                        } else {
+                            startNewGame(options)
+                        }
+                        break;
+                    }
                 case 'ArrowUp':
                 case 'd':
                 case 'ArrowRight':
                     if (!trade) {
                         doTrade(yourCoinName, yourCoinName === 'USD' ? 'BTC' : 'USD')
                     }
-                    break;
-                case 'Gamepads9':
-                case 'Escape':
-                    startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                    showMenu(true)
                     break;
                 case 'Tab':
                 case 'Enter':
@@ -555,6 +564,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 case 'ArrowLeft':
                 case 's':
                 case 'Gamepads2':
+                    if (isFinalScreen) {
+                        startNewGame(options)
+                        break;
+                    }
                 case 'ArrowDown':
                         if (stopIndex < 0) {
                             stopIndizes.push(currentIndexInteger)
@@ -713,7 +726,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
             if (!trade && isFinalScreen) {
                 doTrade(yourCoinName, yourCoinName, {silent: true})
-                SoundManager.stopAll(9)
+                SoundManager.stopAll()
                 if (yourFiat > options.fiatBTCHodler) {
                     SoundManager.play('game_won')
                 } else {
@@ -835,11 +848,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                        } else {
                         if (res < 0) {
-                            shepardSoundDown.muted = false
+                            shepardSoundDown.muted = SoundManager.muted
                             shepardSoundUp.muted = true
                         } else {
                             shepardSoundDown.muted = true
-                            shepardSoundUp.muted = false
+                            shepardSoundUp.muted = SoundManager.muted
                         }
                        }
                         
@@ -926,12 +939,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             txt += `Level ${options.name}\n`
             if (fiat > options.fiatBTCHodler) {
                 txt += "You won, nice!\n\n" 
-               
-                if (res > getWin(options.name)) {
-                    setWin(options.name, res)
-                }
             } else {
                 txt += "Oh no, you lost\n\n" 
+            }
+            if (getWin(options.name) === 0 || res > getWin(options.name)) {
+                setWin(options.name, res)
             }
 
             const word = hodlerActivities[Math.floor((deltaTime.lastTime * 0.0005) % hodlerActivities.length)];
