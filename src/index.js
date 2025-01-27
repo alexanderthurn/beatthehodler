@@ -515,19 +515,26 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
         }
         
-    });
+});
+
+
+    window.addEventListener('keyup', (event) => {
+        triggerCustomKey(event.key)
+    })
 
     // Event-Listener für keyup hinzufügen
-    window.addEventListener('keyup', (event) => {
+    window.addEventListener('customkey', (event) => {
+        let key = event.detail.key
         if (isMenuVisible()) {
             menuKeyUpEvent(menu, event, startNewGame,getMute, setMute, showMenu)
         } else {
             let trade = trades.find(t => t.index === currentIndexInteger)
             let stopIndex = stopIndizes.indexOf(currentIndexInteger)
     
-            switch (event.key) {
+            switch (key) {
                 case ' ':
                 case 'w':
+                case 'Gamepads0':
                 case 'ArrowUp':
                 case 'd':
                 case 'ArrowRight':
@@ -535,16 +542,19 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                         doTrade(yourCoinName, yourCoinName === 'USD' ? 'BTC' : 'USD')
                     }
                     break;
+                case 'Gamepads9':
                 case 'Escape':
                     startNewGame(gameData.levels.find(level => level.name === 'menu'))
                     showMenu(true)
                     break;
+                case 'Tab':
                 case 'Enter':
                 case 'p':
                 case 'P': 
                 case 'a':
                 case 'ArrowLeft':
                 case 's':
+                case 'Gamepads2':
                 case 'ArrowDown':
                         if (stopIndex < 0) {
                             stopIndizes.push(currentIndexInteger)
@@ -554,9 +564,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                         } else {
                             doTrade(yourCoinName, yourCoinName)
                         }
-                    break;
-                case 'Tab':
-                    console.log('Tab');
                     break;
             }
         }
@@ -630,6 +637,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     showMenu(!menu.visible)
     app.ticker.add((deltaTime) => {
 
+        handleGamepadInput()
+        
         particles.forEach((p,i) => {
             p.x = 0.9*p.x + 0.1*p.xTarget
             p.y = 0.9*p.y + 0.1*p.yTarget

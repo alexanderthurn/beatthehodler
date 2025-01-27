@@ -168,6 +168,8 @@ function menuPointerMoveEvent(menu, event) {
 }
 
 function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
+    let key = event.detail.key
+
     if (menu.state === MENU_STATE_INTRO) {
         menu.state = MENU_STATE_LEVELS
     } else {
@@ -181,8 +183,10 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
         if (!entry && menu.audioButtonSprite.active) {
             entry = menu.audioButtonSprite
         }
-        switch (event.key) {
+        switch (key) {
             case 'w':
+            case 'GamepadsUp':
+            case 'Gamepads12':
             case 'ArrowUp':
                 if (!entry) {
                     menu.levelEntries[0].active = true
@@ -191,7 +195,9 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                     entry.up.active = true
                 }
             break;
-            case 'd':
+            case 'd':   
+            case 'Gamepads15':
+            case 'GamepadsRight':
             case 'ArrowRight':
                 if (!entry) {
                     menu.levelEntries[0].active = true
@@ -201,6 +207,8 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                 }    
             break;
             case 'a':
+            case 'Gamepads14':
+            case 'GamepadsLeft':
             case 'ArrowLeft':
                 if (!entry) {
                     menu.levelEntries[0].active = true
@@ -210,6 +218,8 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                 }
                 break;
             case 's':
+            case 'Gamepads13':
+            case 'GamepadsDown':
             case 'ArrowDown':
                 if (!entry) {
                     menu.levelEntries[0].active = true
@@ -218,12 +228,14 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                     entry.down.active = true
                 }
                 break;
+            case 'Gamepads9':
             case 'Tab':
             case 'Escape':
                 if (menu.state === MENU_STATE_LEVELS) {
                     menu.state = MENU_STATE_INTRO
                 }
                 break;
+            case 'Gamepads0':
             case 'Enter':    
             case ' ':
                 if (entry) {
@@ -236,7 +248,6 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                     } else {
                         showMenu(false)
                         startNewGame(entry.level) 
-                        entry.active = false
                     }
 
                 }
@@ -246,7 +257,7 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
 }
 
 function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
-    
+
     menu.pointer.x = event.x
     menu.pointer.y = event.y
 

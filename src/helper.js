@@ -479,3 +479,90 @@ function getQueryParam(key) {
         priceLabel.y = app.renderer.height*0.8
         priceLabel.text = formatCurrency(0.00021, fiatName,null, true) + '\n' + formatCurrency(0.0021, fiatName,null, true) + '\n' + formatCurrency(0.021, fiatName,null, true) + '\n' +  formatCurrency(0.21, fiatName,null, true) + '\n' + formatCurrency(2.21, fiatName,null, true) + '\n' + formatCurrency(21.21, fiatName,null, true) + '\n' + formatCurrency(212.21, fiatName,null, true) + '\n' + formatCurrency(2121.21, fiatName,null, true) + '\n' + formatCurrency(21212.21, fiatName,null, true) + '\n' + formatCurrency(221212.21, fiatName,null, true) + '\n' + formatCurrency(2212121.21, fiatName,null, true) + '\n' + formatCurrency(22121212.21, fiatName,null, true)  + '\n' + formatCurrency(221212121.21, fiatName,null, true) + '\n' + formatCurrency(2212121221.21, fiatName,null, true) 
         */
+
+
+        const gamepadStates = {};
+
+// Gamepad-Eingaben auf KeyUp-Logik mappen
+function handleGamepadInput() {
+    const gamepads = navigator.getGamepads();
+
+    for (let index = 0; index < gamepads.length; index++) {
+        const gamepad = gamepads[index];
+        if (!gamepad) continue;
+
+        // Initialisiere den Zustand für dieses Gamepad, falls noch nicht vorhanden
+        if (!gamepadStates[index]) {
+            gamepadStates[index] = {
+                axes: new Array(gamepad.axes.length).fill(0), // Achsen-Zustand
+                buttons: new Array(gamepad.buttons.length).fill(false) // Buttons-Zustand
+            };
+        }
+
+        const state = gamepadStates[index]; // Zustand für dieses Gamepad
+        const [axisX, axisY] = gamepad.axes;
+
+        // X-Achse prüfen
+        if (axisX < -0.5 && state.x >= -0.5) {
+            triggerCustomKey('GamepadsLeft', index); // Links
+        } else if (axisX > 0.5 && state.x <= 0.5) {
+            triggerCustomKey('GamepadsRight', index); // Rechts
+        } else if (Math.abs(axisX) < 0.5 && Math.abs(state.x) >= 0.5) {
+            triggerCustomKey(null, index); // Neutralposition für X
+        }
+
+        // Y-Achse prüfen
+        if (axisY < -0.5 && state.y >= -0.5) {
+            triggerCustomKey('GamepadsUp', index); // Hoch
+        } else if (axisY > 0.5 && state.y <= 0.5) {
+            triggerCustomKey('GamepadsDown', index); // Runter
+        } else if (Math.abs(axisY) < 0.5 && Math.abs(state.y) >= 0.5) {
+            triggerCustomKey(null, index); // Neutralposition für Y
+        }
+
+        /*
+            Gamepads0: A
+            Gamepads1: B
+            Gamepads2: X
+            Gamepads3: Y
+            Gamepads4: LB (Left Bumper)
+            Gamepads5: RB (Right Bumper)
+            Gamepads6: LT (Left Trigger)
+            Gamepads7: RT (Right Trigger)
+            Gamepads8: Back
+            Gamepads9: Start
+            Gamepads10: Left Stick (Click)
+            Gamepads11: Right Stick (Click)
+            Gamepads12: D-Pad Up
+            Gamepads13: D-Pad Down
+            Gamepads14: D-Pad Left
+            Gamepads15: D-Pad Right
+            Gamepads16: Guide (Home Button, optional)
+        */
+
+        // Zustand aktualisieren
+        state.x = axisX;
+        state.y = axisY;
+        gamepad.buttons.forEach((button, buttonIndex) => {
+            if (button.pressed && !state.buttons[buttonIndex]) {
+                triggerCustomKey(`Gamepads${buttonIndex}`, index); // Button gedrückt
+                triggerCustomKey(`Gamepad${index}_${buttonIndex}`, index); // Button gedrückt
+            } else if (!button.pressed && state.buttons[buttonIndex]) {
+                // Optional: KeyUp für Loslassen des Buttons
+            }
+
+            state.buttons[buttonIndex] = button.pressed; 
+        })
+
+    }
+}
+
+function triggerCustomKey(key) {
+    if (key) {
+        const event = new CustomEvent('customkey', {
+            detail: {key: key},
+            bubbles: true
+        });
+        document.dispatchEvent(event);
+    }
+}

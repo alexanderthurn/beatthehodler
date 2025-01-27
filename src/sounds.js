@@ -77,6 +77,27 @@ const SoundManager = {
             loadAndInit()
             window.removeEventListener('keyup', handleKeyUpOnce);
         });
+
+
+            // Gamepad-Überprüfung
+        let gamepadLoop = function () {
+            const gamepads = navigator.getGamepads();
+            for (const gamepad of gamepads) {
+                if (!gamepad) continue;
+
+                // Prüfen, ob irgendein Button gedrückt ist
+                if (gamepad.buttons.some(button => button.pressed)) {
+                    loadAndInit();
+                    return; // Schleife und Loop beenden, da Sound initialisiert wurde
+                }
+            }
+
+            // Wenn noch keine Taste gedrückt wurde, fortsetzen
+            requestAnimationFrame(gamepadLoop);
+        };
+
+        gamepadLoop();
+
     },
     add: function(name, url) {
         if (PIXI.sound) {
