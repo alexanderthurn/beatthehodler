@@ -1,24 +1,34 @@
 
 const SoundManager = {
     isInit: false,
-    musicInstance: null,
-    musicName: null,
     sounds: {},
+    musicName: null,
     muted: false,
     mutedMusic: false,
     toAdd: [],
 
-    muteMusic: () => {
-        SoundManager.mutedMusic= true
-        if (SoundManager.musicInstance) {
-            SoundManager.musicInstance.muted = true
+    getMusicSounds: (filterName) => {  
+        if (PIXI.sound) {
+            if (filterName) {
+                return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') > -1).filter(k => k.indexOf(filterName) > -1).map(k => PIXI.sound._sounds[k])
+            } else {
+                return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') > -1).map(k => PIXI.sound._sounds[k])
+            }
+        } else {
+            return []
         }
     },
+    muteMusic: () => {
+        SoundManager.mutedMusic= true
+        if (PIXI.sound) {
+            SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.muted = true)
+        }
+    }, 
 
     unmuteMusic: () => {
         SoundManager.mutedMusic= false
-        if (SoundManager.musicInstance) {
-            SoundManager.musicInstance.muted = false
+        if (PIXI.sound) {
+            SoundManager.getMusicSounds().filter(s => s.isPlaying && s.muted === true).forEach(s => s.muted = false)
         }
     },
     muteAll: () => {
@@ -37,18 +47,12 @@ const SoundManager = {
 
     playMusic: (musicname) => {
         SoundManager.musicName = musicname
-        
-        if (SoundManager.musicInstance) {
-            SoundManager.musicInstance.stop()
-            SoundManager.musicInstance = null;
-        }
 
         if (PIXI.sound) {
-            Promise.resolve(PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance : true})).then((instance) => {
-                SoundManager.musicInstance = instance
-            })
+            SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.stop())
+            PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance : true})
         }
-        
+
     },
     stopAll: () => {
         PIXI.sound?.stopAll();
@@ -60,7 +64,7 @@ const SoundManager = {
                 SoundManager.isInit = true
                 loadScript('lib/pixi-sound.js')
                 .then(() => {
-                    SoundManager.init()
+                    SoundManager._init()
                 })
                 .catch((error) => {
                     console.error(error);
@@ -107,7 +111,7 @@ const SoundManager = {
         }
         
     },
-    init: function() {
+    _init: function() {
         PIXI.sound.disableAutoPause = true
         SoundManager.toAdd.forEach(s => {
             SoundManager.add(s.name, s.url)
