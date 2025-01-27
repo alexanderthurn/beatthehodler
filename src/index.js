@@ -799,19 +799,36 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 maxPriceLabel.text = g.graph.maxPriceLabel.text
 
                 //ownLabelContainer.mask = graphBorderMask
-                ownLabelContainer.x = graphBorderAreaRight.x
+                //ownLabelContainer.x = graphBorderAreaRight.x
                 
-               
                 if (yourCoinName !== fiatName) {
-
-
                     let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
-
-                    //ownLabelContainer.y = priceLabelContainer.y 
                     ownLabelContainer.x = p.x
                     ownLabelContainer.y = p.y
-                    
+                } else {
+                    let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, yourCoins)
+                    ownLabelContainer.x = p.x
+                    ownLabelContainer.y = p.y
+                }
+
+                if (yourCoinName === fiatName && !isFinalScreen && stopIndex < 0 && !isMenuVisible()) {
+                    ownLabel.visible = true
+                    ownLabel.scale = 0.8;
+                } else {
                     ownLabel.visible = false
+                }
+
+                let ts = trades.filter(t => t.toName !== t.fromName)
+                let tp = ts.length < 1 ? yourFiat : ts[ts.length-1]?.fromPrice
+                let res = (100*(tp / graphResult.price))-100
+                if (res < 0) {
+                    ownLabel.text = `- ${-res.toFixed(0)}%`
+                } else {
+                    ownLabel.text = `+ ${res.toFixed(0)}%`
+                }
+
+               
+                if (yourCoinName !== fiatName && stopIndex < 0 && !isFinalScreen && !isMenuVisible()) {
                     if (shepardSoundDown) {
                         shepardSoundDown.muted = true
                     }
@@ -819,40 +836,17 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     if (shepardSoundUp) {
                         shepardSoundUp.muted = true
                     }
-                
-                
-                    
                 } else if (stopIndex < 0 && !isFinalScreen && !isMenuVisible()) {
-                    let ts = trades.filter(t => t.toName !== t.fromName)
-                    ownLabelContainer.y = trades.length < 1 ? priceLabelContainer.y: ts[ts.length-1]?.container.getGlobalPosition().y
-                    let tp = trades.length < 1 ? graphResult.price : ts[ts.length-1]?.fromPrice
-                    let res = (100*(tp / graphResult.price))-100
-                    if (res < 0) {
-                        ownLabel.text = `- ${-res.toFixed(0)}%`
+                    if (!shepardSoundUp || !shepardSoundDown) {
+                        
+                        Promise.resolve(SoundManager.playSFX('shepard_up', {volume: 0.15, loop: true, singleInstance : true, muted: true})).then(instance => {
+                            shepardSoundUp = instance
+                        })
+                        Promise.resolve(SoundManager.playSFX('shepard_down', {volume: 0.05, loop: true, singleInstance : true, muted: true})).then(instance => {
+                            shepardSoundDown = instance
+                        })
+
                     } else {
-                        ownLabel.text = `+ ${res.toFixed(0)}%`
-                    }
-                    
-                    ownLabel.visible = true
-                   
-                 //   ownLabel.x = -20+20 * Math.sin(deltaTime.lastTime*0.001);                 // X-Wert der Kurve
-                  //  ownLabel.y = -20+20 * Math.sin(2 * deltaTime.lastTime*0.0010) / 2;    
-                    ownLabel.scale = 0.8;
-
-                    if (ownLabel.oldRes !== res) {
-                        //shepardSound?.stop()
-
-
-                        if (!shepardSoundUp || !shepardSoundDown) {
-                            
-                            Promise.resolve(SoundManager.playSFX('shepard_up', {volume: 0.15, loop: true, singleInstance : true, muted: true})).then(instance => {
-                                shepardSoundUp = instance
-                            })
-                            Promise.resolve(SoundManager.playSFX('shepard_down', {volume: 0.05, loop: true, singleInstance : true, muted: true})).then(instance => {
-                                shepardSoundDown = instance
-                            })
-
-                       } else {
                         if (res < 0) {
                             shepardSoundDown.muted = SoundManager.mutedSounds
                             shepardSoundUp.muted = true
@@ -860,13 +854,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                             shepardSoundDown.muted = true
                             shepardSoundUp.muted = SoundManager.mutedSounds
                         }
-                       }
-                        
-                      
-                 
-                       
                     }
-                    
+
                 } else {
                     
                     if (shepardSoundDown) {
@@ -882,18 +871,25 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height - Math.random()*10}
             
                 if (isFinalScreen) {
+                    let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
+                    hodlerContainer.x = p.x
+                    hodlerContainer.y = p.y
+
                     hodlerContainer.visible = true
-                    ownLabelContainer.visible = false
-                    hodlerContainer.x = graphBorderAreaRight.x - 10
-                    hodlerContainer.y = priceLabelContainer.y
+                    ownLabelContainer.visible = true
+
+                    let p2 = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, yourFiat)
+                    ownLabelContainer.x = p2.x
+                    ownLabelContainer.y = p2.y
+
                 } else {
                     hodlerContainer.visible = yourCoinName !== fiatName
                     ownLabelContainer.visible = yourCoinName === fiatName
-                    //hodlerContainer.x = 0.1*app.screen.width
-                    //hodlerContainer.y = gscalet*app.screen.height
                     hodlerContainer.x = ownLabelContainer.x
                     hodlerContainer.y = ownLabelContainer.y
                 }
+
+            
           
 
                
@@ -937,8 +933,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
                     //txt += `You have 1${formatCurrency(null,options.coinNames[1])}\n\n`
                     txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
-                    txt += `\n= YOU HAVE $\n`
-                    txt += `\n = YOU HAVE ${formatCurrency(null,options.coinNames[1])}`
+                    txt += `\n    = $ OWNED\n`
+                    txt += `\n    = ${formatCurrency(null,options.coinNames[1])} OWNED`
                 }
                
             } 
