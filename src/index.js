@@ -301,10 +301,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             }
         } else {
             if (value) {
-                SoundManager.muteAll()
+                SoundManager.muteSounds()
             } else {
     
-                SoundManager.unmuteAll()
+                SoundManager.unmuteSounds()
             }
         }
        
@@ -483,10 +483,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
             if (res < 0) {
                 trade.labelPercentage.text  = `- ${-res.toFixed(0)}%`
-                !options?.silent && SoundManager.play('trade_lost' + sfxIndex)
+                !options?.silent && SoundManager.playSFX('trade_lost' + sfxIndex)
             } else {
                 trade.labelPercentage.text  = `+ ${res.toFixed(0)}%`
-                !options?.silent && SoundManager.play('trade_won' + sfxIndex)
+                !options?.silent && SoundManager.playSFX('trade_won' + sfxIndex)
 
                 particles.forEach((p,i) => { 
                     p.x =  ownLabelContainer.x
@@ -498,7 +498,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
         } else {
-            !options?.silent && SoundManager.play(trade.toName)
+            !options?.silent && SoundManager.playSFX(trade.toName)
         }
         trades.push(trade)
         containerGraphs.addChild(trade.container)
@@ -728,9 +728,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 doTrade(yourCoinName, yourCoinName, {silent: true})
                 SoundManager.stopAll()
                 if (yourFiat > options.fiatBTCHodler) {
-                    SoundManager.play('game_won')
+                    SoundManager.playSFX('game_won')
                 } else {
-                    SoundManager.play('game_lost')
+                    SoundManager.playSFX('game_lost')
                 }
 
 
@@ -839,20 +839,20 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                         if (!shepardSoundUp || !shepardSoundDown) {
                             
-                            Promise.resolve(SoundManager.play('shepard_up', {volume: 0.15, loop: true, singleInstance : true, muted: true})).then(instance => {
+                            Promise.resolve(SoundManager.playSFX('shepard_up', {volume: 0.15, loop: true, singleInstance : true, muted: true})).then(instance => {
                                 shepardSoundUp = instance
                             })
-                            Promise.resolve(SoundManager.play('shepard_down', {volume: 0.05, loop: true, singleInstance : true, muted: true})).then(instance => {
+                            Promise.resolve(SoundManager.playSFX('shepard_down', {volume: 0.05, loop: true, singleInstance : true, muted: true})).then(instance => {
                                 shepardSoundDown = instance
                             })
 
                        } else {
                         if (res < 0) {
-                            shepardSoundDown.muted = SoundManager.muted
+                            shepardSoundDown.muted = SoundManager.mutedSounds
                             shepardSoundUp.muted = true
                         } else {
                             shepardSoundDown.muted = true
-                            shepardSoundUp.muted = SoundManager.muted
+                            shepardSoundUp.muted = SoundManager.mutedSounds
                         }
                        }
                         

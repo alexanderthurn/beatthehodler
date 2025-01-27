@@ -241,10 +241,12 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                 if (entry) {
                     if (entry === menu.audioButtonSprite) {
                         setMute(!getMute())
+                        SoundManager.playSFX('trade_won1')
                     } else if (entry === menu.musicButtonSprite) {
                         setMute(!getMute('music') ,'music')
                     } else if (entry === menu.helpButtonSprite) {
                         //setMute(!getMute())
+                        SoundManager.playSFX('trade_won1')
                     } else {
                         showMenu(false)
                         startNewGame(entry.level) 
@@ -281,6 +283,7 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
     
         if (menu.audioButtonSprite.getBounds().containsPoint(event.x,event.y)) {
             setMute(!getMute())
+            SoundManager.playSFX('trade_won1')
         } 
             
         if (menu.musicButtonSprite.getBounds().containsPoint(event.x,event.y)) {
@@ -289,6 +292,7 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
     
         if (menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)) {
             //setMute(!getMute())
+            SoundManager.playSFX('trade_won1')
         } 
     }
     

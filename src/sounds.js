@@ -3,17 +3,20 @@ const SoundManager = {
     isInit: false,
     sounds: {},
     musicName: null,
-    muted: false,
+    mutedSounds: false,
     mutedMusic: false,
     toAdd: [],
 
-    getMusicSounds: (filterName) => {  
+    getSFXSounds: () => {  
         if (PIXI.sound) {
-            if (filterName) {
-                return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') > -1).filter(k => k.indexOf(filterName) > -1).map(k => PIXI.sound._sounds[k])
-            } else {
-                return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') > -1).map(k => PIXI.sound._sounds[k])
-            }
+            return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') === -1).map(k => PIXI.sound._sounds[k])
+        } else {
+            return []
+        }
+    },
+    getMusicSounds: () => {  
+        if (PIXI.sound) {
+            return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') > -1).map(k => PIXI.sound._sounds[k])
         } else {
             return []
         }
@@ -28,21 +31,28 @@ const SoundManager = {
     unmuteMusic: () => {
         SoundManager.mutedMusic= false
         if (PIXI.sound) {
-            SoundManager.getMusicSounds().filter(s => s.isPlaying && s.muted === true).forEach(s => s.muted = false)
+            SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.muted = false)
+            SoundManager.getMusicSounds().filter(s => s.isPlaying).map(s => s.instances).filter(ia => ia[0].muted).forEach(ia => ia[0].muted = false)
         }
     },
-    muteAll: () => {
-        PIXI.sound?.muteAll()
-        SoundManager.muted= true
+    muteSounds: () => {
+        SoundManager.mutedSounds= true
+        if (PIXI.sound) {
+            SoundManager.getSFXSounds().filter(s => s.isPlaying).forEach(s => s.muted = true)
+        }
     },
 
-    unmuteAll: () => {
-        PIXI.sound?.unmuteAll()
-        SoundManager.muted = false
+    unmuteSounds: () => {
+        SoundManager.mutedSounds= false
+        if (PIXI.sound) {
+            SoundManager.getSFXSounds().filter(s => s.isPlaying && s.muted === true).forEach(s => s.muted = false)
+            SoundManager.getSFXSounds().filter(s => s.isPlaying).map(s => s.instances).filter(ia => ia[0].muted).forEach(ia => ia[0].muted = false)
+            
+        }
     },
 
-    play: (soundName, options = {}) => {
-        return PIXI.sound?.play(soundName, {...options, muted: SoundManager.muted})
+    playSFX: (soundName, options = {}) => {
+        return PIXI.sound?.play(soundName, {...options, muted: SoundManager.mutedSounds})
     },
 
     playMusic: (musicname) => {
@@ -50,7 +60,7 @@ const SoundManager = {
 
         if (PIXI.sound) {
             SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.stop())
-            PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance : true})
+            PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance: true})
         }
 
     },
