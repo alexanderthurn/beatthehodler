@@ -60,41 +60,22 @@ function createStockBottomLines(dataPoints, lineWidth, coin) {
     const colors = []
     const pointIndices = []
 
-    for (let i = 1; i < dataPoints.length; i++) {
+    for (let i = dataPoints.length-1; i >= 0; i--) {
        
-        const prevY = dataPoints[i - 1].price || 0;
         const currentY = dataPoints[i].price || 0;
-        const x = (i - 1) * lineWidth;
-        const prevX = (i - 2) * lineWidth;
-        const halfWidth = lineWidth * 0.5
+        const x = i* lineWidth;
 
-        prices.push(prevY)
+        prices.push(0)
         prices.push(currentY)
-        prices.push(-10000)
-        prices.push(-10000)
-        // Punkte für Triangle Strip: P1, P2, P3, P4
-        vertices.push(
-            prevX+halfWidth, prevY,                  // P1: Unten links
-            x+halfWidth, currentY,               // P2: Oben links
-            prevX+halfWidth, -10000,      // P3: Unten rechts
-            x+halfWidth, -10000    // P4: Oben rechts
+
+        vertices.push(         
+            x, 0,  
+            x, currentY  
         );
-        for (let h = 0; h < 4; h++) {
-            pointIndices.push(i-1)
+
+        for (let h = 0; h < 2; h++) {
+            pointIndices.push(i)
         }
-
-
-       
-
-        indices.push(4*(i - 1)+2); 
-        indices.push(4*(i - 1)+1); 
-        indices.push(4*(i - 1)+0); 
-        indices.push(4*(i - 1)+1); 
-        indices.push(4*(i - 1)+2); 
-        indices.push(4*(i - 1)+3); 
-        
-       
-        
 
         // Bestimme die Farbe: Grün (Aufwärts) oder Rot (Abwärts)
         const color = hexToRGB('#4d4d4d', 1.0)
@@ -104,7 +85,7 @@ function createStockBottomLines(dataPoints, lineWidth, coin) {
         }
     }
 
-    return { prices: new Float32Array(prices), vertices: new Float32Array(vertices), indices: new Int32Array(indices), colors: colors, pointIndices: new Float32Array(pointIndices) };
+    return { prices: new Float32Array(prices), vertices: new Float32Array(vertices), colors: colors, pointIndices: new Float32Array(pointIndices) };
 
 }
 
@@ -169,7 +150,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         const ix = i*8
         let y = parsedData[i].price || 0;
         d[ix + 1] = -100
-        d[ix + 3] =-100
+        d[ix + 3] = -100
         d[ix + 5] = -100
         d[ix + 7] = -100
     }
@@ -260,7 +241,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
         if (trade.labelPercentage) { 
             trade.labelPercentage.scale = 0.6
-            trade.labelPercentage.y = trade.tradeBefore.container.y - trade.container.y
+            trade.labelPercentage.y = trade.tradeBefore.container.y - trade.container.y-10
             trade.labelPercentage.x = (trade.tradeBefore.container.x - trade.container.x)*0.5
         }
 
@@ -306,7 +287,8 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
             aIndex: ownLines.pointIndices,
             aUV: ownLines.uv
         },
-        indexBuffer: ownLines.indices
+        indexBuffer: ownLines.indices,
+        topology: 'triangle-list'
     });
 
    
@@ -316,7 +298,7 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
             aColor: linesBottom.colors,
             aIndex: linesBottom.pointIndices,
         },
-        indexBuffer: linesBottom.indices
+        topology: 'triangle-strip'
     });
 
     geometryLinesBottom.addAttribute('aPrice', linesBottom.prices, 1)

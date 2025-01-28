@@ -218,8 +218,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     let ownLabel = new PIXI.Text({text: "+ 400%", style: textStyleBorder})
     ownLabelContainer.addChild(ownLabel)
     ownLabel.anchor.set(1,1)
-    ownLabel.x = -40
-    ownLabel.y = -20
+    ownLabel.x = -60
+    ownLabel.y = -50
 
     let priceLabel = new PIXI.Text({text: "100$", style: textStyle});
     let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyle});
@@ -800,26 +800,32 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                 //ownLabelContainer.mask = graphBorderMask
                 //ownLabelContainer.x = graphBorderAreaRight.x
-                
-                if (yourCoinName !== fiatName) {
-                    let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
-                    ownLabelContainer.x = p.x
-                    ownLabelContainer.y = p.y
-                } else {
-                    let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, yourCoins)
-                    ownLabelContainer.x = p.x
-                    ownLabelContainer.y = p.y
+
+                let ts = trades.filter(t => t.toName !== t.fromName)
+                let tp = ts.length < 1 ? yourFiat : ts[ts.length-1]?.fromPrice
+
+                if (isFinalScreen) {
+                    tp = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
                 }
 
-                if (yourCoinName === fiatName && !isFinalScreen && stopIndex < 0 && !isMenuVisible()) {
+                let p
+                if (yourCoinName !== fiatName) {
+                    p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
+                } else {
+                    p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, tp)
+                }
+
+                ownLabelContainer.x = p.x
+                ownLabelContainer.y = p.y
+
+                if ((isFinalScreen || yourCoinName === fiatName) && stopIndex !== 0 && !isMenuVisible()) {
                     ownLabel.visible = true
                     ownLabel.scale = 0.8;
                 } else {
                     ownLabel.visible = false
                 }
 
-                let ts = trades.filter(t => t.toName !== t.fromName)
-                let tp = ts.length < 1 ? yourFiat : ts[ts.length-1]?.fromPrice
+
                 let res = (100*(tp / graphResult.price))-100
                 if (res < 0) {
                     ownLabel.text = `- ${-res.toFixed(0)}%`
@@ -1066,7 +1072,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         
         hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
-
+        hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
         if (isFinalScreen) {
 
