@@ -100,7 +100,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         e.group = e.level.group
      
         e.index = new PIXI.Container()
-        e.indexText = new PIXI.Text( {text: e.level.name, style: menu.textStylePreview})
+        e.indexText = new PIXI.Text( {text: e.level.name + ' ' + e.level.difficulty, style: menu.textStylePreview})
         e.indexSubText = new PIXI.Text({text: '0%', style: menu.textStylePreviewSub})
         e.indexSubText.value = 0.0
         e.indexBackgroundRadius = 512

@@ -330,6 +330,69 @@ async function fetchCSV(filePath) {
         return [];
     }
 }
+function calculateDifficulty(pricesData, startDate, endDate) {
+    if (!pricesData || pricesData.length < 2) {
+      throw new Error("pricesData must contain at least 2 entries.");
+    }
+  
+    // Filter der Daten basierend auf den angegebenen Datumsbereich
+    const filteredPrices = pricesData.filter(entry => {
+      return entry.date >= startDate && entry.date <= endDate;
+    });
+  
+    if (filteredPrices.length < 2) {
+      throw new Error("Filtered pricesData must contain at least 2 entries within the specified date range.");
+    }
+  
+    const dailyChanges = [];
+  
+    // Berechnung der täglichen prozentualen Preisänderungen
+    for (let i = 1; i < filteredPrices.length; i++) {
+      const previousPrice = filteredPrices[i - 1].price;
+      const currentPrice = filteredPrices[i].price;
+  
+      if (previousPrice > 0) {
+        const dailyChange = ((currentPrice - previousPrice) / previousPrice) * 100; // Prozentuale Änderung
+        dailyChanges.push(dailyChange);
+      }
+    }
+  
+    // Mittelwert der täglichen Preisänderungen berechnen
+    const mean = dailyChanges.reduce((sum, change) => sum + change, 0) / dailyChanges.length;
+  
+    // Standardabweichung berechnen
+    const squaredDifferences = dailyChanges.map(change => Math.pow(change - mean, 2));
+    const variance = squaredDifferences.reduce((sum, diff) => sum + diff, 0) / dailyChanges.length;
+    const standardDeviation = Math.sqrt(variance);
+  
+    return standardDeviation;
+  }
+  
+  function assignRelativeDifficulties(gameData) {
+    const allDifficulties = [];
+  
+    // Zuerst berechnen wir die Standardabweichungen für alle Level
+    gameData.levels.forEach(level => {
+      const dataCoinNames = level.coinNames.filter(name => coins[name].data);
+      const pricesData = coins[dataCoinNames[0]].data;
+      const startDate = level.dateStart;
+      const endDate = level.dateEnd;
+  
+      const standardDeviation = calculateDifficulty(pricesData, startDate, endDate);
+      allDifficulties.push({ level, standardDeviation });
+    });
+  
+    // Min- und Max-Werte der Standardabweichungen finden
+    const minDeviation = Math.min(...allDifficulties.map(item => item.standardDeviation));
+    const maxDeviation = Math.max(...allDifficulties.map(item => item.standardDeviation));
+  
+    // Schwierigkeitsgrad relativ zu allen anderen berechnen und normalisieren
+    allDifficulties.forEach(item => {
+      const normalizedDifficulty = (item.standardDeviation - minDeviation) / (maxDeviation - minDeviation);
+      item.level.difficulty = Math.max(0, Math.min(9, Math.floor(normalizedDifficulty * 9)));
+    });
+  }
+
 
 function calculateLevelStatistics(level, coins) {
 
@@ -449,7 +512,10 @@ function parseGameData(jsonString, coins) {
         }
         level.stopIndizes = level.stops.map(d => findClosestDateIndex(pricesData, d))
         calculateLevelStatistics(level, coins)
+       // level.difficulty = calculateDifficulty(pricesData, level.dateStart,  level.dateEnd )
     })
+    
+    assignRelativeDifficulties(gameData);
    
     return gameData;
 }
