@@ -100,12 +100,25 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         e.group = e.level.group
      
         e.index = new PIXI.Container()
-        e.indexText = new PIXI.Text( {text: e.level.name + ' ' + e.level.difficulty, style: menu.textStylePreview})
+        e.indexText = new PIXI.Text( {text: e.level.name, style: menu.textStylePreview})
         e.indexSubText = new PIXI.Text({text: '0%', style: menu.textStylePreviewSub})
         e.indexSubText.value = 0.0
         e.indexBackgroundRadius = 512
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
-        e.indexBackground = new PIXI.Graphics().rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius).fill({color: 0xF7931B, alpha: 1}).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
+        
+       let color;
+        if (e.level.difficulty <= 2) {
+            color = 0x005500; // Grün (Einfach)
+        } else if (e.level.difficulty < 5) {
+            color = 0x995500; // Gelb (Mittel)
+        } else {
+            color = 0x550000; // Rot (Schwer)
+        }
+            
+       e.indexBackground = new PIXI.Graphics()
+        .rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius)
+        .fill({color: color, alpha: 0.8})
+        .stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
         
         e.index.addChild(e.indexBackground)
         e.index.addChild(e.indexText)
