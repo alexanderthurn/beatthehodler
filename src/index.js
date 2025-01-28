@@ -804,10 +804,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 let ts = trades.filter(t => t.toName !== t.fromName)
                 let tp = ts.length < 1 ? yourFiat : ts[ts.length-1]?.fromPrice
 
-                if (isFinalScreen) {
-                    tp = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
-                }
-
                 let p
                 if (yourCoinName !== fiatName) {
                     p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
@@ -818,7 +814,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 ownLabelContainer.x = p.x
                 ownLabelContainer.y = p.y
 
-                if ((isFinalScreen || yourCoinName === fiatName) && stopIndex !== 0 && !isMenuVisible()) {
+                if (!isFinalScreen && yourCoinName === fiatName && stopIndex !== 0 && !isMenuVisible()) {
                     ownLabel.visible = true
                     ownLabel.scale = 0.8;
                 } else {
