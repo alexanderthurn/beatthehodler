@@ -656,7 +656,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                         doTrade(yourCoinName, yourCoinName)
                     }
 
-                    bigtextContainer.active = true
                 }
             }
 
@@ -758,6 +757,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (stopIndex > -1) {
             
             if (!trade && isFinalScreen) {
+                
+                bigtextContainer.active = true
                 doTrade(yourCoinName, yourCoinName, {silent: true})
                 SoundManager.stopMusic()
                 if (yourFiat > options.fiatBTCHodler) {
@@ -991,7 +992,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
             txt += `The HODLer\n${word},\n`;
             txt += "while you traded.\n\n" 
-            txt += "Was it worth\nthe risk and time?"
+            //txt += "Was it worth\nthe risk and time?"
           
         }
         
