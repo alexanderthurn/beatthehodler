@@ -616,10 +616,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
             if (btnSpeedContainer.getBounds().containsPoint(event.x,event.y)){
                 factorSpeed = saveSpeed(changeSpeed(factorSpeed))
-            }
-            if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
+                btnSpeedContainer.active = false
+            } else if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 startNewGame(gameData.levels.find(level => level.name === 'menu'))
                 showMenu(true)
+                btnMenuSprite.active = false
             } else if (isFinalScreen) {
                 if (yourFiat > options.fiatBTCHodler) {
                     startNewGame(gameData.levels.find(level => level.name === 'menu'))
