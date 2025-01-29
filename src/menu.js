@@ -103,15 +103,12 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         e.indexText = new PIXI.Text( {text: e.level.name, style: menu.textStylePreview})
         e.indexSubText = new PIXI.Text({text: '0%', style: menu.textStylePreviewSub})
         e.indexSubText.value = Number.MAX_VALUE
-        e.indexBackgroundRadius = 512
-       // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
-        
 
-            
+
+
        e.indexBackground = new PIXI.Graphics()
-        .rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius)
+        .rect(-0.5, -0.5,1, 1)
         .fill({color: 0xffffff, alpha: 0.8})
-        .stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
 
 
         e.index.addChild(e.indexBackground)
@@ -414,7 +411,9 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                     entry.down = menu.helpButtonSprite
                 }
 
-                entry.indexBackground.scale = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * Math.min(colw / (entry.indexBackgroundRadius*2), colh / (entry.indexBackgroundRadius))
+                entry.indexBackground.scale.x = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * colw
+                entry.indexBackground.scale.y = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * colh
+                
                 entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
     
                 if (entry.indexSubText.value !== score)  {
