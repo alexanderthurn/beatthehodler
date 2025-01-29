@@ -378,7 +378,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         paused = Number.MAX_VALUE
         gameDurationMilliseconds = options.duration
         factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
-        factorSpeed = (getQueryParam('fast') ? 5.0 : 1.0) * 1.0
+        factorSpeed = (getQueryParam('fast') ? 5.0 : 1.0) * loadSpeed()
         currentIndexFloat = options.indexStart; // Zeitverfolgung
         currentIndexInteger = Math.floor(currentIndexFloat)
         focusedCoinName = null
@@ -615,7 +615,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         } else {
             
             if (btnSpeedContainer.getBounds().containsPoint(event.x,event.y)){
-                factorSpeed = changeSpeed(factorSpeed)
+                factorSpeed = saveSpeed(changeSpeed(factorSpeed))
             }
             if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 startNewGame(gameData.levels.find(level => level.name === 'menu'))
@@ -1052,8 +1052,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         btnMenuSprite.scale = (btnMenuSprite.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
         btnMenuSprite.position.set(app.screen.width - btnMenuSprite.width*0.6, btnMenuSprite.height*0.7)
-        btnSpeedContainer.position.set(app.screen.width - btnMenuSprite.width*(0.6+1.3), btnMenuSprite.height*0.7)
         btnSpeedContainer.scale = (btnSpeedContainer.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
+        btnSpeedContainer.position.set(app.screen.width - btnSpeedContainer.width*(0.6+1.3)/(btnSpeedContainer.active ? 1.1 : 1.0), btnSpeedContainer.height*0.7)
         btnSpeedText.text = formatSpeedAsFraction(factorSpeed)
         if (factorSpeed > 1.0) {
             btnSpeedSprite.texture = textureSpeedFast

@@ -21,21 +21,13 @@ function loadScript(url) {
         document.head.appendChild(script);
     });
 }
-
-function getFloatFromLocalStorage(key) {
+function getFloatFromLocalStorage(key, defaultValue = 0.0) {
     const value = localStorage.getItem(key);
+    const parsed = parseFloat(value);
     
-    if (value === null) return 0.0; // Kein Wert vorhanden
-    if (value === "true") return 0.0;
-    if (value === "false") return 0.0;
-    
-    try {
-        return Number.parseFloat(value)
-    } catch(ex) {
-        return 0.0
-    }
-    
+    return !isNaN(parsed) ? parsed : defaultValue;
 }
+
 
 function calculateNormal(xA, yA, xB, yB) {
     const dx = xB - xA;
@@ -633,8 +625,17 @@ function triggerCustomKey(key) {
     }
 }
 
+function saveSpeed(speed) {
+    localStorage.setItem('speed', speed)
+    return speed
+}
+
+function loadSpeed() {
+    return getFloatFromLocalStorage('speed',1.0)
+}
+
 function changeSpeed(oldSpeed) {
-    const speeds = [0.25, 0.5, 1.0, 2.0, 4.0];
+    const speeds = [0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0];
     let nextIndex = (speeds.indexOf(oldSpeed) + 1) % speeds.length;
     return speeds[nextIndex];
 }
