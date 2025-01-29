@@ -680,7 +680,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
     menu.visible = false
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(!menu.visible)
+    showMenu(menu.visible)
     app.ticker.add((deltaTime) => {
 
         handleGamepadInput()
@@ -1080,26 +1080,33 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             backgroundImage.scaleWanted = 0.2*(Math.min(app.screen.width,1080)/1080)
 
             if (bigtextContainer.visible && bigtextContainer.active) {
-                backgroundImage.x = app.screen.width*0.5
                 //backgroundImage.y = app.screen.height*0.3
                 bigtextLabel.text = txt
-                let w = Math.min(bigtextLabel.width*1.1, app.screen.width)
+                let w = bigtextLabel.width*1.1
                 let h = bigtextLabel.height*1.1
                 //bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*(gscalet + gscale*0.5))
-                bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
                 bigTextBackground.scale.set(w,h)
-                backgroundImage.scale = 0.2
-                graphBorder.visible = true
-                containerGraphsForeground.visible = true
-                graphBorderAreaRight.visible = false
-                containerGraphs.mask = containerGraphs.cmask
+                if (backgroundImage.width < w) {
+                    backgroundImage.scale = 0.2
+                }
+                if (backgroundImage.x + backgroundImage.width*0.5 > app.screen.width) {
+                    backgroundImage.x = app.screen.width-backgroundImage.width*0.5
+                }
+
+                if (backgroundImage.x - backgroundImage.width*0.5 < 0) {
+                    backgroundImage.x = app.screen.width*0.5
+                }
+
+                bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
+                
             } else {
                 backgroundImage.scale = backgroundImage.scale.x*0.9 + backgroundImage.scaleWanted*0.1
-                graphBorder.visible = true
-                containerGraphsForeground.visible = true
-                graphBorderAreaRight.visible = false
-                containerGraphs.mask = containerGraphs.cmask
             }
+
+            graphBorder.visible = true
+            containerGraphsForeground.visible = true
+            graphBorderAreaRight.visible = false
+            containerGraphs.mask = containerGraphs.cmask
 
         }
         
