@@ -138,6 +138,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     const textStyleCenteredBlack = textStyleCentered.clone()
     textStyleCenteredBlack.fill = '#000'
     textStyleCenteredBlack.stroke = {color: '#ffffff', width: 3}
+   
+    let graphBorder = new PIXI.Graphics()
+    let graphBorderMask = new PIXI.Graphics()
+    let graphBorderAreaRight = new PIXI.Graphics()
+    graphBorder.cheight = 0
+    graphBorder.cwidth = 0
+    containerForeground.addChild(graphBorder)
+
 
     const bigtextContainer = new PIXI.Container()
     const bigTextBackground = new PIXI.Graphics().circle(0, 0, 1).fill({color: 0xffffff,alpha:0.0})
@@ -148,6 +156,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     const dateLabel = new PIXI.Text({text: '', style: textStyle});
     containerForeground.addChild(dateLabel);
     containerForeground.addChild(bigtextContainer);
+
+
+
 
     const stopContainer = new PIXI.Container()
     const stopLabel = new PIXI.Text({text: "Pause", style: textStyleCentered} );
@@ -193,12 +204,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerForeground.addChild(btnSpeedContainer)
 
     let containerGraphsForeground = new PIXI.Container()
-    let graphBorder = new PIXI.Graphics()
-    let graphBorderMask = new PIXI.Graphics()
-    let graphBorderAreaRight = new PIXI.Graphics()
-    graphBorder.cheight = 0
-    graphBorder.cwidth = 0
-    containerGraphsForeground.addChild(graphBorder)
+
+
+
+
     containerGraphsForeground.addChild(graphBorderAreaRight)
     let ownLabelContainer = new PIXI.Container()
     let hodlerContainer = new PIXI.Container()
@@ -457,7 +466,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         trade.labelPrice.anchor.set(0.5,1.5)
       
         trade.container.addChild(trade.labelPrice)
-        if (from === to) {
+        if (from === to && trades.length > 0) {
             trade.labelPrice.scale.set(8*1.0)
         } else {
             trade.sprite = new PIXI.Sprite(coins[to].texture)
@@ -511,7 +520,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
         } else {
-            !options?.silent && trade.toName !== trade.fromName && SoundManager.playSFX(trade.toName)
+            !options?.silent && (trade.toName !== trade.fromName || trades.length === 0) && SoundManager.playSFX(trade.toName)
         }
         trades.push(trade)
         containerGraphs.addChild(trade.container)
@@ -629,10 +638,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 showMenu(true)
                 btnMenuSprite.active = false
             } else if (isFinalScreen) {
-                if (swapImage.active) {
+                if (stopImage.active) {
                     startNewGame(gameData.levels.find(level => level.name === 'menu'))
                     showMenu(true)
-                } else if (stopImage.active) {
+                } else if (swapImage.active) {
                     startNewGame(options)
                 }
             }  else {
@@ -689,6 +698,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             p.y = 0.9*p.y + 0.1*p.yTarget
         })
 
+        let visibleWidth = isFinalScreen ? app.screen.width-10 : app.screen.width-100
+
         if (isMenuVisible()) {
             updateMenu(menu, app, deltaTime, getMute, getWin, particles)
 
@@ -740,7 +751,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         maxVisiblePoints = isFinalScreen ? options.indexEnd-options.indexStart : 100
         currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
-        const stepX = (app.renderer.width-100) / (maxVisiblePoints-3);
+        const stepX = (visibleWidth) / (maxVisiblePoints-3);
         isFinalScreen = currentDate >= options.dateEnd
         isStopScreen = isFinalScreen || (stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
@@ -787,14 +798,15 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         //maxVisiblePoints = Math.max(20, trades.length > 1 ? currentIndexInteger - trades[trades.length-2].index : currentIndexInteger)
 
+        //visibleWidth = app.screen.width
 
-        if (graphBorder.cheight !== app.screen.height*gscale || graphBorder.cwidth !== app.screen.width-100) {
+        if (graphBorder.cheight !== app.screen.height*gscale || graphBorder.cwidth !== visibleWidth) {
             graphBorder.cheight = app.screen.height*gscale
-            graphBorder.cwidth = app.screen.width-100
+            graphBorder.cwidth = visibleWidth
             graphBorder.clear()
             graphBorder.rect(0,app.screen.height*gscalebg,app.screen.width,app.screen.height*(1.0-gscalebg)).fill({color: 0x4d4d4d}).rect(0, app.screen.height*gscalet, graphBorder.cwidth, graphBorder.cheight)//.stroke({color: 0xffffff, width:2})
         
-            graphBorderAreaRight.position.set(app.screen.width-100,app.screen.height*gscalet)
+            graphBorderAreaRight.position.set(visibleWidth,app.screen.height*gscalet)
             graphBorderAreaRight.cheight = graphBorder.cheight
             graphBorderAreaRight.cwidth = 100
             graphBorderAreaRight.clear()
@@ -807,7 +819,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
            
             graphBorderMask.clear()
-            graphBorderMask.rect(0, app.screen.height*gscalet, graphBorder.cwidth, app.screen.height*gscale).fill({color: 0xff0000})
+            graphBorderMask.rect(0, app.screen.height*gscalet, isFinalScreen ? app.screen.width : visibleWidth, app.screen.height*gscale).fill({color: 0xff0000})
         
             containerGraphs.cmask = graphBorderMask
         }
@@ -910,8 +922,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                     let p2 = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, yourFiat)
                     ownLabelContainer.x = p2.x
-                    ownLabelContainer.y = p2.y
+                    ownLabelContainer.y = p2.y 
 
+                   // hodlerContainer.visible = ownLabelContainer.visible = false
                 } else {
                     hodlerContainer.visible = yourCoinName !== fiatName
                     ownLabelContainer.visible = yourCoinName === fiatName
@@ -999,7 +1012,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         bigtextContainer.visible = (isFinalScreen || stopIndex === 0)
         bigtextContainer.alpha = bigtextContainer.active
-        priceLabelContainer.visible = !isFinalScreen
+        maxPriceLabel.visible = minPriceLabel.visible = priceLabelContainer.visible = !isFinalScreen
         
        
        
@@ -1025,10 +1038,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
       
         if (isFinalScreen) {
-            stopImage.texture = textureBtnTrade
-            swapImage.texture = textureBtnMenu
-            swapLabel.text = 'MENU'
-            stopLabel.text = 'RETRY'
+            stopImage.texture = textureBtnMenu
+            swapImage.texture = textureBtnTrade
+            swapLabel.text = 'RETRY'
+            stopLabel.text = 'MENU'
             
         } else{
             swapLabel.text = (stopIndex > -1 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
@@ -1061,13 +1074,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (isMenuVisible()) {
             backgroundImage.texture = coins['BTC'].texture 
         } else {
-            backgroundImage.texture = (isFinalScreen || stopIndex === 0) ? textureWhiteCoin : coins[yourCoinName].texture
+            backgroundImage.texture = ((isFinalScreen && bigtextContainer.active) || stopIndex === 0) ? textureWhiteCoin : coins[yourCoinName].texture
         }
 
      
        
         if (isMenuVisible()) {
-            backgroundImage.x = app.renderer.width-100 -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100);
+            backgroundImage.x = visibleWidth -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(visibleWidth);
             backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height*2
             backgroundImage.scale = 0.2*(Math.min(app.screen.width,1080)/1080)
         
@@ -1076,7 +1089,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             containerGraphs.mask = null
 
         } else {
-            backgroundImage.x = 0.1*backgroundImage.x + 0.9*(app.renderer.width-100 -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100));
+            backgroundImage.x = 0.1*backgroundImage.x + 0.9*(visibleWidth -backgroundImage.width*0.5+ (-1.0+Math.sin(deltaTime.lastTime*0.0001))*0.1*(visibleWidth));
             backgroundImage.y = 0.1*backgroundImage.y + 0.9*(app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height)
             backgroundImage.scaleWanted = 0.2*(Math.min(app.screen.width,1080)/1080)
 
@@ -1088,10 +1101,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 //bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*(gscalet + gscale*0.5))
                 bigTextBackground.scale.set(w,h)
                 if (backgroundImage.width < w) {
-                    backgroundImage.scale = 0.2
+                    backgroundImage.scale = 0.22
                 }
-                if (backgroundImage.x + backgroundImage.width*0.5 > app.screen.width) {
-                    backgroundImage.x = app.screen.width-backgroundImage.width*0.5
+                if (backgroundImage.x + backgroundImage.width*0.5 > visibleWidth) {
+                    backgroundImage.x = visibleWidth-backgroundImage.width*0.5
                 }
 
                 if (backgroundImage.x - backgroundImage.width*0.5 < 0) {
@@ -1100,12 +1113,19 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                 bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
                 
+                if (isFinalScreen) {
+                    containerGraphsForeground.visible = false
+                } else {
+                    
+                    containerGraphsForeground.visible = true
+                }
+                
             } else {
                 backgroundImage.scale = backgroundImage.scale.x*0.9 + backgroundImage.scaleWanted*0.1
+                containerGraphsForeground.visible = true
             }
 
             graphBorder.visible = true
-            containerGraphsForeground.visible = true
             graphBorderAreaRight.visible = false
             containerGraphs.mask = containerGraphs.cmask
 
@@ -1115,10 +1135,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (isMenuVisible()){
            containerGraphs.position.set(100-diffCurrentIndexIntToFloat*stepX,(1.0-gscalebg)*app.screen.height)
         } else {
-
-            containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
-
-
+           containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
         }       
 
 

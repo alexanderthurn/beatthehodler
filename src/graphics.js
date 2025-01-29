@@ -154,14 +154,13 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         d[ix + 5] = -100
         d[ix + 7] = -100
     }
-    let realTrades = trades.filter(trade => (trade.fromName !== trade.toName && (trade.toName === fiatName || trade.fromName === fiatName)))
+    let realTrades = trades.filter((trade,i) => ((i === 0 || trade.fromName !== trade.toName) && (trade.toName === fiatName || trade.fromName === fiatName)))
+    
+    
     realTrades.forEach((trade, i) => {
         if (trade.toName === fiatName) {
-            let toIndex = i < realTrades.length-1 ? realTrades[i+1].index : parsedData.length-1
-            
-            let y = trade.fromPrice;
-            let y2 = i < realTrades.length-1 ? realTrades[i+1].toPrice : parsedData[parsedData.length-1].price
-
+            let toIndex = i < realTrades.length-1 ? realTrades[i+1].index : options.indexEnd-1
+            let y = trade.fromName !== fiatName ? trade.fromPrice : trade.fromCoins;
             for(let i=trade.index;i<toIndex;i++) {
                 const ix = i*8
                 d[ix + 1] = y - heightHalf
@@ -169,8 +168,6 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
                 d[ix + 5] = y + heightHalf
                 d[ix + 7] = y-heightHalf;
             }
-           
-
         }
     })
 
@@ -226,29 +223,29 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     //graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
  
-    trades.filter(trade => (trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
+    trades.filter((trade,i) => (i === 0 || trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
         trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         trade.container.y = app.renderer.height*gscalebg-  ((trade.fromName === graph.coinName ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;
         if (trade.sprite) {
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.02
         }
         
-        if (trade.index > currentIndexInteger - maxVisiblePoints) {  
-            trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
-        } else {
-            trade.labelPrice.position.set(0,0)
+        if (trade.labelPrice) {
+            if (trade.index > currentIndexInteger - maxVisiblePoints) {  
+                trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
+            } else {
+                trade.labelPrice.position.set(0,0)
+            }
+            trade.labelPrice.visible = false
+            trade.labelPrice.scale = SCALE_TEXT_BASE
         }
+     
 
         if (trade.labelPercentage) { 
             trade.labelPercentage.scale = 0.6
             trade.labelPercentage.y = trade.tradeBefore.container.y - trade.container.y-10
             trade.labelPercentage.x = (trade.tradeBefore.container.x - trade.container.x)*0.5
         }
-
-        trade.labelPrice.visible = false
-
-        trade.labelPrice.scale = SCALE_TEXT_BASE
-
 
         trade.container.visible = options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === graph.coinName
      })

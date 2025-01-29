@@ -62,3 +62,4 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 - if starting with dollar, the line is not drawn as there is no trade
 - click on big text => hide
 - finalScreen: button to go to next level and retry level
+- sound does not work on ios if switched app
