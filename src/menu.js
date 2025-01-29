@@ -102,24 +102,18 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         e.index = new PIXI.Container()
         e.indexText = new PIXI.Text( {text: e.level.name, style: menu.textStylePreview})
         e.indexSubText = new PIXI.Text({text: '0%', style: menu.textStylePreviewSub})
-        e.indexSubText.value = 0.0
+        e.indexSubText.value = Number.MAX_VALUE
         e.indexBackgroundRadius = 512
        // e.indexBackground = new PIXI.Graphics().circle(0,0,e.indexBackgroundRadius).fill(0xF7931B, 1).stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.1})
         
-       let color;
-        if (e.level.difficulty <= 2) {
-            color = 0x005500; // Grün (Einfach)
-        } else if (e.level.difficulty < 5) {
-            color = 0x995500; // Gelb (Mittel)
-        } else {
-            color = 0x550000; // Rot (Schwer)
-        }
+
             
        e.indexBackground = new PIXI.Graphics()
         .rect(-e.indexBackgroundRadius, -e.indexBackgroundRadius/2,e.indexBackgroundRadius*2, e.indexBackgroundRadius)
-        .fill({color: color, alpha: 0.8})
+        .fill({color: 0xffffff, alpha: 0.8})
         .stroke({color: 0xffffff, width:e.indexBackgroundRadius*0.025})
-        
+
+
         e.index.addChild(e.indexBackground)
         e.index.addChild(e.indexText)
         e.index.addChild(e.indexSubText)
@@ -430,6 +424,26 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                     } else {
                         entry.indexSubText.text =  score > 0 ? '+' + (score).toFixed(0) + '%' : score.toFixed(0) + '%'
                     }
+
+                    let color;
+                    if (score > -1 && score < 1) {
+                        color = 0x000000
+                    } else if (score > 1) {
+                        color = 0x005500
+                    } else {
+                        color = 0x550000
+                    }
+                    entry.indexBackground.tint = color
+                   /* 
+                    if (e.level.difficulty <= 2) {
+                        color = 0x005500; // Grün (Einfach)
+                    } else if (e.level.difficulty < 5) {
+                        color = 0x995500; // Gelb (Mittel)
+                    } else {
+                        color = 0x550000; // Rot (Schwer)
+                    }*/
+
+
                 }
 
             })
