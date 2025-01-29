@@ -97,6 +97,9 @@ async function initGame() {
 }))
 
 
+let textureSpeedSlow = await PIXI.Assets.load({src: 'gfx/slow.png'})
+let textureSpeedNormal = await PIXI.Assets.load({src: 'gfx/normal.png'})
+let textureSpeedFast = await PIXI.Assets.load({src: 'gfx/fast.png'})
 let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
 let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
 let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
@@ -178,10 +181,21 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
     containerBackground.addChildAt(background,0);
 
-    
-    btnMenuSprite = new PIXI.Sprite(textureBtnMenu);
-    btnMenuSprite.anchor.set(1.1,-0.2)
+    let btnMenuSprite = new PIXI.Sprite(textureBtnMenu);
+    btnMenuSprite.anchor.set(0.5,0.5)
     containerForeground.addChild(btnMenuSprite)
+
+    let btnSpeedSprite = new PIXI.Sprite(textureSpeedNormal)
+    btnSpeedSprite.anchor.set(0.5,0.5)
+    containerForeground.addChild(btnSpeedSprite)
+
+    let btnSpeedText= new PIXI.Text({text: "1x", style: textStyleBorder});
+    btnSpeedText.scale = 2
+    btnSpeedText.anchor.set(0.5,-0.3)
+    let btnSpeedContainer = new PIXI.Container()
+    btnSpeedContainer.addChild(btnSpeedSprite)
+    btnSpeedContainer.addChild(btnSpeedText)
+    containerForeground.addChild(btnSpeedContainer)
 
     let containerGraphsForeground = new PIXI.Container()
     let graphBorder = new PIXI.Graphics()
@@ -337,6 +351,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     let paused
     let gameDurationMilliseconds
     let factorMilliSeconds
+    let factorSpeed
     let currentIndexFloat
     let currentIndexInteger
     let focusedCoinName
@@ -361,9 +376,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         yourCoins = yourFiat
         yourCoinName = fiatName
         paused = Number.MAX_VALUE
-        options.duration = getQueryParam('fast') ? 5000 : options.duration
         gameDurationMilliseconds = options.duration
         factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
+        factorSpeed = (getQueryParam('fast') ? 5.0 : 1.0) * 1.0
         currentIndexFloat = options.indexStart; // Zeitverfolgung
         currentIndexInteger = Math.floor(currentIndexFloat)
         focusedCoinName = null
@@ -511,6 +526,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             menuPointerMoveEvent(menu, event)
         } else {
             btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
+            btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
+            
             stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
             swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
         }
@@ -596,7 +613,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (isMenuVisible()) {
             menuPointerUpEvent(menu, event, startNewGame,getMute, setMute, showMenu)
         } else {
-
+            
+            if (btnSpeedContainer.getBounds().containsPoint(event.x,event.y)){
+                factorSpeed = changeSpeed(factorSpeed)
+            }
             if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 startNewGame(gameData.levels.find(level => level.name === 'menu'))
                 showMenu(true)
@@ -609,7 +629,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 }
             }  else {
 
-
+                
+                btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
                 btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
                 stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
                 swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
@@ -653,7 +674,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
     menu.visible = false
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(!menu.visible)
+    showMenu(menu.visible)
     app.ticker.add((deltaTime) => {
 
         handleGamepadInput()
@@ -691,11 +712,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             containerForeground.visible = true
         }
         if (paused <= 0) {
-            currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds;
+            currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds*factorSpeed;
         } else {
             paused -= deltaTime.elapsedMS
             if (paused < buyPaused) {
-                currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds*(Math.max(0,(buyPaused-paused*2)/buyPaused));
+                currentIndexFloat += deltaTime.elapsedMS*factorMilliSeconds*factorSpeed*(Math.max(0,(buyPaused-paused*2)/buyPaused));
             }
         }
 
@@ -1030,8 +1051,19 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         stopContainer.visible =  !isFinalScreen&& !trade
 
         btnMenuSprite.scale = (btnMenuSprite.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
-        btnMenuSprite.position.set(app.screen.width, app.screen.height*0 )
-       
+        btnMenuSprite.position.set(app.screen.width - btnMenuSprite.width*0.6, btnMenuSprite.height*0.7)
+        btnSpeedContainer.position.set(app.screen.width - btnMenuSprite.width*(0.6+1.3), btnMenuSprite.height*0.7)
+        btnSpeedContainer.scale = (btnSpeedContainer.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
+        btnSpeedText.text = formatSpeedAsFraction(factorSpeed)
+        if (factorSpeed > 1.0) {
+            btnSpeedSprite.texture = textureSpeedFast
+        } else if (factorSpeed < 1.0) {
+            btnSpeedSprite.texture = textureSpeedNormal
+        } else {
+            btnSpeedSprite.texture = textureSpeedNormal
+        }
+        
+
         backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
 
         backgroundImage.scale.set(0.2*(Math.min(app.screen.width,1080)/1080))

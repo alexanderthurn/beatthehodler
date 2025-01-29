@@ -632,3 +632,18 @@ function triggerCustomKey(key) {
         document.dispatchEvent(event);
     }
 }
+
+function changeSpeed(oldSpeed) {
+    const speeds = [0.25, 0.5, 1.0, 2.0, 4.0];
+    let nextIndex = (speeds.indexOf(oldSpeed) + 1) % speeds.length;
+    return speeds[nextIndex];
+}
+
+function formatSpeedAsFraction(speed) {
+    if (speed >= 1.0) {
+        return `${speed}x`; // Ganze Zahl ohne Bruch
+    }
+
+    const denominator = Math.round(1 / speed); // Berechnet den Nenner für Brüche
+    return `1/${denominator}x`;
+}
