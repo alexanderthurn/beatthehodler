@@ -4,7 +4,7 @@
 https://alexanderthurn.github.io/coinswiper/
 
 
-## Crypto Logos
+# Crypto Logos
 
 https://cryptologos.cc/bitcoin
 https://cryptologos.cc/
@@ -17,7 +17,7 @@ DOGE: BA9F32  F7F0DE
 ETH: 383938 FFFFFF
 
 
-## Data
+# Data
 
 https://www.coingecko.com/en/coins/bitcoin/historical_data?start=2009-1-1
 https://www.coingecko.com/en/coins/ethereum/historical_data?start=2009-1-1
@@ -26,7 +26,7 @@ https://www.coingecko.com/en/coins/dogecoin/historical_data?start=2009-1-1
 https://www.coingecko.com/en/coins/cardano/historical_data?start=2009-1-1
 
 
-## Font
+# Font
 
 https://www.fontspace.com/xolonium-font-f17644
 
@@ -36,7 +36,7 @@ link: https://www.fontspace.com/xolonium-font-f17644
 
 
 
-## sfx
+# sfx
 
 https://jfxr.frozenfractal.com/
 
@@ -51,6 +51,10 @@ Sound Effect by <a href="https://pixabay.com/users/shut_up_ghost-32917765/?utm_s
 
 Sound Effect by <a href="https://pixabay.com/users/shut_up_ghost-32917765/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=168473">Ghostie Graves</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=168473">Pixabay</a>
 
+
+# Icon Pack
+
+https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 # TODO
 
