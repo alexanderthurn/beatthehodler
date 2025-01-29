@@ -110,8 +110,18 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         .rect(-0.5, -0.5,1, 1)
         .fill({color: 0xffffff, alpha: 0.8})
 
+        e.indexDifficultyContainer = new PIXI.Container()
+        e.indexDifficultyBackground = new PIXI.Graphics()
+        .rect(-1, 0,1, 1)
+        .fill({color: 0xffffff, alpha: 0.7})
+        e.indexDifficultyLabel =  new PIXI.Text({text: 'HARD', style: menu.textStylePreviewSub})
+        e.indexDifficultyLabel.anchor.set(1.05,-0.05)
+
+        e.indexDifficultyContainer.addChild(e.indexDifficultyBackground)
+        e.indexDifficultyContainer.addChild(e.indexDifficultyLabel)
 
         e.index.addChild(e.indexBackground)
+        e.index.addChild(e.indexDifficultyContainer)
         e.index.addChild(e.indexText)
         e.index.addChild(e.indexSubText)
         e.indexText.anchor.set(0.5,0.5)
@@ -424,26 +434,34 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                         entry.indexSubText.text =  score > 0 ? '+' + (score).toFixed(0) + '%' : score.toFixed(0) + '%'
                     }
 
-                    let color;
-                    if (score > -1 && score < 1) {
-                        color = 0x000000
-                    } else if (score > 1) {
-                        color = 0x005500
+                   
+                    if (entry.level.difficulty <= 2) {
+                        entry.indexDifficultyLabel.text = 'NORMAL'
+                        entry.indexDifficultyBackground.tint = 0x00ff00
+                    } else if (entry.level.difficulty < 5) {
+                        entry.indexDifficultyLabel.text = 'HARD'
+                        entry.indexDifficultyBackground.tint = 0xffff00
                     } else {
-                        color = 0x550000
+                        entry.indexDifficultyLabel.text = 'BRUTAL'
+                        entry.indexDifficultyBackground.tint = 0xff0000
                     }
-                    entry.indexBackground.tint = color
-                   /* 
-                    if (e.level.difficulty <= 2) {
-                        color = 0x005500; // Grün (Einfach)
-                    } else if (e.level.difficulty < 5) {
-                        color = 0x995500; // Gelb (Mittel)
-                    } else {
-                        color = 0x550000; // Rot (Schwer)
-                    }*/
-
+                    
 
                 }
+
+                let color;
+                if (score > -1 && score < 1) {
+                    color = 0x000000
+                } else if (score > 1) {
+                    color = 0x005500
+                } else {
+                    color = 0x550000
+                }
+                entry.indexBackground.tint = color
+                entry.indexDifficultyLabel.scale = entry.indexSubText.scale
+                entry.indexDifficultyContainer.position.set( entry.indexBackground.scale.x*0.5,-entry.indexBackground.scale.y*0.5)
+                entry.indexDifficultyBackground.scale.set(entry.indexDifficultyLabel.width*1.1, entry.indexDifficultyLabel.height*1.1)
+               
 
             })
         })

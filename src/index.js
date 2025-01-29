@@ -675,7 +675,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
     menu.visible = false
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(menu.visible)
+    showMenu(!menu.visible)
     app.ticker.add((deltaTime) => {
 
         handleGamepadInput()
