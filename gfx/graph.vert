@@ -8,6 +8,8 @@ attribute float aPrice;
 varying vec4 vColor;
 varying vec2 vPosition;
 varying float vPrice;
+varying float vPriceFlat;
+varying float vIndex;
 
 uniform mat3 uProjectionMatrix;
 uniform mat3 uWorldTransformMatrix;
@@ -25,9 +27,12 @@ void main() {
     }
 
     vec2 scaledPosition = aPosition * uScale;
+    scaledPosition.y=scaledPosition.y;
     mat3 mvp = uProjectionMatrix * uWorldTransformMatrix * uTransformMatrix;
     gl_Position = vec4((mvp * vec3(scaledPosition, 1.0)).xy, 0.0, 1.0);
     vColor = vec4(aColor.rgb, aColor.a * uAlpha);
     vPosition = gl_Position.xy;
     vPrice = aPrice;
+    vPriceFlat = aPosition.y;
+    vIndex = aIndex;
 }

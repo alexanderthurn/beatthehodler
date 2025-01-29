@@ -65,7 +65,7 @@ function createStockBottomLines(dataPoints, lineWidth, coin) {
         const currentY = dataPoints[i].price || 0;
         const x = i* lineWidth;
 
-        prices.push(0)
+        prices.push(currentY)
         prices.push(currentY)
 
         vertices.push(         
