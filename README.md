@@ -60,3 +60,5 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 - 0% result finalscreen: better message if hodled
 - if starting with dollar, the line is not drawn as there is no trade
+- click on big text => hide
+- finalScreen: button to go to next level and retry level
