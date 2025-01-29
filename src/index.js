@@ -97,7 +97,7 @@ async function initGame() {
 }))
 
 
-let textureSpeedSlow = await PIXI.Assets.load({src: 'gfx/slow.png'})
+let textureWhiteCoin = await PIXI.Assets.load({src: 'gfx/white.png'})
 let textureSpeedNormal = await PIXI.Assets.load({src: 'gfx/normal.png'})
 let textureSpeedFast = await PIXI.Assets.load({src: 'gfx/fast.png'})
 let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
@@ -133,27 +133,21 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     textStyleCentered.align = 'center'
 
     const textStyleBorder = textStyle.clone()
-    textStyleBorder.stroke = {color: '#4d4d4d', width: 2}
+    textStyleBorder.stroke = {color: '#000000', width: 3}
 
+    const textStyleCenteredBlack = textStyleCentered.clone()
+    textStyleCenteredBlack.fill = '#000'
+    textStyleCenteredBlack.stroke = {color: '#ffffff', width: 3}
 
     const bigtextContainer = new PIXI.Container()
-    const bigTextBackground = new PIXI.Graphics()
-    const bigtextLabel = new PIXI.Text({text: '', style: textStyleCentered})
+    const bigTextBackground = new PIXI.Graphics().circle(0, 0, 1).fill({color: 0xffffff,alpha:0.0})
+    const bigtextLabel = new PIXI.Text({text: '', style: textStyleCenteredBlack})
     bigtextLabel.anchor.set(0.5,0.5)
     bigtextContainer.addChild(bigTextBackground)
     bigtextContainer.addChild(bigtextLabel)
     const dateLabel = new PIXI.Text({text: '', style: textStyle});
     containerForeground.addChild(dateLabel);
     containerForeground.addChild(bigtextContainer);
-
-    
-
-
-    bigtextContainer.hodlerSprite = new PIXI.Sprite(textureHodler)
-    bigtextContainer.playerSprite = new PIXI.Sprite(texturePlayer)
-    bigtextContainer.playerSprite.scale = bigtextContainer.hodlerSprite.scale = 0.075
-    bigtextContainer.addChild(bigtextContainer.playerSprite, bigtextContainer.hodlerSprite)
-
 
     const stopContainer = new PIXI.Container()
     const stopLabel = new PIXI.Text({text: "Pause", style: textStyleCentered} );
@@ -171,9 +165,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     stopContainer.addChild(swapLabel);
     containerForeground.addChild(stopContainer);
 
-    const backgroundImage = new PIXI.Sprite({blendMode: 'normal'}); //screen
+    const backgroundImage = new PIXI.Sprite(); //screen
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
-
+    backgroundImage.scaleWanted = 0.2
+    backgroundImage.scale = 0.2
 
 
     containerBackground.addChild(backgroundImage);
@@ -235,9 +230,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     ownLabel.x = -60
     ownLabel.y = -50
 
-    let priceLabel = new PIXI.Text({text: "100$", style: textStyle});
-    let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyle});
-    let minPriceLabel =new PIXI.Text({text: "200$", style: textStyle});
+    let priceLabel = new PIXI.Text({text: "100$", style: textStyleBorder});
+    let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyleBorder});
+    let minPriceLabel =new PIXI.Text({text: "200$", style: textStyleBorder});
     priceLabel.anchor.set(1.1,0.5)
     maxPriceLabel.anchor.set(1.1,0)
     minPriceLabel.anchor.set(1.1,1)
@@ -419,6 +414,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         trades = []
 
+        bigtextContainer.active = true
+
     }
 
  
@@ -499,6 +496,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             if (res < 0) {
                 trade.labelPercentage.text  = `- ${-res.toFixed(0)}%`
                 !options?.silent && SoundManager.playSFX('trade_lost' + sfxIndex)
+
             } else {
                 trade.labelPercentage.text  = `+ ${res.toFixed(0)}%`
                 !options?.silent && SoundManager.playSFX('trade_won' + sfxIndex)
@@ -527,7 +525,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         } else {
             btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
             btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
-            
             stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
             swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
         }
@@ -610,9 +607,19 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
      app.stage.addEventListener('pointerup', (event) => {
 
+        stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
+        swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
+        btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
+        btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
+ 
         if (isMenuVisible()) {
             menuPointerUpEvent(menu, event, startNewGame,getMute, setMute, showMenu)
         } else {
+            
+       
+            if (bigtextContainer.getBounds().containsPoint(event.x,event.y)){
+                bigtextContainer.active = !bigtextContainer.active
+            } 
             
             if (btnSpeedContainer.getBounds().containsPoint(event.x,event.y)){
                 factorSpeed = saveSpeed(changeSpeed(factorSpeed))
@@ -622,21 +629,17 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 showMenu(true)
                 btnMenuSprite.active = false
             } else if (isFinalScreen) {
-                if (yourFiat > options.fiatBTCHodler) {
+                if (swapImage.active) {
                     startNewGame(gameData.levels.find(level => level.name === 'menu'))
                     showMenu(true)
-                } else {
+                } else if (stopImage.active) {
                     startNewGame(options)
                 }
             }  else {
 
                 
-                btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
-                btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
-                stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
-                swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
-                 let trade = trades.find(t => t.index === currentIndexInteger)
-                 let stopIndex = stopIndizes.indexOf(currentIndexInteger)
+                let trade = trades.find(t => t.index === currentIndexInteger)
+                let stopIndex = stopIndizes.indexOf(currentIndexInteger)
                 if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
                     
                     if (stopIndex < 0) {
@@ -652,6 +655,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     } else if (stopImage.active && stopIndex > -1)   {
                         doTrade(yourCoinName, yourCoinName)
                     }
+
+                    bigtextContainer.active = true
                 }
             }
 
@@ -675,7 +680,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
     menu.visible = false
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(!menu.visible)
+    showMenu(menu.visible)
     app.ticker.add((deltaTime) => {
 
         handleGamepadInput()
@@ -684,10 +689,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             p.x = 0.9*p.x + 0.1*p.xTarget
             p.y = 0.9*p.y + 0.1*p.yTarget
         })
-        updateMenu(menu, app, deltaTime, getMute, getWin, particles)
-
 
         if (isMenuVisible()) {
+            updateMenu(menu, app, deltaTime, getMute, getWin, particles)
+
             containerForeground.visible = false
             paused = 0
             if (options.name !== 'menu') {
@@ -801,7 +806,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
            
             graphBorderMask.clear()
-            graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height).fill({color: 0xff0000})
+            graphBorderMask.rect(0, app.screen.height*gscalet, graphBorder.cwidth, app.screen.height*gscale).fill({color: 0xff0000})
         
             containerGraphs.cmask = graphBorderMask
         }
@@ -949,25 +954,21 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     txt += `Choose wisely and\n`
                     txt += `Beat the HODler`
                 } else {
-                    txt += `Level ${options.name}\n\n\n`
+                    txt += `Level ${options.name}\n\n`
                     txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
-                    txt += `a HODLer by trading.\n`
-                    txt += `Every percent counts!\n\n`
-                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
-                    //txt += `You have 1${formatCurrency(null,options.coinNames[1])}\n\n`
+                    txt += `the HODLer by trading.\n\n`
                     txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
-                    txt += `\n    = $ OWNED\n`
-                    txt += `\n    = ${formatCurrency(null,options.coinNames[1])} OWNED`
+                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
+                    txt += `What do you want?`
                 }
-               
+                
             } 
         } else {
             
 
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
-            txt += " --- Game Over ---\n\n" 
             txt += `Level ${options.name}\n`
             if (fiat > options.fiatBTCHodler) {
                 txt += "You won, nice!\n\n" 
@@ -988,7 +989,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 txt += `than the HODLer.\n\n`
             }
 
-            txt += `By the way:\n`;
             txt += `The HODLer\n${word},\n`;
             txt += "while you traded.\n\n" 
             txt += "Was it worth\nthe risk and time?"
@@ -996,31 +996,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         }
         
 
-        bigtextContainer.visible = isFinalScreen || stopIndex === 0
+        bigtextContainer.visible = (isFinalScreen || stopIndex === 0)
+        bigtextContainer.alpha = bigtextContainer.active
         priceLabelContainer.visible = !isFinalScreen
         
-        if (bigtextContainer.visible) {
-            bigtextLabel.text = txt
-            bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*0.4)
-            bigtextContainer.scale.set(8*0.75*SCALE_TEXT_BASE)
-            bigTextBackground.clear()
-            bigTextBackground.rect(-bigtextLabel.width/2, -bigtextLabel.height/2, bigtextLabel.width, bigtextLabel.height).fill(0x4d4d4d).stroke({color: 0xffffff, width: 2})
-            bigTextBackground.scale = 1.1
-
-            if (stopIndex === 0) {
-                bigtextContainer.playerSprite.x = -0.6*bigtextContainer.width
-                bigtextContainer.hodlerSprite.x = -0.6*bigtextContainer.width
-                bigtextContainer.playerSprite.y = 0.52*bigtextContainer.height
-                bigtextContainer.hodlerSprite.y = 0.7*bigtextContainer.height
-                
-            } else {
-                bigtextContainer.hodlerSprite.x = bigtextContainer.playerSprite.x = app.screen.width*2
-            }
-        }
        
-
-
-        swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
+       
+        bigtextLabel.scale = swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
 
        
         background.shader.resources.backgroundUniforms.uniforms.uR = color[0];
@@ -1039,17 +1021,28 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         stopImage.height = stopImage.width = (stopImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
         swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
  
-        swapLabel.text = (stopIndex > -1 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
-        stopLabel.text = (stopIndex > -1 ? yourCoinName : 'Pause')
-        stopImage.texture = (stopIndex > -1 ? coins[yourCoinName].texture : textureBtnStop) 
-        swapImage.texture = coins[yourCoinName === 'USD' ? 'BTC' : 'USD'].texture
+
+      
+        if (isFinalScreen) {
+            stopImage.texture = textureBtnTrade
+            swapImage.texture = textureBtnMenu
+            swapLabel.text = 'MENU'
+            stopLabel.text = 'RETRY'
+            
+        } else{
+            swapLabel.text = (stopIndex > -1 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
+            stopLabel.text = (stopIndex > -1 ? yourCoinName : 'Pause')    
+            stopImage.texture = (stopIndex > -1 ? coins[yourCoinName].texture : textureBtnStop) 
+            swapImage.texture = coins[yourCoinName === 'USD' ? 'BTC' : 'USD'].texture
+        }
+
         stopImage.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height)
         stopLabel.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height-stopImage.height*0.75)
         
         swapImage.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height)
         swapLabel.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height-swapImage.height*0.75)
         
-        stopContainer.visible =  !isFinalScreen&& !trade
+        stopContainer.visible =  isFinalScreen || !trade
 
         btnMenuSprite.scale = (btnMenuSprite.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
         btnMenuSprite.position.set(app.screen.width - btnMenuSprite.width*0.6, btnMenuSprite.height*0.7)
@@ -1064,17 +1057,43 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             btnSpeedSprite.texture = textureSpeedNormal
         }
         
+        if (isMenuVisible()) {
+            backgroundImage.texture = coins['BTC'].texture 
+        } else {
+            backgroundImage.texture = (isFinalScreen || stopIndex === 0) ? textureWhiteCoin : coins[yourCoinName].texture
+        }
 
-        backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
+     
+       
+        if (isMenuVisible()) {
+            backgroundImage.x = app.renderer.width-100 -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100);
+            backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height*2
+            backgroundImage.scale = 0.2*(Math.min(app.screen.width,1080)/1080)
+        
+        } else {
+            backgroundImage.x = 0.1*backgroundImage.x + 0.9*(app.renderer.width-100 -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100));
+            backgroundImage.y = 0.1*backgroundImage.y + 0.9*(app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height)
+            backgroundImage.scaleWanted = 0.2*(Math.min(app.screen.width,1080)/1080)
 
-        backgroundImage.scale.set(0.2*(Math.min(app.screen.width,1080)/1080))
-        backgroundImage.alpha = 1;
-        backgroundImage.x = app.renderer.width-50-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100);
-        backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16;
+            if (bigtextContainer.visible && bigtextContainer.active) {
+                backgroundImage.x = app.screen.width*0.5
+                //backgroundImage.y = app.screen.height*0.3
+                bigtextLabel.text = txt
+                let w = Math.min(bigtextLabel.width*1.1, app.screen.width)
+                let h = bigtextLabel.height*1.1
+                //bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*(gscalet + gscale*0.5))
+                bigtextContainer.position.set(backgroundImage.position.x ,backgroundImage.position.y)
+                bigTextBackground.scale.set(w,h)
+                backgroundImage.scale = 0.2
+            } else {
+                backgroundImage.scale = backgroundImage.scale.x*0.9 + backgroundImage.scaleWanted*0.1
+            }
+        }
+        
 
         if (isMenuVisible()){
            // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
-           backgroundImage.y += (1.0-gscalebg)*app.screen.height
+     
            containerGraphs.position.set(100-diffCurrentIndexIntToFloat*stepX,(1.0-gscalebg)*app.screen.height)
             graphBorder.visible = false
             containerGraphsForeground.visible = false
@@ -1090,7 +1109,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             graphBorder.visible = true
          */
            
-            backgroundImage.y += (1.0-gscalebg)*app.screen.height
             containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
             graphBorder.visible = true
             containerGraphsForeground.visible = true
@@ -1103,12 +1121,12 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
         hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
-        if (isFinalScreen) {
+       /* if (isFinalScreen) {
 
-            const A = app.screen.width*0.2; // Horizontale Ausdehnung
-            const B = Math.min(A*0.5,0.4*(app.screen.height*(1.0-gscalebg))); // Vertikale Ausdehnung
+            const A = app.screen.width*0.1; // Horizontale Ausdehnung
+            const B = Math.min(A*0.7,0.4*(app.screen.height*(1.0-gscalebg))); // Vertikale Ausdehnung
             const centerX = app.screen.width*0.5
-            const centerY = app.screen.height*gscalebg + 0.5*(app.screen.height*(1.0-gscalebg))
+            const centerY = app.screen.height*gscalebg
 
             particles.forEach((p,i) => {
 
@@ -1121,8 +1139,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
   
                 
             })
-        }
-
+        } */
     });
 }
 
