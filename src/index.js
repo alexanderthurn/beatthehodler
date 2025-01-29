@@ -617,7 +617,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         } else {
             
        
-            if (bigtextContainer.getBounds().containsPoint(event.x,event.y)){
+            if (event.y > app.screen.height*gscalet && event.y < app.screen.height*gscalebg) {
                 bigtextContainer.active = !bigtextContainer.active
             } 
             
@@ -680,7 +680,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
     menu.visible = false
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(menu.visible)
+    showMenu(!menu.visible)
     app.ticker.add((deltaTime) => {
 
         handleGamepadInput()
@@ -896,8 +896,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     }
                 }
 
-                if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}
-                if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height - Math.random()*10}
+                if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y}
+                if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height}
             
                 if (isFinalScreen) {
                     let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
@@ -1070,6 +1070,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height*2
             backgroundImage.scale = 0.2*(Math.min(app.screen.width,1080)/1080)
         
+            graphBorder.visible = false
+            containerGraphsForeground.visible = false
+            containerGraphs.mask = null
+
         } else {
             backgroundImage.x = 0.1*backgroundImage.x + 0.9*(app.renderer.width-100 -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100));
             backgroundImage.y = 0.1*backgroundImage.y + 0.9*(app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height)
@@ -1082,37 +1086,30 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 let w = Math.min(bigtextLabel.width*1.1, app.screen.width)
                 let h = bigtextLabel.height*1.1
                 //bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*(gscalet + gscale*0.5))
-                bigtextContainer.position.set(backgroundImage.position.x ,backgroundImage.position.y)
+                bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
                 bigTextBackground.scale.set(w,h)
                 backgroundImage.scale = 0.2
+                graphBorder.visible = true
+                containerGraphsForeground.visible = true
+                graphBorderAreaRight.visible = false
+                containerGraphs.mask = containerGraphs.cmask
             } else {
                 backgroundImage.scale = backgroundImage.scale.x*0.9 + backgroundImage.scaleWanted*0.1
+                graphBorder.visible = true
+                containerGraphsForeground.visible = true
+                graphBorderAreaRight.visible = false
+                containerGraphs.mask = containerGraphs.cmask
             }
+
         }
         
 
         if (isMenuVisible()){
-           // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
-     
            containerGraphs.position.set(100-diffCurrentIndexIntToFloat*stepX,(1.0-gscalebg)*app.screen.height)
-            graphBorder.visible = false
-            containerGraphsForeground.visible = false
-            containerGraphs.mask = null
-           // backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-       
         } else {
 
-            /*
-            containerGraphs.mask = containerGraphs.cmask
-            containerGraphsForeground.visible = true
             containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
-            graphBorder.visible = true
-         */
-           
-            containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
-            graphBorder.visible = true
-            containerGraphsForeground.visible = true
-            containerGraphs.mask = containerGraphs.cmask
+
 
         }       
 
