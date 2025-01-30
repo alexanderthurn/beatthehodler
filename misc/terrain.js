@@ -6,14 +6,30 @@ async function loadShader(url) {
     return response.text(); // Shader als Text zurückgeben
 }
 
-function createTerrain(app, vertexShader, fragmentShader)  {
+function createTerrain(app, vertexShader, fragmentShader, texture)  {
 
     let container = new PIXI.Container()
-    let test = new PIXI.Graphics().rect(100,50, 300, 200).fill({color: 0xff00ff, alpha: 1})
-    let terrain = new PIXI.Graphics().rect(150,100, 300, 200).fill({color: 0xff0000, alpha: 1})
+    let normalRect = new PIXI.Graphics().rect(100,50, 300, 200).fill({color: 0xff0000, alpha: 1})
+    let blurRect = new PIXI.Graphics().rect(150,100, 300, 200).fill({color: 0x00ff00, alpha: 1})
+    let terrainRect = new PIXI.Graphics().rect(200,150, 300, 200).fill({color: 0x0000ff, alpha: 1})
 
 
-    const filter = new PIXI.Filter({
+    let normalSprite = new PIXI.Sprite(texture)
+    normalSprite.scale = 0.1
+    normalSprite.x = 100+400
+    normalSprite.y =50
+    
+    let blurSprite = new PIXI.Sprite(texture)
+    blurSprite.scale = 0.1
+    blurSprite.x = 150+400
+    blurSprite.y = 100
+
+    let terrainSprite = new PIXI.Sprite(texture)
+    terrainSprite.scale = 0.1
+    terrainSprite.x = 200+400
+    terrainSprite.y = 150
+
+    const shaderFilter = new PIXI.Filter({
         glProgram: new PIXI.GlProgram({ 
             vertex: vertexShader, 
             fragment: fragmentShader, 
@@ -28,11 +44,19 @@ function createTerrain(app, vertexShader, fragmentShader)  {
         }
     });
 
-    terrain.filters = [filter]
+    blurSprite.filters = [new PIXI.BlurFilter()]
+    blurRect.filters = [new PIXI.BlurFilter()]
 
-    container.addChild(test)
-    container.addChild(terrain)
-    container.position.x = -20
+    //terrainRect.filters = [shaderFilter]
+   //terrainSprite.filters = [shaderFilter]
+
+    container.addChild(normalRect)
+    container.addChild(blurRect)
+    container.addChild(terrainRect)
+    
+    container.addChild(normalSprite)
+    container.addChild(blurSprite)
+    container.addChild(terrainSprite)
     return container
 }
 
@@ -40,6 +64,7 @@ async function initGame() {
         
     const backgroundVertexShader = await loadShader('../gfx/terrain.vert')
     const backgroundFragmentShader = await loadShader('../gfx/terrain.frag')
+    const textureBTC = await PIXI.Assets.load({src: '../gfx/btc.png'})
 
     const app = new PIXI.Application();
     await app.init({
@@ -55,7 +80,7 @@ async function initGame() {
     document.body.appendChild(app.canvas);
     const containerTerrain = new PIXI.Container()
     app.stage.addChild(containerTerrain)
-    const terrain = createTerrain(app, backgroundVertexShader, backgroundFragmentShader);
+    const terrain = createTerrain(app, backgroundVertexShader, backgroundFragmentShader, textureBTC);
     containerTerrain.addChildAt(terrain,0);
 
 }
