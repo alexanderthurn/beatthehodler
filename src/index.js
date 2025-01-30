@@ -840,9 +840,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                 //ownLabelContainer.mask = graphBorderMask
                 //ownLabelContainer.x = graphBorderAreaRight.x
-
-                let ts = trades.filter(t => t.toName !== t.fromName)
-                let tp = ts.length < 1 ? yourFiat : ts[ts.length-1]?.fromPrice
+                let ts = trades.filter((trade,i) => ((i === 0 || trade.fromName !== trade.toName) && (trade.toName === fiatName || trade.fromName === fiatName)))
+                //trades.filter((t,i) => t.toName !== t.fromName)
+                let tp = ts.length < 1 ? yourFiat : (ts[ts.length-1].fromName !== fiatName ? ts[ts.length-1].fromPrice : ts[ts.length-1].fromCoins)
 
                 let p
                 if (yourCoinName !== fiatName) {
@@ -1010,7 +1010,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         }
         
 
-        bigtextContainer.visible = (isFinalScreen || stopIndex === 0)
+        bigtextContainer.visible = (isFinalScreen || currentIndexInteger === options.indexStart)
         bigtextContainer.alpha = bigtextContainer.active
         maxPriceLabel.visible = minPriceLabel.visible = priceLabelContainer.visible = !isFinalScreen
         
@@ -1074,7 +1074,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (isMenuVisible()) {
             backgroundImage.texture = coins['BTC'].texture 
         } else {
-            backgroundImage.texture = ((isFinalScreen && bigtextContainer.active) || stopIndex === 0) ? textureWhiteCoin : coins[yourCoinName].texture
+            backgroundImage.texture = ((isFinalScreen && bigtextContainer.active) || (stopIndex === 0 && !trade)) ? textureWhiteCoin : coins[yourCoinName].texture
         }
 
      
