@@ -6,21 +6,15 @@ async function loadShader(url) {
     return response.text(); // Shader als Text zurückgeben
 }
 
-function createTerrain(vertexShader, fragmentShader)  {
+function createTerrain(app, vertexShader, fragmentShader)  {
 
-    var geometry = new PIXI.Geometry({
-        attributes: {
-            aPosition:  new Float32Array([
-                -1, -1, // Linke untere Ecke
-                 1, -1, // Rechte untere Ecke
-                -1,  1, // Linke obere Ecke
-                 1,  1  // Rechte obere Ecke
-            ])
-        },
-        topology: 'triangle-strip'
-    });
-
-    const shader = new PIXI.Shader({
+   // let terrain = new PIXI.Graphics().rect(app.screen.width*0.25,app.screen.height*0.25, app.screen.width*0.5,app.screen.height*0.5).fill({color: 0xff0000, alpha: 1})
+   let container = new PIXI.Container()
+    let test = new PIXI.Graphics().rect(100,50, 300, 200).fill({color: 0xff00ff, alpha: 1})
+    let terrain = new PIXI.Graphics().rect(150,100, 300, 200).fill({color: 0xff0000, alpha: 1})
+    let mask = new PIXI.Graphics().rect(-100,-100, 550,250)
+   // terrain.mask = mask
+    const filter = new PIXI.Filter({
         glProgram: new PIXI.GlProgram({ 
             vertex: vertexShader, 
             fragment: fragmentShader, 
@@ -34,11 +28,12 @@ function createTerrain(vertexShader, fragmentShader)  {
         }
     });
 
-    const graph = new PIXI.Mesh({
-        geometry,
-        shader
-    });
-    return graph
+    terrain.filters = [filter]
+
+    container.addChild(test)
+    container.addChild(terrain)
+    container.position.x = -20
+    return container
 }
 
 async function initGame() {
@@ -60,9 +55,8 @@ async function initGame() {
     document.body.appendChild(app.canvas);
     const containerTerrain = new PIXI.Container()
     app.stage.addChild(containerTerrain)
-    const terrain = createTerrain(backgroundVertexShader, backgroundFragmentShader);
+    const terrain = createTerrain(app, backgroundVertexShader, backgroundFragmentShader);
     containerTerrain.addChildAt(terrain,0);
-
 
 }
 
