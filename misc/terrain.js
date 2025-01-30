@@ -8,12 +8,11 @@ async function loadShader(url) {
 
 function createTerrain(app, vertexShader, fragmentShader)  {
 
-   // let terrain = new PIXI.Graphics().rect(app.screen.width*0.25,app.screen.height*0.25, app.screen.width*0.5,app.screen.height*0.5).fill({color: 0xff0000, alpha: 1})
-   let container = new PIXI.Container()
+    let container = new PIXI.Container()
     let test = new PIXI.Graphics().rect(100,50, 300, 200).fill({color: 0xff00ff, alpha: 1})
     let terrain = new PIXI.Graphics().rect(150,100, 300, 200).fill({color: 0xff0000, alpha: 1})
-    let mask = new PIXI.Graphics().rect(-100,-100, 550,250)
-   // terrain.mask = mask
+
+
     const filter = new PIXI.Filter({
         glProgram: new PIXI.GlProgram({ 
             vertex: vertexShader, 
@@ -23,7 +22,8 @@ function createTerrain(app, vertexShader, fragmentShader)  {
             backgroundUniforms: {
                 uTime: {value: 0.0, type: 'f32'},
                 uSun: { value: [0.75, 0.75], type: 'vec2<f32>' },
-                uResolution: { value: [640.0, 480.0], type: 'vec2<f32>' },
+                uRectPos: { value: [0,  0], type: 'vec2<f32>' },   
+                uResolution: { value: [1238, 860], type: 'vec2<f32>' },
             }
         }
     });
