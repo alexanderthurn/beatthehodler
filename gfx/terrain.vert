@@ -1,11 +1,9 @@
-#version 300 es
 precision mediump float;
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoord;
 
-out vec2 TexCoord;
+attribute vec2 aPosition;
+varying vec2 vPosition; 
 
 void main() {
-    gl_Position = vec4(aPos, 1.0);
-    TexCoord = aTexCoord;
+    vPosition = aPosition * 0.5 + 0.5; // Normalisieren zu [0, 1]
+    gl_Position = vec4(aPosition, 0.0, 1.0);
 }
