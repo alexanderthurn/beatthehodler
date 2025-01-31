@@ -1012,7 +1012,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 txt += `as the HODLer.\n\n`
             } else {
                 txt += `You have ${-res.toFixed(0)}% less\n`
-                txt += `than the HODLer.\n\n`
+                txt += `than the HODLer and: \n\n`
             }
 
             let fiatTrades = trades.filter(trade => trade.toName === fiatName)
@@ -1023,7 +1023,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             } else {
                 txt += `You did not trade\n`;
                 txt += `You are a the HODLer\n`;
-                txt += "Amazing!\n\n" 
+                txt += "Congratulations!\n\n" 
             }
 
             //txt += "Was it worth\nthe risk and time?"
