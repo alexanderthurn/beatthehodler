@@ -56,10 +56,15 @@ Sound Effect by <a href="https://pixabay.com/users/shut_up_ghost-32917765/?utm_s
 
 https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
-# TODO
+# TODO´
 
-- show result in numbers, more details (btc, usd status)
+- hide ownLabel when bigtext visible
+- won music when no trade
+- last percentage if in fiat not shown on finalscreen
+- gamepad/keyboard controls (e.g. fast forward)
+- levelCompleted: only if no trade happened
+- save all wins/losses
 - sound does not work on ios if switched app
-- bigger status - where am i? am i winning => big global percantage on top left (icon of player with sadness or happy)
 - graph as shader only
-
+- zoom button / mouse wheel?
+- optimize loading

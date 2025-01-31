@@ -926,7 +926,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 hodlerContainer.y = pHodler.y
                 
                 hodlerContainer.visible = isFinalScreen
-                ownLabelContainer.visible = true
+                ownLabelContainer.visible = !bigtextContainer.active
                
             }
         })
