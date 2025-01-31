@@ -167,7 +167,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
 
 
     menu.helpContainer = new PIXI.Container()
-    const gameInstructions = "Welcome to the ultimate Bitcoin trading challenge! Your goal is simple: outperform the HODLer.\n\nHow it works:\n- The Bitcoin price fluctuates over time. Buy low, sell high!\n- At the end of the game, your performance is compared to a HODLer (who simply holds BTC).\n- Your score is based on how much better (or worse) you did compared to HODLing.\n\nControls:\n- Gamepad, Mouse, or Keyboard - Play however you like!\n\nWinning?\n- The secret lesson: HODLing is king. The best way to win...is to do nothing.";
+    const gameInstructions = "Welcome to the ultimate Bitcoin challenge!\nYour goal is simple: outperform the HODLer.\n\nHow it works:\n- The Bitcoin price fluctuates over time. Buy low, sell high!\n- At the end of the game, your performance is compared to a HODLer (who simply holds BTC).\n- Your score is based on how much better (or worse) you did compared to HODLing.\n\nControls:\n- Gamepad, Mouse, or Keyboard - Play however you like!\n\nWinning?\n- The secret lesson: HODLing is king. The best way to win...is to do nothing.";
 
     menu.helpText = new PIXI.Text({text: gameInstructions, style: menu.textStyleHelper})
     menu.helpText.anchor.set(0.5,0)
@@ -210,17 +210,35 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
         }
     } else if (menu.state === MENU_STATE_HELP) {
         switch (key) {
+            
+            case 'w':
+            case 'GamepadsUp':
+            case 'Gamepads12':
+            case 'ArrowUp':
+                menu.helpContainer.pageIndex--
+            break;
+            case 's':
+            case 'Gamepads13':
+            case 'GamepadsDown':
+            case 'ArrowDown':
+                menu.helpContainer.pageIndex++
+                break;
             case 'Gamepads0':
             case 'Enter':    
-            case 'Escape':
             case ' ': 
-            if ( menu.helpContainer.position.y+ menu.helpText.height > menu.app.screen.height) {
-                menu.helpContainer.pageIndex++
-            } else {
+            if ( menu.helpContainer.position.y+ menu.helpText.height < menu.app.screen.height*0.75) {
                 menu.state = MENU_STATE_LEVELS
                 menu.helpContainer.pageIndex = 0
+            } else {
+                menu.helpContainer.pageIndex++
             }
-            
+            break;
+
+            case 'Gamepads1':
+            case 'Gamepads9':
+            case 'Escape':
+                menu.state = MENU_STATE_LEVELS
+                menu.helpContainer.pageIndex = 0
             break;
         }
     } else {
@@ -281,11 +299,10 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                 break;
             case 'Gamepads1':
             case 'Gamepads9':
-            case 'Tab':
             case 'Escape':
                 if (menu.state === MENU_STATE_LEVELS) {
                     menu.state = MENU_STATE_INTRO
-                }
+                } 
                 break;
             case 'Gamepads0':
             case 'Enter':    
@@ -297,7 +314,7 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
                     } else if (entry === menu.musicButtonSprite) {
                         setMute(!getMute('music') ,'music')
                     } else if (entry === menu.helpButtonSprite) {
-                        //setMute(!getMute())
+                        menu.state = MENU_STATE_HELP
                         SoundManager.playSFX('trade_won1')
                     } else {
                         showMenu(false)
@@ -319,11 +336,11 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
         menu.state = MENU_STATE_LEVELS
     } else if (menu.state === MENU_STATE_HELP) {
 
-        if ( menu.helpContainer.position.y+ menu.helpText.height > menu.app.screen.height) {
-            menu.helpContainer.pageIndex++
-        } else {
+        if ( menu.helpContainer.position.y+ menu.helpText.height < menu.app.screen.height*0.75) {
             menu.state = MENU_STATE_LEVELS
             menu.helpContainer.pageIndex = 0
+        } else {
+            menu.helpContainer.pageIndex++
         }
         
     } else {

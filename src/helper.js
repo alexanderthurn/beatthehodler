@@ -695,7 +695,6 @@ function getMute(type = '') {
 }
 
 function setWin(levelName, percentage, tradeCount) {
-    console.log('setWin', levelName, percentage, tradeCount)
 
     const key = `t_${levelName}`;
     const historyKey = `h_${levelName}`;
@@ -721,7 +720,6 @@ function setWin(levelName, percentage, tradeCount) {
             if (tradeCount === 0) {
                 localStorage.setItem(hodledKey, "21");
             }
-            console.log(`Highscore saved.`);
         } catch (e) {
             console.error('Highscore Save error', e);
         }
