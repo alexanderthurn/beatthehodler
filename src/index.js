@@ -236,8 +236,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     let ownLabel = new PIXI.Text({text: "+ 400%", style: textStyleBorder})
     ownLabelContainer.addChild(ownLabel)
     ownLabel.anchor.set(1,1)
-    ownLabel.x = -60
-    ownLabel.y = -50
+    ownLabel.x = -40
+    ownLabel.y = -60
 
     let priceLabel = new PIXI.Text({text: "100$", style: textStyleBorder});
     let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyleBorder});
@@ -860,21 +860,20 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 ownLabelContainer.x = p.x
                 ownLabelContainer.y = p.y
 
-                if (!isFinalScreen && yourCoinName === fiatName && stopIndex !== 0 && !isMenuVisible()) {
-                    ownLabel.visible = true
-                    ownLabel.scale = 0.8;
-                } else {
-                    ownLabel.visible = false
-                }
+               
 
+                let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
+                let resTotal = (100*percentageTotal)-100
+                if (resTotal < 0) {
+                 //   ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(- ${-resTotal.toFixed(0)}%)`
+                    ownLabel.text =  `- ${-resTotal.toFixed(0)}%`
+                } else {
+                //    ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(+ ${resTotal.toFixed(0)}%)`
+                    ownLabel.text =  `+ ${resTotal.toFixed(0)}%`
+                }
+                ownLabel.scale = 0.8
 
                 let res = (100*(tp / graphResult.price))-100
-                if (res < 0) {
-                    ownLabel.text = `- ${-res.toFixed(0)}%`
-                } else {
-                    ownLabel.text = `+ ${res.toFixed(0)}%`
-                }
-
                
                 if (yourCoinName !== fiatName && stopIndex < 0 && !isFinalScreen && !isMenuVisible()) {
                     if (shepardSoundDown) {
@@ -918,29 +917,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y}
                 if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height}
             
-                if (isFinalScreen) {
-                    let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
-                    hodlerContainer.x = p.x
-                    hodlerContainer.y = p.y
-
-                    hodlerContainer.visible = true
-                    ownLabelContainer.visible = true
-
-                    let p2 = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, yourFiat)
-                    ownLabelContainer.x = p2.x
-                    ownLabelContainer.y = p2.y 
-
-                   // hodlerContainer.visible = ownLabelContainer.visible = false
-                } else {
-                    hodlerContainer.visible = yourCoinName !== fiatName
-                    ownLabelContainer.visible = yourCoinName === fiatName
-                    hodlerContainer.x = ownLabelContainer.x
-                    hodlerContainer.y = ownLabelContainer.y
-                }
-
-            
-          
-
+              
+                let pHodler = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
+                hodlerContainer.x = pHodler.x
+                hodlerContainer.y = pHodler.y
+                
+                hodlerContainer.visible = isFinalScreen
+                ownLabelContainer.visible = true
                
             }
         })
@@ -1134,14 +1117,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
                // bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
                bigtextContainer.position.set(backgroundImage.position.x ,backgroundImage.position.y)
-                
-                if (isFinalScreen) {
-                    containerGraphsForeground.visible = false
-                } else {
-                    
-                    containerGraphsForeground.visible = true
-                }
-                
+               containerGraphsForeground.visible = true
             } else {
                 backgroundImage.scale = backgroundImage.scale.x*0.9 + backgroundImage.scaleWanted*0.1
                 containerGraphsForeground.visible = true
