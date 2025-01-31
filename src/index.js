@@ -778,7 +778,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 bigtextContainer.active = true
                 doTrade(yourCoinName, yourCoinName, {silent: true})
                 SoundManager.stopMusic()
-                if (yourFiat > options.fiatBTCHodler) {
+                if (yourFiat >= options.fiatBTCHodler) {
                     SoundManager.playSFX('game_won')
                 } else {
                     SoundManager.playSFX('game_lost')
