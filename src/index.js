@@ -282,8 +282,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     }
 
     app.stage.addChild(containerBackground)
-    app.stage.addChild(containerParticles)
     app.stage.addChild(containerForeground)
+    app.stage.addChild(containerParticles)
     app.stage.addChild(containerMenu)
 
 
@@ -399,6 +399,12 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         })
 
        
+        particles.forEach((p,i) => { 
+            p.x =  -100
+            p.y = -100
+            p.xTarget = -100; 
+            p.yTarget = -150;        
+        })
     
         graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
             let container = new PIXI.Container()
@@ -1000,7 +1006,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
    
             if (fiat > options.fiatBTCHodler) {
                 txt += `You have ${res.toFixed(0)}% more\n`
-                txt += `than the HODLer.\n\n`
+                txt += `than the HODLer, but:\n\n`
             } else if (fiat === options.fiatBTCHodler) {
                 txt += `You have the same\n`
                 txt += `as the HODLer.\n\n`
@@ -1126,7 +1132,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     backgroundImage.x = app.screen.width*0.5
                 }
 
-                bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
+               // bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
+               bigtextContainer.position.set(backgroundImage.position.x ,backgroundImage.position.y)
                 
                 if (isFinalScreen) {
                     containerGraphsForeground.visible = false
@@ -1158,7 +1165,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
         hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
-       // if (isFinalScreen) {
+        if (isFinalScreen) {
 
             const A = backgroundImage.width*0.25; // Horizontale Ausdehnung
             const B = Math.min(A*0.7,0.4*(app.screen.height*(1.0-gscalebg))); // Vertikale Ausdehnung
@@ -1168,30 +1175,42 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             const circleRadius = backgroundImage.height*0.5; // Setze den gewünschten Radius
             const circleCenterX = backgroundImage.x; // X-Koordinate des Kreiszentrums
             const circleCenterY = backgroundImage.y; // Y-Koordinate des Kreiszentrums
-       
-            particles.forEach((p, i) => {
-                const followOffset = i * 300; // Abstand zwischen den Partikeln
-                const t = (deltaTime.lastTime + followOffset) * 0.001; // Zeitversatz für den Wurm-Effekt
+            let durationLemniscate = 0
+            let durationCircle = 0
+            if (yourFiat > options.fiatBTCHodler) {
+                durationLemniscate = 0
+                durationCircle = 32
+            } else if (yourFiat === options.fiatBTCHodler) {
+                durationLemniscate = 12
+                durationCircle = 20 
+            } 
 
-                if (t % 20 > 12) {
-                    p.phase = "lemniscate";
-                } else {
-                    p.phase = "circle"
-                }
-                if (p.phase === "circle") {
-                    // Bewegung entlang des Kreises
-                    p.xTarget = circleCenterX + circleRadius * Math.cos(t);
-                    p.yTarget = circleCenterY + circleRadius * Math.sin(t);
-                    
-                    // Nach einer bestimmten Zeit auf die Lemniskate umschalten
-                 
-                } else if (p.phase === "lemniscate") {
-                    // Bewegung entlang der Lemniskate
-                    p.xTarget = centerX + A * Math.sin(t);
-                    p.yTarget = centerY + B * Math.sin(2 * t) / 2;
-                }
-            });
-     //   } 
+            if (durationLemniscate + durationCircle > 0) {
+                particles.forEach((p, i) => {
+                    const followOffset = i * 300; // Abstand zwischen den Partikeln
+                    const t = (deltaTime.lastTime + followOffset) * 0.001; // Zeitversatz für den Wurm-Effekt
+    
+                    if (t % (durationLemniscate+durationCircle) > durationCircle) {
+                        p.phase = "lemniscate";
+                    } else {
+                        p.phase = "circle"
+                    }
+                    if (p.phase === "circle") {
+                        // Bewegung entlang des Kreises
+                        p.xTarget = circleCenterX + circleRadius * Math.cos(t);
+                        p.yTarget = circleCenterY + circleRadius * Math.sin(t);
+                        
+                        // Nach einer bestimmten Zeit auf die Lemniskate umschalten
+                     
+                    } else if (p.phase === "lemniscate") {
+                        // Bewegung entlang der Lemniskate
+                        p.xTarget = centerX + A * Math.sin(t);
+                        p.yTarget = centerY + B * Math.sin(2 * t) / 2;
+                    }
+                });
+            }
+            
+        } 
     });
 }
 
