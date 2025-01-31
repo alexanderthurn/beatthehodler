@@ -58,9 +58,6 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 # TODO´
 
-- hide ownLabel when bigtext visible
-- won music when no trade
-- last percentage if in fiat not shown on finalscreen
 - gamepad/keyboard controls (e.g. fast forward)
 - levelCompleted: only if no trade happened
 - save all wins/losses

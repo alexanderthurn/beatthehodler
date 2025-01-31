@@ -1005,12 +1005,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 txt += `You have ${res.toFixed(0)} % more\n`
                 txt += `than the Hodler, but:\n\n`
                 txt += `The Hodler\n${word},\n`;
-                txt += "while you traded." 
+                txt += "while you traded.\n\n" 
+                txt += "Try again?\n" 
             } else {
                 txt += `You have ${-res.toFixed(0)} % less\n`
                 txt += `than the Hodler, and: \n\n`
                 txt += `The Hodler\n${word},\n`;
-                txt += "while you traded." 
+                txt += "while you traded.\n\n" 
+                txt += "Try again?\n" 
             }
             
             //txt += "Was it worth\nthe risk and time?"
@@ -1048,7 +1050,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (isFinalScreen) {
             stopImage.texture = textureBtnMenu
             swapImage.texture = textureBtnTrade
-            swapLabel.text = 'RETRY'
+            swapLabel.text = 'TRY AGAIN'
             stopLabel.text = 'MENU'
             
         } else{
