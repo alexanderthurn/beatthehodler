@@ -444,7 +444,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         menu.helpText.scale = 0.75
         menu.textStyleHelper.wordWrap= true
         menu.textStyleHelper.wordWrapWidth = app.screen.width > 1920 ? app.screen.width*0.8 : app.screen.width
-        menu.helpContainer.position.set(app.screen.width*0.5, menu.title.y + menu.title.height + menu.helpText.height < app.screen.height ? menu.title.y + menu.title.height : 100 - menu.helpContainer.pageIndex*app.screen.height*0.25)
+        menu.helpContainer.position.set(app.screen.width*0.5, menu.title.y + menu.title.height - menu.helpContainer.pageIndex*app.screen.height*0.25 )
     
     } else if (menu.state === MENU_STATE_LEVELS) {
         menu.spriteHodler.x = 0.9* menu.spriteHodler.x + 0.1*app.screen.width*1.05 
