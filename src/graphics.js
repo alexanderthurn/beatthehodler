@@ -223,9 +223,11 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     //graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
  
-    trades.filter((trade,i) => (i === 0 || trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
+    trades.filter((trade,i) => (i === 0 || trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade,i) => {
         trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-        trade.container.y = app.renderer.height*gscalebg-  ((trade.fromName === graph.coinName ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;
+        trade.container.y = app.renderer.height*gscalebg-  
+        ((trade.fromName !== fiatName ? trade.fromPrice : (i === 0 ? trade.fromCoins : trade.toPrice))-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;
+  
         if (trade.sprite) {
             trade.sprite.height = trade.sprite.width = app.renderer.width*0.02
         }

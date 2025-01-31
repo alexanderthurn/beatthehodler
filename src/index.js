@@ -482,7 +482,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         yourCoins = trade.toCoins
         yourCoinName = trade.toName
        
-        let tradesDifferent = trades.filter(t => t.fromName !== t.toName && t.toName === trade.fromName)
+        let tradesDifferent = trades.filter((t,i) => (i === 0 || t.fromName !== t.toName) && t.toName === trade.fromName)
         if (tradesDifferent.length > 0 && trade.fromName === fiatName && trade.toName !== trade.fromName) {
             trade.tradeBefore = tradesDifferent[tradesDifferent.length-1]
             trade.labelPercentage = new PIXI.Text({text: "", style: textStyleBorder})
