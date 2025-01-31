@@ -150,7 +150,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         const ix = i*8
         let y = parsedData[i].price || 0;
 
-        if (i > options.indexEnd || i < options.indexStart || isFinalScreen) {
+        if (app.screen.width < 640 || i > options.indexEnd || i < options.indexStart || isFinalScreen) {
             d[ix + 1] = -100
             d[ix + 3] = -100
             d[ix + 5] = -100
@@ -234,7 +234,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     //graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
  
-    trades.filter((trade,i) => (i === 0 || trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade,i) => {
+    trades.filter((trade,i) => (i === 0 || trade.fromName === graph.coinName || trade.toName === graph.coinName || trade.final)).forEach((trade,i) => {
         trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
         trade.container.y = app.renderer.height*gscalebg-  
         ((trade.fromName !== fiatName ? trade.fromPrice : (i === 0 ? trade.fromCoins : trade.toPrice))-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;

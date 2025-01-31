@@ -444,7 +444,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         let trade =  {
             index: currentIndexInteger, 
-
+            final: options?.final,
             percentage: null,
             tradeBefore: null,
             fiat: -1,
@@ -464,7 +464,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         
         trade.toCoins = (trade.fromCoins * trade.fromPrice) / trade.toPrice
-        
+
       
 
      
@@ -488,8 +488,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         yourCoins = trade.toCoins
         yourCoinName = trade.toName
        
-        let tradesDifferent = trades.filter((t,i) => (i === 0 || t.fromName !== t.toName) && t.toName === trade.fromName)
-        if (tradesDifferent.length > 0 && trade.fromName === fiatName && trade.toName !== trade.fromName) {
+        let tradesDifferent = trades.filter((t,i) => ((i === 0 || t.fromName !== t.toName) && (t.toName === trade.fromName || (trade.final && i === trades.length-1))))
+        if (tradesDifferent.length > 0 && trade.fromName === fiatName && (trade.toName !== trade.fromName || trade.final)) {
             trade.tradeBefore = tradesDifferent[tradesDifferent.length-1]
             trade.labelPercentage = new PIXI.Text({text: "", style: textStyleBorder})
             trade.labelPercentage.anchor.set(0.5,1.2)  
@@ -776,7 +776,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             if (!trade && isFinalScreen) {
                 
                 bigtextContainer.active = true
-                doTrade(yourCoinName, yourCoinName, {silent: true})
+                doTrade(yourCoinName, yourCoinName, {silent: true, final: true})
                 SoundManager.stopMusic()
                 if (yourFiat >= options.fiatBTCHodler) {
                     SoundManager.playSFX('game_won')
@@ -825,7 +825,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
            
             graphBorderMask.clear()
-            graphBorderMask.rect(0, app.screen.height*gscalet, isFinalScreen ? app.screen.width : visibleWidth, app.screen.height*gscale).fill({color: 0xff0000})
+            graphBorderMask.rect(0, 0, isFinalScreen ? app.screen.width : visibleWidth, app.screen.height).fill({color: 0xff0000})
         
             containerGraphs.cmask = graphBorderMask
         }
@@ -873,7 +873,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 }
                 ownLabel.scale = 0.8
                 hodlerSprite.scale = 0.04*Math.max(8,Math.min(12,stepX))*0.2
-                ownSprite.scale =  hodlerSprite.scale.x*Math.max(0.5, Math.min(2.0,percentageTotal))
+                ownSprite.scale =  hodlerSprite.scale.x*Math.max(0.5, Math.min(2.0,1.0+ (percentageTotal-1.0)*0.5))
                 hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
                 let res = (100*(tp / graphResult.price))-100
@@ -926,7 +926,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 hodlerContainer.y = pHodler.y
                 
                 hodlerContainer.visible = isFinalScreen
-                ownLabelContainer.visible = !bigtextContainer.active
+                ownLabelContainer.visible = true
+                ownLabel.visible = !(bigtextContainer.visible && bigtextContainer.active)
                
             }
         })
@@ -963,7 +964,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     txt += `Level ${options.name}\n\n`
                     txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
-                    txt += `the HODLer by trading.\n\n`
+                    txt += `the Hodler by trading.\n\n`
                     txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
                     txt += `What do you want?`
@@ -972,15 +973,20 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             } 
         } else {
             
-
+            let fiatTrades = trades.filter(trade => trade.toName === fiatName)
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
             txt += `Level ${options.name}\n`
-            if (fiat >= options.fiatBTCHodler) {
+            
+            
+            if (fiatTrades.length === 0) {
                 txt += "You won, nice!\n\n" 
+            } else if (fiat >= options.fiatBTCHodler) {
+                txt += "Good, but not perfect!\n\n" 
             } else {
                 txt += "Oh no, you lost\n\n" 
             }
+
             if (getWin(options.name) === 0 || res > getWin(options.name)) {
                 setWin(options.name, res)
             }
@@ -989,29 +995,24 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
            
             txt += `Hodler  ${formatCurrency(options.fiatBTCHodler/ coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n`
             txt += `You     ${formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n\n`
-   
-            if (fiat > options.fiatBTCHodler) {
-                txt += `You have ${res.toFixed(0)}% more\n`
-                txt += `than the HODLer, but:\n\n`
-            } else if (fiat === options.fiatBTCHodler) {
-                txt += `You have the same\n`
-                txt += `as the HODLer.\n\n`
-            } else {
-                txt += `You have ${-res.toFixed(0)}% less\n`
-                txt += `than the HODLer, and: \n\n`
-            }
-
-            let fiatTrades = trades.filter(trade => trade.toName === fiatName)
-    
-            if (fiatTrades.length > 0) {
-                txt += `The HODLer\n${word},\n`;
-                txt += "while you traded.\n\n" 
-            } else {
+           
+        
+            if (fiatTrades.length === 0) { 
                 txt += `You did not trade\n`;
-                txt += `You are a the HODLer\n`;
-                txt += "Congratulations!\n\n" 
+                txt += `You are the Hodler\n\n`;
+                txt += "Congratulations!" 
+            } else if (fiat >= options.fiatBTCHodler) {
+                txt += `You have ${res.toFixed(0)} % more\n`
+                txt += `than the Hodler, but:\n\n`
+                txt += `The Hodler\n${word},\n`;
+                txt += "while you traded." 
+            } else {
+                txt += `You have ${-res.toFixed(0)} % less\n`
+                txt += `than the Hodler, and: \n\n`
+                txt += `The Hodler\n${word},\n`;
+                txt += "while you traded." 
             }
-
+            
             //txt += "Was it worth\nthe risk and time?"
           
         }
@@ -1159,8 +1160,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 durationLemniscate = 0
                 durationCircle = 32
             } else if (yourFiat === options.fiatBTCHodler) {
-                durationLemniscate = 12
-                durationCircle = 20 
+                durationLemniscate = 9
+                durationCircle = 12 
             } 
 
             if (durationLemniscate + durationCircle > 0) {
