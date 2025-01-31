@@ -58,7 +58,6 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 # TODO
 
-- 0% result finalscreen: better message if hodled
 - show result in numbers, more details (btc, usd status)
 - sound does not work on ios if switched app
 - bigger status - where am i? am i winning => big global percantage on top left (icon of player with sadness or happy)

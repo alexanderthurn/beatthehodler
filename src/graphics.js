@@ -149,10 +149,21 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     for(let i=0;i<parsedData.length-1;i++) {
         const ix = i*8
         let y = parsedData[i].price || 0;
-        d[ix + 1] = -100
-        d[ix + 3] = -100
-        d[ix + 5] = -100
-        d[ix + 7] = -100
+
+        if (i > options.indexEnd || i < options.indexStart || isFinalScreen) {
+            d[ix + 1] = -100
+            d[ix + 3] = -100
+            d[ix + 5] = -100
+            d[ix + 7] = -100
+        } else {
+            d[ix + 1] = y - heightHalf
+            d[ix + 3] = y + heightHalf
+            d[ix + 5] = y + heightHalf
+            d[ix + 7] = y-heightHalf;
+        }
+
+
+
     }
     let realTrades = trades.filter((trade,i) => ((i === 0 || trade.fromName !== trade.toName) && (trade.toName === fiatName || trade.fromName === fiatName)))
     
@@ -282,7 +293,6 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
     const geometryOwnLines = new PIXI.Geometry({
         attributes: {
             aPosition: ownLines.vertices,
-            aColor: ownLines.colors,
             aIndex: ownLines.pointIndices,
             aUV: ownLines.uv
         },
@@ -331,7 +341,6 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
             uTexture: textureCloud.source,
             graphUniforms: {
                 uCurrentIndex: {type: 'i32', value: 0},
-                uAlpha: {type: 'f32', value: 1.0},
                 uMaxVisiblePoints: {type: 'i32', value: 3},
                 uScale: { value: [1.0, 1.0], type: 'vec2<f32>' }
             }

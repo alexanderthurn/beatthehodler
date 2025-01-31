@@ -1012,7 +1012,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 txt += `as the HODLer.\n\n`
             } else {
                 txt += `You have ${-res.toFixed(0)}% less\n`
-                txt += `than the HODLer and: \n\n`
+                txt += `than the HODLer, and: \n\n`
             }
 
             let fiatTrades = trades.filter(trade => trade.toName === fiatName)
