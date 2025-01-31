@@ -35,6 +35,10 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         fill: '#fff',
     });
 
+    menu.textStyleHelper = menu.textStylePreview.clone()
+    menu.textStyleHelper.align = 'center'
+    menu.textStyleHelper.wordWrap = true
+    //menu.textStyleHelper.stroke = {color: '#000000', width: 3}
 
     menu.textStyleClick = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
@@ -59,7 +63,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.addChild(menu.spriteHodler)
     menu.addChild(menu.spritePlayer)
     
-    menu.title = new PIXI.Text({text: 'Beat the Hodler', style: menu.textStyleTitle})
+    menu.title = new PIXI.Text({text: 'Beat the HODLer', style: menu.textStyleTitle})
     menu.title.anchor.set(0.5,0.0)
     menu.addChild(menu.title)
 
@@ -71,9 +75,9 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.finaltitle.anchor.set(0.5,1.0)
     menu.addChild(menu.finaltitle)
 
-    menu.clickTitle = new PIXI.Text({text: 'A "Hodler" holds, no matter what!', style: menu.textStyleClick }) 
-    menu.clickTitle.textMobile = 'A "Hodler" holds,\n no matter what!'
-    menu.clickTitle.textDesktop = 'A "Hodler" holds, no matter what!'
+    menu.clickTitle = new PIXI.Text({text: 'A "HODLer" holds, no matter what!', style: menu.textStyleClick }) 
+    menu.clickTitle.textMobile = 'A "HODLer" holds,\n no matter what!'
+    menu.clickTitle.textDesktop = 'A "HODLer" holds, no matter what!'
 
     menu.clickTitle.anchor.set(0.5,1.5)
     menu.addChild(menu.clickTitle)
@@ -132,6 +136,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         let group = menu.levelGroups.find(group => group.label === e.level.group)
         group.levels.addChild(e)
         group.levelEntries.push(e)
+
         return e
     })
 
@@ -161,7 +166,17 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.audioButtonSprite.right = menu.helpButtonSprite
 
 
+    menu.helpContainer = new PIXI.Container()
+    const gameInstructions = "Welcome to the ultimate Bitcoin trading challenge! Your goal is simple: outperform the HODLer.\n\nHow it works:\n- The Bitcoin price fluctuates over time. Buy low, sell high!\n- At the end of the game, your performance is compared to a HODLer (who simply holds BTC).\n- Your score is based on how much better (or worse) you did compared to HODLing.\n\nControls:\n- Gamepad, Mouse, or Keyboard - Play however you like!\n\nWinning?\n- The secret lesson: HODLing is king. The best way to win...is to do nothing.";
+
+    menu.helpText = new PIXI.Text({text: gameInstructions, style: menu.textStyleHelper})
+    menu.helpText.anchor.set(0.5,0)
+    menu.helpContainer.addChild(menu.helpText)
+    menu.helpContainer.pageIndex = 0
+    menu.addChild(menu.helpContainer)
+
     menu.pointer = {x: app.screen.width/2, y:app.screen.height / 6 * 5}
+
     return menu
 }
 
@@ -191,6 +206,21 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
             case ' ': 
             menu.levelEntries[0].active = true
             menu.state = MENU_STATE_LEVELS
+            break;
+        }
+    } else if (menu.state === MENU_STATE_HELP) {
+        switch (key) {
+            case 'Gamepads0':
+            case 'Enter':    
+            case 'Escape':
+            case ' ': 
+            if ( menu.helpContainer.position.y+ menu.helpText.height > menu.app.screen.height) {
+                menu.helpContainer.pageIndex++
+            } else {
+                menu.state = MENU_STATE_LEVELS
+                menu.helpContainer.pageIndex = 0
+            }
+            
             break;
         }
     } else {
@@ -287,6 +317,15 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
 
     if (menu.state === MENU_STATE_INTRO) {
         menu.state = MENU_STATE_LEVELS
+    } else if (menu.state === MENU_STATE_HELP) {
+
+        if ( menu.helpContainer.position.y+ menu.helpText.height > menu.app.screen.height) {
+            menu.helpContainer.pageIndex++
+        } else {
+            menu.state = MENU_STATE_LEVELS
+            menu.helpContainer.pageIndex = 0
+        }
+        
     } else {
         menu.levelEntries.filter(entry => true || entry.isCompletedLevelBefore ).forEach((entry,index2) => {
             if (entry.getBounds().containsPoint(event.x,event.y)) {
@@ -314,6 +353,7 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
     
         if (menu.helpButtonSprite.getBounds().containsPoint(event.x,event.y)) {
             //setMute(!getMute())
+            menu.state = MENU_STATE_HELP
             SoundManager.playSFX('trade_won1')
         } 
     }
@@ -322,6 +362,8 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
 }
 
 function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
+    let scaleToFullHD = app.screen.width/1920
+    menu.app = app
     menu.background.scale.set(app.screen.width / 1024, app.screen.height / 1024)
     menu.background.alpha = 0.0
     menu.audioButtonSprite.scale = (menu.audioButtonSprite.active ? 1.1 : 1.0) * 0.2
@@ -341,7 +383,6 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.helpButtonSprite.down = menu.musicButtonSprite.down = menu.audioButtonSprite.down = menu.levelEntries[0]
 
 
-    let scaleToFullHD = app.screen.width/1920
 
     menu.title.scale.set(4*scaleToFullHD*0.5)
     menu.subtitle.scale.set(scaleToFullHD)
@@ -354,8 +395,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     if (menu.state === MENU_STATE_INTRO) {
         menu.spriteHodler.x = app.screen.width*0.75
         menu.spritePlayer.x = app.screen.width*0.25
-        menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
-        menu.clickTitle.visible = true
+        menu.helpContainer.visible = menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
+        menu.title.visible = menu.clickTitle.visible = true
         menu.textStyleClick.wordWrapWidth = app.screen.width*0.75*2
         if (app.screen.width < 1280) {
             menu.clickTitle.text = menu.clickTitle.textMobile
@@ -373,12 +414,27 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         menu.subtitle.position.set(app.screen.width*0.5, app.screen.height*0.15)
        // menu.subtitle.rotation = menu.title.rotation = -10*Math.PI/360
 
+    } else if (menu.state === MENU_STATE_HELP) {
+     
+        menu.spriteHodler.x = 0.9* menu.spriteHodler.x + 0.1*app.screen.width*1.05 
+        menu.spritePlayer.x = 0.9*menu.spritePlayer.x + 0.1*-app.screen.width*0.05
+        menu.title.position.set(0.9*menu.title.position.x+0.1*app.screen.width*0.5, 0.9*menu.title.position.y+0.1*app.screen.height*0.05)
+        menu.subtitle.rotation = menu.title.rotation = 0
+        menu.subtitle.position.set(0.9*menu.subtitle.position.x+0.1*app.screen.width*0.5, 0.9*menu.subtitle.position.y+0.1*app.screen.height*0.0)
+     
+        menu.title.visible = menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
+        menu.helpContainer.visible = true
+        menu.helpText.scale = 0.75
+        menu.textStyleHelper.wordWrap= true
+        menu.textStyleHelper.wordWrapWidth = app.screen.width > 1920 ? app.screen.width*0.8 : app.screen.width
+        menu.helpContainer.position.set(app.screen.width*0.5, menu.title.y + menu.title.height + menu.helpText.height < app.screen.height ? menu.title.y + menu.title.height : 100 - menu.helpContainer.pageIndex*app.screen.height*0.25)
+    
     } else if (menu.state === MENU_STATE_LEVELS) {
         menu.spriteHodler.x = 0.9* menu.spriteHodler.x + 0.1*app.screen.width*1.05 
         menu.spritePlayer.x = 0.9*menu.spritePlayer.x + 0.1*-app.screen.width*0.05
-
+        menu.helpContainer.visible = false
         menu.clickTitle.alpha*=0.92
-        menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
+        menu.title.visible = menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
         menu.subtitle.alpha*=0.92
        
         menu.title.position.set(0.9*menu.title.position.x+0.1*app.screen.width*0.5, 0.9*menu.title.position.y+0.1*app.screen.height*0.05)

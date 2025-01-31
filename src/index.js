@@ -921,7 +921,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         let txt = ''
 
         txt += `Today   ${currentDate.toLocaleDateString()}\n`
-        txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
+        txt += `HODLer  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
         let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
         let res = (100*percentageTotal)-100
         if (res < 0) {
@@ -948,7 +948,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     txt += `Level ${options.name}\n\n`
                     txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
-                    txt += `the Hodler by trading.\n\n`
+                    txt += `the HODLer by trading.\n\n`
                     txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
                     txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
                     txt += `What do you want?`
@@ -975,24 +975,24 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
             const word = hodlerActivities[Math.floor((deltaTime.lastTime * 0.0005) % hodlerActivities.length)];
            
-            txt += `Hodler  ${formatCurrency(options.fiatBTCHodler/ coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n`
+            txt += `HODLer  ${formatCurrency(options.fiatBTCHodler/ coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n`
             txt += `You     ${formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n\n`
            
         
             if (fiatTrades.length === 0) { 
                 txt += `You did not trade\n`;
-                txt += `You are the Hodler\n\n`;
+                txt += `You are the HODLer\n\n`;
                 txt += "Congratulations!" 
             } else if (fiat >= options.fiatBTCHodler) {
                 txt += `You have ${res.toFixed(0)} % more\n`
-                txt += `than the Hodler, but:\n\n`
-                txt += `The Hodler\n${word},\n`;
+                txt += `than the HODLer, but:\n\n`
+                txt += `The HODLer\n${word},\n`;
                 txt += "while you traded.\n\n" 
                 txt += "Try again?\n" 
             } else {
                 txt += `You have ${-res.toFixed(0)} % less\n`
-                txt += `than the Hodler, and: \n\n`
-                txt += `The Hodler\n${word},\n`;
+                txt += `than the HODLer, and: \n\n`
+                txt += `The HODLer\n${word},\n`;
                 txt += "while you traded.\n\n" 
                 txt += "Try again?\n" 
             }
