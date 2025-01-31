@@ -1,3 +1,11 @@
+function smoothLogScale(baseSize, percentage, minScale, maxScale) {
+    let scaleFactor = Math.log(1 + Math.abs(percentage) / 50) / Math.log(2); // Sanfte Progression
+    scaleFactor = percentage >= 0 ? 1 + scaleFactor : 1 - scaleFactor;
+    
+    let newSize = baseSize * scaleFactor;
+    
+    return Math.max(minScale * baseSize, Math.min(maxScale * baseSize, newSize)); 
+}
 function getBooleanFromLocalStorage(key) {
     const value = localStorage.getItem(key);
     

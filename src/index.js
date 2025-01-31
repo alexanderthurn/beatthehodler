@@ -872,6 +872,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     ownLabel.text =  `+ ${resTotal.toFixed(0)}%`
                 }
                 ownLabel.scale = 0.8
+                hodlerSprite.scale = 0.04*Math.max(8,Math.min(12,stepX))*0.2
+                ownSprite.scale =  hodlerSprite.scale.x*Math.max(0.5, Math.min(2.0,percentageTotal))
+                hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
                 let res = (100*(tp / graphResult.price))-100
                
@@ -1138,8 +1141,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
         
-        hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
-        hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
+
 
         if (isFinalScreen) {
 
