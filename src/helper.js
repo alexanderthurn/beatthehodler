@@ -484,7 +484,7 @@ function parseGameData(jsonString, coins) {
     var gameData = JSON.parse(jsonString) 
     injectGeneratedLevels(gameData)
     
-    gameData.levels.forEach(level => {
+    gameData.levels.forEach((level,index) => {
         if (!level.coinNames) {
             //level.coinNames= Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
              level.coinNames = Object.keys(coins)
@@ -505,6 +505,7 @@ function parseGameData(jsonString, coins) {
         level.minPrice = pricesData.filter((p,index) => index >= level.indexStart && index <= level.indexEnd).reduce((max, p) => Math.min(p.price, max),Number.MAX_VALUE)
         level.music = level.music || 'music_game1'
         level.fiatStart = pricesData[ level.indexStart].price || 1000
+        level.next = index < gameData.levels.length ? gameData.levels[index+1] : null
         if (typeof level.stops === 'number' && !isNaN(level.stops)) {
             level.stops = generateDatesBetween(level.dateStart, level.dateEnd, level.stops)
         } else if (Array.isArray(level.stops)) {
@@ -663,4 +664,93 @@ function formatSpeedAsFraction(speed) {
 
     const denominator = Math.round(1 / speed); // Berechnet den Nenner für Brüche
     return `1/${denominator}x`;
+}
+
+
+let localStorageCache = {}
+
+function setMute(value, type = '') {
+    localStorageCache['mute'+type] = value
+    localStorage.setItem('mute'+type, value)
+    
+    if (type === 'music') {
+        if (value) {
+            SoundManager.muteMusic()
+        } else {
+            SoundManager.unmuteMusic()
+        }
+    } else {
+        if (value) {
+            SoundManager.muteSounds()
+        } else {
+
+            SoundManager.unmuteSounds()
+        }
+    }
+   
+}
+
+function getMute(type = '') {
+    return localStorageCache['mute'+type] ?? getBooleanFromLocalStorage('mute'+type)
+}
+
+function setWin(levelName, percentage, tradeCount) {
+    console.log('setWin', levelName, percentage, tradeCount)
+
+    const key = `t_${levelName}`;
+    const historyKey = `h_${levelName}`;
+    const hodledKey = `hodled_${levelName}`;
+    const newEntry = {
+        p: percentage,
+        t: tradeCount
+    };
+
+    if (!localStorageCache[key] || localStorageCache[key] && (localStorageCache[key].p !== newEntry.p  || localStorageCache[key].t !== newEntry.t)) {
+        localStorageCache[key] = newEntry
+
+        try {
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+            history.push(newEntry);
+            localStorage.setItem(historyKey, JSON.stringify(history));
+            
+            let bestScore = JSON.parse(localStorage.getItem(key));
+            if (!bestScore || percentage > bestScore.p) {
+                localStorage.setItem(key, JSON.stringify(newEntry));
+            }
+            
+            if (tradeCount === 0) {
+                localStorage.setItem(hodledKey, "21");
+            }
+            console.log(`Highscore saved.`);
+        } catch (e) {
+            console.error('Highscore Save error', e);
+        }
+    }
+}
+
+function getWin(levelName) {
+    const hodledKey = `hodled_${levelName}`;
+    const key = `t_${levelName}`;
+    let result = null
+    if (localStorageCache[key]) {
+        result = localStorageCache[key]
+    } else {
+        let content = localStorage.getItem(key)
+        if (content) {
+            result = JSON.parse(localStorage.getItem(key));
+        } 
+    }
+
+    if (result) {
+        result.hodled = localStorage.getItem(hodledKey)
+    }
+    return result
+}
+
+function getNextLevel(level) {
+    if (level.next) {
+        return level.next
+    } else {
+        return level
+    }
 }

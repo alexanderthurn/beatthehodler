@@ -102,6 +102,7 @@ let textureSpeedNormal = await PIXI.Assets.load({src: 'gfx/normal.png'})
 let textureSpeedFast = await PIXI.Assets.load({src: 'gfx/fast.png'})
 let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
 let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
+let textureBtnPlay = await PIXI.Assets.load({src: 'gfx/play.png'})
 let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
 let texturePlayer = await PIXI.Assets.load({src: 'gfx/player.png'})
 let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
@@ -305,46 +306,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         }
     }
 
-    let localStorageCache = {}
-
-    function setMute(value, type = '') {
-        localStorageCache['mute'+type] = value
-        localStorage.setItem('mute'+type, value)
-        
-        if (type === 'music') {
-            if (value) {
-                SoundManager.muteMusic()
-            } else {
-                SoundManager.unmuteMusic()
-            }
-        } else {
-            if (value) {
-                SoundManager.muteSounds()
-            } else {
-    
-                SoundManager.unmuteSounds()
-            }
-        }
-       
-    }
-
-    function getMute(type = '') {
-        return localStorageCache['mute'+type] ?? getBooleanFromLocalStorage('mute'+type)
-    }
 
     setMute(getMute())
     setMute(getMute('music'),'music')
 
-    function setWin(level, value) {
-        if (localStorageCache['l'+level] !== value) {
-            localStorageCache['l'+level] = value
-            localStorage.setItem('l'+level, value)
-        }
-    }
-
-    function getWin(level) {
-        return localStorageCache['l'+level] ?? getFloatFromLocalStorage('l'+level)
-    }
+    
 
     let options
     var maxVisiblePoints
@@ -587,7 +553,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 case 'w':
                 case 'Gamepads0':
                     if (isFinalScreen) {                
-                        startNewGame(options)
+                        if (yourFiat === options.fiatBTCHodler) {
+                            startNewGame(getNextLevel(options))
+                        } else {
+                            startNewGame(options)
+                        }
                         break;
                     }
                 case 'ArrowUp':
@@ -654,7 +624,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     startNewGame(gameData.levels.find(level => level.name === 'menu'))
                     showMenu(true)
                 } else if (swapImage.active) {
-                    startNewGame(options)
+                    if (yourFiat === options.fiatBTCHodler) {
+                        startNewGame(getNextLevel(options))
+                    } else {
+                        startNewGame(options)
+                    }
                 }
             }  else {
 
@@ -700,7 +674,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     
     menu.visible = false
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(menu.visible)
+    showMenu(!menu.visible)
     app.ticker.add((deltaTime) => {
 
         handleGamepadInput()
@@ -790,6 +764,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     SoundManager.playSFX('game_lost')
                 }
 
+             
+                let tradeCount = trades.filter((trade,i) => ((i > 0 && i < trades.length && trade.fromName !== trade.toName))).length
+                let percentageCount = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
+                setWin(options.name, percentageCount, tradeCount)
 
             }
             
@@ -993,9 +971,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 txt += "Oh no, you lost\n\n" 
             }
 
-            if (getWin(options.name) === 0 || res > getWin(options.name)) {
-                setWin(options.name, res)
-            }
+
 
             const word = hodlerActivities[Math.floor((deltaTime.lastTime * 0.0005) % hodlerActivities.length)];
            
@@ -1055,8 +1031,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
       
         if (isFinalScreen) {
             stopImage.texture = textureBtnMenu
-            swapImage.texture = textureBtnTrade
-            swapLabel.text = 'TRY AGAIN'
+           
+            if (yourFiat === options.fiatBTCHodler) {
+                swapLabel.text = options.next ? options.next.name : 'NEXT'
+                swapImage.texture = textureBtnPlay
+            } else {
+                swapLabel.text = 'TRY AGAIN'
+                swapImage.texture = textureBtnTrade
+            }
             stopLabel.text = 'MENU'
             
         } else{

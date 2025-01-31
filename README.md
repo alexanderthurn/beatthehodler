@@ -58,10 +58,9 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 # TODO´
 
-- gamepad/keyboard controls (e.g. fast forward)
 - levelCompleted: only if no trade happened
 - save all wins/losses
 - sound does not work on ios if switched app
-- graph as shader only
 - zoom button / mouse wheel?
 - optimize loading
+- graph as shader only

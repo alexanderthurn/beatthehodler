@@ -402,9 +402,10 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                 entry.indexSubText.scale.set(0.3* (Math.max(640, app.screen.width)/640)* (entry.active ? 1.1 : 1.0)) 
                 entry.indexSubText.position.set(0,  entry.indexText.height/2)
                 entry.indexText.position.set(0,  -entry.indexText.height/2)
-                let score = getWin(entry.level.name)
-                entry.isCompleted = score > 0
-                entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)
+                let win = getWin(entry.level.name)
+                let score = 100*(win?.p || 1.0)-100
+                entry.isCompleted = win?.hodled
+                entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)?.hodled
                 entry.col = (index2 % cols)
                 entry.row = Math.floor(index2 / cols)
                 entry.position.set(entry.col * colw + colw*0.5,entry.row*colh + colh*0.5)
@@ -456,6 +457,10 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                     color = 0x005500
                 } else {
                     color = 0x550000
+                }
+
+                if (win && win.hodled) {
+                    color = 0xF7931B
                 }
                 entry.indexBackground.tint = color
                 entry.indexDifficultyLabel.scale = entry.indexSubText.scale
