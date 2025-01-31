@@ -984,7 +984,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
             txt += `Level ${options.name}\n`
-            if (fiat > options.fiatBTCHodler) {
+            if (fiat >= options.fiatBTCHodler) {
                 txt += "You won, nice!\n\n" 
             } else {
                 txt += "Oh no, you lost\n\n" 
@@ -994,17 +994,32 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             }
 
             const word = hodlerActivities[Math.floor((deltaTime.lastTime * 0.0005) % hodlerActivities.length)];
-             
+           
+            txt += `Hodler  ${formatCurrency(options.fiatBTCHodler/ coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n`
+            txt += `You     ${formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n\n`
+   
             if (fiat > options.fiatBTCHodler) {
                 txt += `You have ${res.toFixed(0)}% more\n`
                 txt += `than the HODLer.\n\n`
+            } else if (fiat === options.fiatBTCHodler) {
+                txt += `You have the same\n`
+                txt += `as the HODLer.\n\n`
             } else {
                 txt += `You have ${-res.toFixed(0)}% less\n`
                 txt += `than the HODLer.\n\n`
             }
 
-            txt += `The HODLer\n${word},\n`;
-            txt += "while you traded.\n\n" 
+            let fiatTrades = trades.filter(trade => trade.toName === fiatName)
+    
+            if (fiatTrades.length > 0) {
+                txt += `The HODLer\n${word},\n`;
+                txt += "while you traded.\n\n" 
+            } else {
+                txt += `You did not trade\n`;
+                txt += `You are a the HODLer\n`;
+                txt += "Amazing!\n\n" 
+            }
+
             //txt += "Was it worth\nthe risk and time?"
           
         }
@@ -1143,25 +1158,40 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
         hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
-       /* if (isFinalScreen) {
+       // if (isFinalScreen) {
 
-            const A = app.screen.width*0.1; // Horizontale Ausdehnung
+            const A = backgroundImage.width*0.25; // Horizontale Ausdehnung
             const B = Math.min(A*0.7,0.4*(app.screen.height*(1.0-gscalebg))); // Vertikale Ausdehnung
-            const centerX = app.screen.width*0.5
-            const centerY = app.screen.height*gscalebg
+            const centerX = backgroundImage.x
+            const centerY = backgroundImage.y + backgroundImage.height*0.6
 
-            particles.forEach((p,i) => {
+            const circleRadius = backgroundImage.height*0.5; // Setze den gewünschten Radius
+            const circleCenterX = backgroundImage.x; // X-Koordinate des Kreiszentrums
+            const circleCenterY = backgroundImage.y; // Y-Koordinate des Kreiszentrums
+       
+            particles.forEach((p, i) => {
+                const followOffset = i * 300; // Abstand zwischen den Partikeln
+                const t = (deltaTime.lastTime + followOffset) * 0.001; // Zeitversatz für den Wurm-Effekt
 
-                const followOffset = i * 360; // Abstand zwischen den Partikeln
-                const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
-        
-                // Position der Partikel entlang der Lemniskate
-                p.x = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
-                p.y = centerY + B * Math.sin(2 * t*0.001) / 2;        
-  
-                
-            })
-        } */
+                if (t % 20 > 12) {
+                    p.phase = "lemniscate";
+                } else {
+                    p.phase = "circle"
+                }
+                if (p.phase === "circle") {
+                    // Bewegung entlang des Kreises
+                    p.xTarget = circleCenterX + circleRadius * Math.cos(t);
+                    p.yTarget = circleCenterY + circleRadius * Math.sin(t);
+                    
+                    // Nach einer bestimmten Zeit auf die Lemniskate umschalten
+                 
+                } else if (p.phase === "lemniscate") {
+                    // Bewegung entlang der Lemniskate
+                    p.xTarget = centerX + A * Math.sin(t);
+                    p.yTarget = centerY + B * Math.sin(2 * t) / 2;
+                }
+            });
+     //   } 
     });
 }
 

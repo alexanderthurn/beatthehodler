@@ -60,8 +60,6 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 - 0% result finalscreen: better message if hodled
 - show result in numbers, more details (btc, usd status)
-- if starting with dollar, the percantage on the line is not shown
-- click on big text => hide
 - sound does not work on ios if switched app
 - bigger status - where am i? am i winning => big global percantage on top left (icon of player with sadness or happy)
 - graph as shader only
