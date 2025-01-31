@@ -561,6 +561,22 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             let stopIndex = stopIndizes.indexOf(currentIndexInteger)
     
             switch (key) {
+                case 'Gamepads3':
+                case 'Control':
+                    bigtextContainer.active = !bigtextContainer.active
+                    break;
+                case '+':
+                case 'Gamepads5':
+                case 'Gamepads7':
+                    factorSpeed = saveSpeed(changeSpeed(factorSpeed))
+                    btnSpeedContainer.active = false
+                    break;
+                case '-':
+                case 'Gamepads4':
+                case 'Gamepads6':
+                    factorSpeed = saveSpeed(changeSpeed(factorSpeed, true))
+                    btnSpeedContainer.active = false
+                    break;
                 case 'Gamepads9':
                 case 'Gamepads1':
                 case 'Escape':
@@ -571,12 +587,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 case 'w':
                 case 'Gamepads0':
                     if (isFinalScreen) {                
-                        if (yourFiat > options.fiatBTCHodler) {
-                            startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                            showMenu(true)
-                        } else {
-                            startNewGame(options)
-                        }
+                        startNewGame(options)
                         break;
                     }
                 case 'ArrowUp':
@@ -586,7 +597,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                         doTrade(yourCoinName, yourCoinName === 'USD' ? 'BTC' : 'USD')
                     }
                     break;
-                case 'Tab':
                 case 'Enter':
                 case 'p':
                 case 'P': 
@@ -594,16 +604,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 case 'ArrowLeft':
                 case 's':
                 case 'Gamepads2':
-                    if (isFinalScreen) {                
-                        if (yourFiat > options.fiatBTCHodler) {
-                            startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                            showMenu(true)
-                        } else {
-                            startNewGame(options)
-                        }
-                        break;
-                    }
                 case 'ArrowDown':
+                    if (isFinalScreen) {                
+                        startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                        showMenu(true)
+                    } else {
                         if (stopIndex < 0) {
                             stopIndizes.push(currentIndexInteger)
                             stopIndizes.sort()
@@ -612,6 +617,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                         } else {
                             doTrade(yourCoinName, yourCoinName)
                         }
+                    }
                     break;
             }
         }

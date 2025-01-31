@@ -642,9 +642,17 @@ function loadSpeed() {
     return getFloatFromLocalStorage('speed',1.0)
 }
 
-function changeSpeed(oldSpeed) {
+function changeSpeed(oldSpeed, reverse = false) {
     const speeds = [0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0];
-    let nextIndex = (speeds.indexOf(oldSpeed) + 1) % speeds.length;
+    let nextIndex
+    if (!reverse) {
+        nextIndex = (speeds.indexOf(oldSpeed) + 1) % speeds.length;
+    } else {
+        nextIndex = (speeds.indexOf(oldSpeed) - 1)
+        if (nextIndex < 0) {
+            nextIndex = speeds.length-1;
+        }
+    }
     return speeds[nextIndex];
 }
 
