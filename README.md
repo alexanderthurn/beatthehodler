@@ -56,16 +56,23 @@ Sound Effect by <a href="https://pixabay.com/users/shut_up_ghost-32917765/?utm_s
 
 https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
-# TODO´
 
-- sound does not work on ios if switched app
-- optimize loading
+
+# Performance optimizations
+01.02.2025: 
+
+Before Optim:
+Normal: No TP, but parallel: 57 requests - 1,50s 3.2mb transferred  2.6 MB resources DOMContentLoaded 1.17s Loaded 1.18s
+Slow 4G: Finish: 22.40s DOMContentLoaded 3.33 s Load 3.33s
+
+After:
+Normal: No TP, but parallel: 26 requests - 652ms 3.1MB transferred  2.6 MB resources DOMContentLoaded 319ms Loaded 323ms
+Slow 4G: Finish: 21.57s DOMContentLoaded 3.335 s Load 3.335s
+
+
+# TODO
 
 - zoom button / mouse wheel?
 - graph as shader only
-
-
-# Performance: 
-01.02.2025: 
-Normal: No TP, but parallel: 57 requests - 1,50s 3.2mb transferred  2.6 MB resources DOMContentLoaded 1.17s Loaded 1.18s
-Slow 4G: Finish: 22.40s DOMContentLoaded 3.33 s Load 3.33s
+- sound does not mute if switched back from other tab
+- show local percentage when usd?
