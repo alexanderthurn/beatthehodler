@@ -213,6 +213,10 @@ function menuKeyUpEvent(menu, event, startNewGame, getMute, setMute, showMenu) {
             break;
         }
     } else if (menu.state === MENU_STATE_HELP) {
+
+        if (menu.demo) {
+            return
+        }
         switch (key) {
             
             case 'w':
@@ -340,6 +344,9 @@ function menuPointerUpEvent(menu, event, startNewGame, getMute, setMute, showMen
         menu.state = MENU_STATE_LEVELS
     } else if (menu.state === MENU_STATE_HELP) {
 
+        if (menu.demo) {
+            return
+        }
         if ( menu.helpContainer.position.y+ menu.helpText.height < menu.app.screen.height*0.75) {
             menu.state = MENU_STATE_LEVELS
             menu.helpContainer.pageIndex = 0
@@ -443,13 +450,18 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         menu.subtitle.rotation = menu.title.rotation = 0
         menu.subtitle.position.set(0.9*menu.subtitle.position.x+0.1*app.screen.width*0.5, 0.9*menu.subtitle.position.y+0.1*app.screen.height*0.0)
      
-        menu.title.visible = menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
+        menu.subtitle.visible = menu.title.visible = menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = false
         menu.helpContainer.visible = true
         menu.helpText.scale = 0.75
         menu.textStyleHelper.wordWrap= true
         menu.textStyleHelper.wordWrapWidth = app.screen.width > 1920 ? app.screen.width*0.8 : app.screen.width
         menu.helpContainer.position.set(app.screen.width*0.5, menu.title.y + menu.title.height - menu.helpContainer.pageIndex*app.screen.height*0.25 )
     
+
+        if (menu.demo) {
+            menu.title.visible = true
+            menu.spriteHodler.visible = menu.spritePlayer.visible = menu.helpContainer.visible = false
+        }
     } else if (menu.state === MENU_STATE_LEVELS) {
         menu.spriteHodler.x = 0.9* menu.spriteHodler.x + 0.1*app.screen.width*1.05 
         menu.spritePlayer.x = 0.9*menu.spritePlayer.x + 0.1*-app.screen.width*0.05

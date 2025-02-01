@@ -682,8 +682,26 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
     
     menu.visible = false
-    startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(!menu.visible)
+    
+    
+    if (getQueryParam('demo')) {
+        showMenu(true)
+        startNewGame(gameData.levels.find(level => level.name === 'menu'))
+        menu.state = MENU_STATE_HELP
+        menu.demo = true
+    } else if (getQueryParam('level')) {
+        let levelname = getQueryParam('level')
+        let level = gameData.levels.find(level => level.name === levelname)
+        if (!level) {
+            level= gameData.levels.find(level => level.name === '2015')
+        }
+        startNewGame(level)
+        showMenu(false)
+    } else {
+        startNewGame(gameData.levels.find(level => level.name === 'menu'))
+        showMenu(true)
+    }
+    
 
 
    
