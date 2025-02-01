@@ -5,8 +5,8 @@ const hodlerActivities = [
 ];
 
 const coins = {
-    USD: { color: '#85BB65', colorInt: 0x85BB65, image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
-    BTC: { color: '#F7931B', colorInt: 0xF7931B,image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8}
+    USD: { color: '#85BB65', colorInt: 0x85BB65, image: 'usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
+    BTC: { color: '#F7931B', colorInt: 0xF7931B,image: 'btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8}
 /*    ADA: { color: '#0133AD', colorInt: 0x0133AD,image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
     DOGE: { color: '#BA9F32', colorInt: 0xBA9F325,image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
     ETH: { color: '#383938', colorInt: 0x383938,image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', csv: 'data/eth-usd-max.csv',  digits: 2},
@@ -38,6 +38,10 @@ async function initGame() {
         loadShader('./gfx/background.frag'),fetchData(coins)]
     )
 
+
+
+    const spriteSheet = await PIXI.Assets.load('gfx/texturepack.json');
+
     const [
         textureWhiteCoin,
         textureSpeedNormal,
@@ -55,25 +59,27 @@ async function initGame() {
         musicOnTexture,
         musicOffTexture,
         helpTexture    
-    ] = await Promise.all([
-        PIXI.Assets.load({src: 'gfx/white.png'}),
-        PIXI.Assets.load({src: 'gfx/normal.png'}),
-        PIXI.Assets.load({src: 'gfx/fast.png'}),
-        PIXI.Assets.load({src: 'gfx/menu.png'}),
-        PIXI.Assets.load({src: 'gfx/stop.png'}),
-        PIXI.Assets.load({src: 'gfx/play.png'}),
-        PIXI.Assets.load({src: 'gfx/trade.png'}),
-        PIXI.Assets.load({src: 'gfx/player.png'}),
-        PIXI.Assets.load({src: 'gfx/hodler.png'}),
-        PIXI.Assets.load({src: 'gfx/hodler_mirror.png'}),
-        PIXI.Assets.load({src: 'gfx/cloud.png'}),
-        PIXI.Assets.load({src: 'gfx/audio_on.png'}),
-        PIXI.Assets.load({src: 'gfx/audio_off.png'}),
-        PIXI.Assets.load({src: 'gfx/music_on.png'}),
-        PIXI.Assets.load({src: 'gfx/music_off.png'}),
-        PIXI.Assets.load({src: 'gfx/help.png'})
-    ])
-
+    ] = [
+        spriteSheet.textures['white.png'],
+         spriteSheet.textures['normal.png'],
+         spriteSheet.textures['fast.png'],
+         spriteSheet.textures['menu.png'],
+         spriteSheet.textures['stop.png'],
+         spriteSheet.textures['play.png'],
+        spriteSheet.textures['trade.png'],
+         spriteSheet.textures['player.png'],
+         spriteSheet.textures['hodler.png'],
+         spriteSheet.textures['hodler_mirror.png'],
+         spriteSheet.textures['cloud.png'],
+         spriteSheet.textures['audio_on.png'],
+         spriteSheet.textures['audio_off.png'],
+         spriteSheet.textures['music_on.png'],
+         spriteSheet.textures['music_off.png'],
+         spriteSheet.textures['help.png']
+    ]
+    Object.keys(coins).map(async (key) => {
+        coins[key].texture =  spriteSheet.textures[coins[key].image]
+    })
 
 
 
@@ -132,11 +138,7 @@ async function initGame() {
   
    containerForeground.visible = containerBackground.visible = containerMenu.visible = false
 
-   await Promise.all(Object.keys(coins).map(async (key) => {
-    coins[key].texture = await PIXI.Assets.load({
-        src: coins[key].image,
-    });
-    }))
+
 
 
     PIXI.Assets.addBundle('fonts', {
@@ -208,8 +210,8 @@ async function initGame() {
 
     const backgroundImage = new PIXI.Sprite(); //screen
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
-    backgroundImage.scaleWanted = 0.2
-    backgroundImage.scale = 0.2
+    backgroundImage.scaleWanted = 0.8
+    backgroundImage.scale = 0.8
 
 
     containerBackground.addChild(backgroundImage);
@@ -303,8 +305,8 @@ async function initGame() {
             y: 0,
             xTarget:0,
             yTarget:0,
-            scaleX:0.01,
-            scaleY:0.01,
+            scaleX:0.04,
+            scaleY:0.04,
             anchorX: 0.5,
             anchorY: 0.5
         })
@@ -1167,7 +1169,7 @@ async function initGame() {
         if (isMenuVisible()) {
             backgroundImage.x = visibleWidth -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(visibleWidth);
             backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height*2
-            backgroundImage.scale = 0.2*(Math.min(app.screen.width,1080)/1080)
+            backgroundImage.scale = 0.8*(Math.min(app.screen.width,1080)/1080)
         
             graphBorder.visible = false
             containerGraphsForeground.visible = false
@@ -1176,7 +1178,7 @@ async function initGame() {
         } else {
             backgroundImage.x = 0.1*backgroundImage.x + 0.9*(visibleWidth -backgroundImage.width*0.5+ (-1.0+Math.sin(deltaTime.lastTime*0.0001))*0.1*(visibleWidth));
             backgroundImage.y = 0.1*backgroundImage.y + 0.9*(app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height)
-            backgroundImage.scaleWanted = 0.2*(Math.min(app.screen.width,1080)/1080)
+            backgroundImage.scaleWanted = 0.8*(Math.min(app.screen.width,1080)/1080)
 
             if (bigtextContainer.visible && bigtextContainer.active) {
                 //backgroundImage.y = app.screen.height*0.3
@@ -1186,7 +1188,7 @@ async function initGame() {
                 //bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*(gscalet + gscale*0.5))
                 bigTextBackground.scale.set(w,h)
                 if (backgroundImage.width < w) {
-                    backgroundImage.scale = 0.22
+                    backgroundImage.scale = 0.9
                 }
                 if (backgroundImage.x + backgroundImage.width*0.5 > visibleWidth) {
                     backgroundImage.x = visibleWidth-backgroundImage.width*0.5

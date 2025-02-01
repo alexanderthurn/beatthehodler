@@ -63,3 +63,9 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 - zoom button / mouse wheel?
 - graph as shader only
+
+
+# Performance: 
+01.02.2025: 
+Normal: No TP, but parallel: 57 requests - 1,50s 3.2mb transferred  2.6 MB resources DOMContentLoaded 1.17s Loaded 1.18s
+Slow 4G: Finish: 22.40s DOMContentLoaded 3.33 s Load 3.33s

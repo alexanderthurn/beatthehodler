@@ -7,7 +7,11 @@ async function loadShader(url) {
 }
 
 
-function createOwnLines(dataPoints, lineWidth, coin) {
+function createOwnLines(dataPoints, lineWidth, texture) {
+
+
+    const textureUVs = texture.uvs
+
     const vertices = []
     const indices = []
     const colors = []
@@ -26,10 +30,10 @@ function createOwnLines(dataPoints, lineWidth, coin) {
             x-halfWidth+lineWidth*2, y    // P4: Oben rechts
         );
 
-        uvs.push(0,0)
-        uvs.push(0,1)
-        uvs.push(1,1)
-        uvs.push(1,0)
+        uvs.push(textureUVs.x0,textureUVs.y0)
+        uvs.push(textureUVs.x1,textureUVs.y1)
+        uvs.push(textureUVs.x2,textureUVs.y2)
+        uvs.push(textureUVs.x3,textureUVs.y3)
    
         for (let h = 0; h < 4; h++) {
             pointIndices.push(i)
@@ -286,7 +290,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader,textureCloud) {
     
     let parsedData = coins[coinName].data
-    let ownLines = createOwnLines(parsedData,1, coins[coinName])
+    let ownLines = createOwnLines(parsedData,1, textureCloud)
     let linesBottom = createStockBottomLines(parsedData, 1, coins[coinName])
    
 
