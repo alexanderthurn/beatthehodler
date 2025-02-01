@@ -35,4 +35,10 @@ void main() {
     vPrice = aPrice;
     vPriceFlat = aPosition.y;
     vIndex = aIndex;
+
+   
+   /* if (int(aIndex) < uCurrentIndex-uMaxVisiblePoints || int(aIndex) > uCurrentIndex) {
+    vColor = vec4(1.0,1.0,1.0,1.0);
+    gl_Position.y=gl_Position.y+0.5;
+    }*/
 }

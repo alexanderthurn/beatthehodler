@@ -146,6 +146,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     graphBorder.cheight = 0
     graphBorder.cwidth = 0
     const bigtextContainer = new PIXI.Container()
+    bigtextContainer.active = false
+    bigtextContainer.visible = false
+
     const bigTextBackground = new PIXI.Graphics().circle(0, 0, 1).fill({color: 0xffffff,alpha:0.0})
     const bigtextLabel = new PIXI.Text({text: '', style: textStyleCenteredBlack})
     bigtextLabel.anchor.set(0.5,0.5)
@@ -288,7 +291,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
     backgroundImage.zIndex = 0
     bigtextContainer.zIndex = 1
-    //bigTextLayer.attach(backgroundImage)
     bigTextLayer.attach(bigtextContainer)
     const buyPaused = 1000
    
@@ -378,7 +380,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             let container = new PIXI.Container()
             let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader, textureCloud)
             container.addChild(graph)
-        
             return {
                 coinName: c,
                 index: i,
@@ -397,7 +398,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         trades = []
 
-        bigtextContainer.active = true
+        if (!isMenuVisible()) {
+            bigtextContainer.active = true
+
+        } else {
+            bigtextContainer.active = false
+
+        }
 
     }
 
@@ -1008,7 +1015,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         }
         
 
-        bigtextContainer.visible = (isFinalScreen || currentIndexInteger === options.indexStart)
+        bigtextContainer.visible = (!isMenuVisible() && (isFinalScreen || currentIndexInteger === options.indexStart) )
         bigtextContainer.alpha = bigtextContainer.active
         maxPriceLabel.visible = minPriceLabel.visible = priceLabelContainer.visible = !isFinalScreen
         
