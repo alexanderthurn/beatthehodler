@@ -6,12 +6,12 @@ const hodlerActivities = [
 
 const coins = {
     USD: { color: '#85BB65', colorInt: 0x85BB65, image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
-    BTC: { color: '#F7931B', colorInt: 0xF7931B,image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
-    ADA: { color: '#0133AD', colorInt: 0x0133AD,image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
+    BTC: { color: '#F7931B', colorInt: 0xF7931B,image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8}
+/*    ADA: { color: '#0133AD', colorInt: 0x0133AD,image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
     DOGE: { color: '#BA9F32', colorInt: 0xBA9F325,image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
     ETH: { color: '#383938', colorInt: 0x383938,image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', csv: 'data/eth-usd-max.csv',  digits: 2},
     SOL: { color: '#BD3EF3', colorInt: 0xBD3EF3,image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', csv: 'data/sol-usd-max.csv',  digits: 2},
-}
+*/}
 
 const SCALE_TEXT_BASE = 1.0/16.0*1.5
 const gscalet = 0.25 // how much screen height space on top
@@ -49,7 +49,12 @@ async function initGame() {
         texturePlayer,
         textureHodler,
         textureHodlerMirror,
-        textureCloud
+        textureCloud,
+        audioOnTexture,
+        audioOffTexture,
+        musicOnTexture,
+        musicOffTexture,
+        helpTexture    
     ] = await Promise.all([
         PIXI.Assets.load({src: 'gfx/white.png'}),
         PIXI.Assets.load({src: 'gfx/normal.png'}),
@@ -61,8 +66,16 @@ async function initGame() {
         PIXI.Assets.load({src: 'gfx/player.png'}),
         PIXI.Assets.load({src: 'gfx/hodler.png'}),
         PIXI.Assets.load({src: 'gfx/hodler_mirror.png'}),
-        PIXI.Assets.load({src: 'gfx/cloud.png'})
+        PIXI.Assets.load({src: 'gfx/cloud.png'}),
+        PIXI.Assets.load({src: 'gfx/audio_on.png'}),
+        PIXI.Assets.load({src: 'gfx/audio_off.png'}),
+        PIXI.Assets.load({src: 'gfx/music_on.png'}),
+        PIXI.Assets.load({src: 'gfx/music_off.png'}),
+        PIXI.Assets.load({src: 'gfx/help.png'})
     ])
+
+
+
 
     const app = new PIXI.Application();
     await app.init({
@@ -311,7 +324,18 @@ async function initGame() {
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
-    const menu = await createMenu(gameData, app, coins, textStyle, textStyleCentered, textureHodlerMirror, texturePlayer)
+
+
+    let texturesMenu = {}
+    texturesMenu.texturePlayer = texturePlayer
+    texturesMenu.textureHodler = textureHodler
+    texturesMenu.textureHodlerMirror = textureHodlerMirror
+    texturesMenu.audioOnTexture = audioOnTexture 
+    texturesMenu.audioOffTexture = audioOffTexture 
+    texturesMenu.musicOnTexture = musicOnTexture 
+    texturesMenu.musicOffTexture = musicOffTexture
+    texturesMenu.helpTexture = helpTexture 
+    const menu = await createMenu(gameData, app, coins, textStyle, textStyleCentered, texturesMenu)
     containerMenu.addChild(menu)
 
     function isMenuVisible() {

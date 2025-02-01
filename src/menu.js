@@ -5,7 +5,7 @@ const MENU_STATE_HELP = 3
 
 
 
-async function createMenu(gameData, app, coins, textStyle, textStyleCentered, textureHodler, texturePlayer, particles) {
+async function createMenu(gameData, app, coins, textStyle, textStyleCentered, texturesMenu) {
 
 
     let menu = new PIXI.Container()
@@ -56,8 +56,8 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     .rect(0, 0, 1024, 1024)
     .fill({ color: 0xf4b400 });
 
-    menu.spriteHodler = new PIXI.Sprite(textureHodler)
-    menu.spritePlayer = new PIXI.Sprite(texturePlayer)
+    menu.spriteHodler = new PIXI.Sprite(texturesMenu.textureHodlerMirror)
+    menu.spritePlayer = new PIXI.Sprite(texturesMenu.texturePlayer)
     menu.spriteHodler.anchor.set(0.5,1)
     menu.spritePlayer.anchor.set(0.5,1)
     menu.addChild(menu.spriteHodler)
@@ -146,11 +146,11 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
 
     menu.levelGroupsContainer.addChild(...menu.levelGroups)
 
-    menu.audioOnTexture = await PIXI.Assets.load({src: 'gfx/audio_on.png'})
-    menu.audioOffTexture = await PIXI.Assets.load({src: 'gfx/audio_off.png'})
-    menu.musicOnTexture = await PIXI.Assets.load({src: 'gfx/music_on.png'})
-    menu.musicOffTexture = await PIXI.Assets.load({src: 'gfx/music_off.png'})
-    menu.helpTexture = await PIXI.Assets.load({src: 'gfx/help.png'})
+    menu.audioOnTexture = texturesMenu.audioOnTexture
+    menu.audioOffTexture = texturesMenu.audioOffTexture
+    menu.musicOnTexture =  texturesMenu.musicOnTexture
+    menu.musicOffTexture =  texturesMenu.musicOffTexture
+    menu.helpTexture =  texturesMenu.helpTexture
 
     menu.audioButtonSprite = new PIXI.Sprite(menu.audioOnTexture);
     menu.addChild(menu.audioButtonSprite)
