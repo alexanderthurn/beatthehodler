@@ -125,7 +125,7 @@ const SoundManager = {
         
     },
     _init: function() {
-        PIXI.sound.disableAutoPause = true
+       // PIXI.sound.disableAutoPause = true
         SoundManager.toAdd.forEach(s => {
             SoundManager.add(s.name, s.url)
         })
