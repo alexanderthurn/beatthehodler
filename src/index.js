@@ -780,8 +780,13 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
              
                 let tradeCount = trades.filter((trade,i) => ((i > 0 && i < trades.length && trade.fromName !== trade.toName))).length
                 let percentageCount = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
+                let menuWasCompleted = menu.isCompleted
                 setWin(options.name, percentageCount, tradeCount)
-
+                updateMenu(menu, app, deltaTime, getMute, getWin, particles)
+                if (!menuWasCompleted && menu.isCompleted) {
+                    menu.state = MENU_STATE_INTRO
+                    showMenu(true)
+                }
             }
             
             if (!trade) {

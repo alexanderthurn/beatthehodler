@@ -120,11 +120,15 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
         .fill({color: 0xffffff, alpha: 0.7})
         e.indexDifficultyLabel =  new PIXI.Text({text: 'HARD', style: menu.textStylePreviewSub})
         e.indexDifficultyLabel.anchor.set(1.05,-0.05)
-
+        e.indexCompletedContainer = new PIXI.Container()
+        e.indexCompletedGraphics = new PIXI.Graphics().star(0,0,7,1).fill({color: 0xffffff, alpha: 1.0})
+        e.indexCompletedContainer.addChild(e.indexCompletedGraphics)
+        
         e.indexDifficultyContainer.addChild(e.indexDifficultyBackground)
         e.indexDifficultyContainer.addChild(e.indexDifficultyLabel)
 
         e.index.addChild(e.indexBackground)
+        e.index.addChild(e.indexCompletedContainer)
         e.index.addChild(e.indexDifficultyContainer)
         e.index.addChild(e.indexText)
         e.index.addChild(e.indexSubText)
@@ -457,150 +461,169 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         menu.title.position.set(0.9*menu.title.position.x+0.1*app.screen.width*0.5, 0.9*menu.title.position.y+0.1*app.screen.height*0.05)
         menu.subtitle.rotation = menu.title.rotation = 0
         menu.subtitle.position.set(0.9*menu.subtitle.position.x+0.1*app.screen.width*0.5, 0.9*menu.subtitle.position.y+0.1*app.screen.height*0.0)
-        
-        let cw = app.screen.width * 0.9
-        let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
-        let cols = cw > ch*2 ? 4 : 3 
-        let rows = cw > ch*2 ? 3 : 4
-        let colw = cw / cols
-        let colh = ch / rows
-        colh = Math.min(colw, colh)
-        ch = colh * rows
-        menu.levelGroupsContainer.position.set(0.5*(app.screen.width - cw), 20+menu.subtitle.position.y - menu.subtitle.height*menu.subtitle.anchor.y + menu.subtitle.height + (app.screen.height*0.9 - menu.levelGroupsContainer.position.y -ch)*0.5)
-        menu.cols = cols
-        menu.rows = rows
-        menu.levelGroups.forEach((group,index) => {
-            group.levelEntries.forEach((entry,index2) => {
-                entry.indexText.scale.set(0.4* (Math.max(640, app.screen.width)/640) * (entry.active ? 1.1 : 1.0))
-                entry.indexSubText.scale.set(0.3* (Math.max(640, app.screen.width)/640)* (entry.active ? 1.1 : 1.0)) 
-                entry.indexSubText.position.set(0,  entry.indexText.height/2)
-                entry.indexText.position.set(0,  -entry.indexText.height/2)
-                let win = getWin(entry.level.name)
-                let score = 100*(win?.p || 1.0)-100
-                entry.isCompleted = win?.hodled
-                entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)?.hodled
-                entry.col = (index2 % cols)
-                entry.row = Math.floor(index2 / cols)
-                entry.position.set(entry.col * colw + colw*0.5,entry.row*colh + colh*0.5)
-                entry.right = group.levelEntries[entry.col < menu.cols-1 ? index2+1 : index2-entry.col]
-                entry.left =  group.levelEntries[entry.col > 0 ? index2-1 : index2+menu.cols-1]
-                entry.up =  group.levelEntries[entry.row > 0 ? index2-cols : group.levelEntries.length-(menu.cols-entry.col)]
-                entry.down =  group.levelEntries[(index2+cols) % group.levelEntries.length]
-                
-                if (entry.row === 0) {
-                    entry.up = menu.helpButtonSprite
-                }
+    }
 
-                if (entry.row === menu.rows-1) {
-                    entry.down = menu.helpButtonSprite
-                }
+    let cw = app.screen.width * 0.9
+    let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
+    let cols = cw > ch*2 ? 4 : 3 
+    let rows = cw > ch*2 ? 3 : 4
+    let colw = cw / cols
+    let colh = ch / rows
+    colh = Math.min(colw, colh)
+    ch = colh * rows
+    menu.levelGroupsContainer.position.set(0.5*(app.screen.width - cw), 20+menu.subtitle.position.y - menu.subtitle.height*menu.subtitle.anchor.y + menu.subtitle.height + (app.screen.height*0.9 - menu.levelGroupsContainer.position.y -ch)*0.5)
+    menu.cols = cols
+    menu.rows = rows
+    menu.levelGroups.forEach((group,index) => {
+        group.levelEntries.forEach((entry,index2) => {
+            entry.indexText.scale.set(0.4* (Math.max(640, app.screen.width)/640) * (entry.active ? 1.1 : 1.0))
+            entry.indexSubText.scale.set(0.3* (Math.max(640, app.screen.width)/640)* (entry.active ? 1.1 : 1.0)) 
+            entry.indexSubText.position.set(0,  entry.indexText.height/2)
+            entry.indexText.position.set(0,  -entry.indexText.height/2)
+            let win = getWin(entry.level.name)
+            let score = 100*(win?.p || 1.0)-100
 
-                entry.indexBackground.scale.x = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * colw
-                entry.indexBackground.scale.y = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * colh
-                
-                entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
-    
-                if (entry.indexSubText.value !== score)  {
-                    entry.indexSubText.value = score
-                    if (score === true || score === null) {
-                        entry.indexSubText.text = ''
-                    } else {
-                        entry.indexSubText.text =  score > 0 ? '+' + (score).toFixed(0) + '%' : score.toFixed(0) + '%'
-                    }
+            if (getQueryParam('win')) {
+                win = {hodled:true}
+            }
+            entry.isCompleted = win?.hodled
+            entry.isCompletedLevelBefore = index2 === 0 || getWin(group.levelEntries[index2-1].level.name)?.hodled
+            entry.col = (index2 % cols)
+            entry.row = Math.floor(index2 / cols)
+            entry.position.set(entry.col * colw + colw*0.5,entry.row*colh + colh*0.5)
+            entry.right = group.levelEntries[entry.col < menu.cols-1 ? index2+1 : index2-entry.col]
+            entry.left =  group.levelEntries[entry.col > 0 ? index2-1 : index2+menu.cols-1]
+            entry.up =  group.levelEntries[entry.row > 0 ? index2-cols : group.levelEntries.length-(menu.cols-entry.col)]
+            entry.down =  group.levelEntries[(index2+cols) % group.levelEntries.length]
+            
+            if (entry.row === 0) {
+                entry.up = menu.helpButtonSprite
+            }
 
-                   
-                    if (entry.level.difficulty <= 2) {
-                        entry.indexDifficultyLabel.text = 'NORMAL'
-                        entry.indexDifficultyBackground.tint = 0x00ff00
-                    } else if (entry.level.difficulty < 5) {
-                        entry.indexDifficultyLabel.text = 'HARD'
-                        entry.indexDifficultyBackground.tint = 0xffff00
-                    } else {
-                        entry.indexDifficultyLabel.text = 'BRUTAL'
-                        entry.indexDifficultyBackground.tint = 0xff0000
-                    }
-                    
+            if (entry.row === menu.rows-1) {
+                entry.down = menu.helpButtonSprite
+            }
 
-                }
+            entry.indexBackground.scale.x = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * colw
+            entry.indexBackground.scale.y = (entry.active && (true || entry.isCompletedLevelBefore) ? 1.0 : 0.9) * colh
+            
+            entry.index.alpha = entry.active && entry.isCompletedLevelBefore ? 1.0 : 1.0
 
-                let color;
-                if (score > -1 && score < 1) {
-                    color = 0x000000
-                } else if (score > 1) {
-                    color = 0x005500
+            if (entry.indexSubText.value !== score)  {
+                entry.indexSubText.value = score
+                if (score === true || score === null) {
+                    entry.indexSubText.text = ''
                 } else {
-                    color = 0x550000
+                    entry.indexSubText.text =  score > 0 ? '+' + (score).toFixed(0) + '%' : score.toFixed(0) + '%'
                 }
 
-                if (win && win.hodled) {
-                    color = 0xF7931B
+                
+                if (entry.level.difficulty <= 2) {
+                    entry.indexDifficultyLabel.text = 'NORMAL'
+                    entry.indexDifficultyBackground.tint = 0x00ff00
+                } else if (entry.level.difficulty < 5) {
+                    entry.indexDifficultyLabel.text = 'HARD'
+                    entry.indexDifficultyBackground.tint = 0xffff00
+                } else {
+                    entry.indexDifficultyLabel.text = 'BRUTAL'
+                    entry.indexDifficultyBackground.tint = 0xff0000
                 }
-                entry.indexBackground.tint = color
-                entry.indexDifficultyLabel.scale = entry.indexSubText.scale
-                entry.indexDifficultyContainer.position.set( entry.indexBackground.scale.x*0.5,-entry.indexBackground.scale.y*0.5)
-                entry.indexDifficultyBackground.scale.set(entry.indexDifficultyLabel.width*1.1, entry.indexDifficultyLabel.height*1.1)
-               
+                
 
-            })
+            }
+
+            let color;
+            if (score > -1 && score < 1) {
+                color = 0x000000
+            } else if (score > 1) {
+                color = 0x005500
+            } else {
+                color = 0x550000
+            }
+
+            if (menu.isCompleted ) {
+                color = 0xF7931B
+            }
+            entry.indexBackground.tint = color
+            entry.indexDifficultyLabel.scale = entry.indexSubText.scale
+            entry.indexDifficultyContainer.position.set( entry.indexBackground.scale.x*0.5,-entry.indexBackground.scale.y*0.5)
+            entry.indexDifficultyBackground.scale.set(entry.indexDifficultyLabel.width*1.1, entry.indexDifficultyLabel.height*1.1)
+            
+            entry.indexCompletedContainer.position.set(-entry.indexBackground.scale.x*0.5,-entry.indexBackground.scale.y*0.5)
+            entry.indexCompletedGraphics.scale.set(entry.indexDifficultyLabel.height, entry.indexDifficultyLabel.height)
+            entry.indexCompletedContainer.visible = entry.isCompleted
+        })
+        group.isCompleted = group.levelEntries.every(l => l.isCompleted)
+    })
+
+    menu.isCompleted =  menu.levelGroups.every(l => l.isCompleted)
+    
+    
+
+    if(menu.isCompleted) {
+        menu.title.text = 'You are the HODLer'
+        menu.subtitle.text = 'Congratulations'
+        menu.clickTitle.text = 'You completed the game'
+        menu.title.rotation = Math.sin(deltaTime.lastTime*0.01)*0.1
+        particles.forEach((p,i) => {
+            p.x = Math.random() * app.screen.width
+            p.y = Math.random() * app.screen.height
+            const faceWidth = app.screen.width * 0.5;
+            const faceHeight = faceWidth;
+            const centerX = app.screen.width * 0.5;
+            const centerY = menu.subtitle.y + menu.subtitle.height + faceHeight*0.75;
+        
+            if (i === 0) {
+                // Linkes Auge
+                p.baseX = centerX - faceWidth * 0.2;
+                p.baseY = centerY - faceHeight * 0.25;
+            } else if (i === 1) {
+                // Rechtes Auge
+                p.baseX = centerX + faceWidth * 0.2;
+                p.baseY = centerY - faceHeight * 0.25;
+            } else {
+                // Mund (Parabel)
+                const mouthWidth = faceWidth * 0.5; // Mundbreite
+                const mouthHeight = faceHeight * 0.1; // Krümmung
+                const t = (i - 2) / (particles.length - 3); // Normierung [0, 1]
+                const offsetX = mouthWidth * (t - 0.5); // X relativ zum Mund
+                const offsetY = -Math.pow(offsetX / mouthWidth * 2, 2) * mouthHeight; // Parabel
+        
+                p.baseX = centerX + offsetX;
+                p.baseY = centerY + offsetY + faceHeight * 0.2; // Unterhalb der Augen
+            }
+        
+            // Zufällige Bewegung initialisieren
+            p.offsetX = Math.random() * 2 - 1;
+            p.offsetY = Math.random() * 2 - 1;
+        
+            // Berechne aktuelle Position
+            p.x = p.baseX + Math.sin(Date.now() * 0.002 + p.offsetX) * 5; // Bewegung in X
+            p.y = p.baseY + Math.cos(Date.now() * 0.002 + p.offsetY) * 5; // Bewegung in Y
+
+
+
         })
 
+
+    } else {
+        // Berechnung der Lemniskate (Unendlichkeitszeichen)
+        const A = (menu.state !== MENU_STATE_INTRO ? 5.0 : 1.0)*Math.min(app.screen.height*0.2, app.screen.width*0.4); // Horizontale Ausdehnung
+        const B = (menu.state !== MENU_STATE_INTRO ? 0.1 : 1.0)*A*0.5; // Vertikale Ausdehnung
+        const centerX = (menu.state !== MENU_STATE_INTRO ?-100 : app.screen.width/2);
+        const centerY = (menu.state !== MENU_STATE_INTRO ? -100 : app.screen.height / 6 * 5) 
+
+        particles.forEach((p,i) => {
+        
+            const followOffset = i * 180; // Abstand zwischen den Partikeln
+            const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
+
+            // Position der Partikel entlang der Lemniskate
+            p.xTarget = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
+            p.yTarget = centerY + B * Math.sin(2 * t*0.0010) / 2;        
+
+
+        })
     }
-   
     
-    
-  
-
-    // Berechnung der Lemniskate (Unendlichkeitszeichen)
-    const A = (menu.state !== MENU_STATE_INTRO ? 5.0 : 1.0)*Math.min(app.screen.height*0.2, app.screen.width*0.4); // Horizontale Ausdehnung
-    const B = (menu.state !== MENU_STATE_INTRO ? 0.1 : 1.0)*A*0.5; // Vertikale Ausdehnung
-    const centerX = (menu.state !== MENU_STATE_INTRO ?-100 : app.screen.width/2);
-    const centerY = (menu.state !== MENU_STATE_INTRO ? -100 : app.screen.height / 6 * 5) 
-
-    particles.forEach((p,i) => {
-     
-        const followOffset = i * 180; // Abstand zwischen den Partikeln
-        const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
-
-        // Position der Partikel entlang der Lemniskate
-        p.xTarget = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
-        p.yTarget = centerY + B * Math.sin(2 * t*0.0010) / 2;        
-  
-
-    })
 }
-
-/*   p.x = Math.random() * app.screen.width
-        p.y = Math.random() * app.screen.height
-        const centerX = app.screen.width / 2;
-        const centerY = app.screen.height / 2;
-        const faceWidth = app.screen.width * 0.5;
-        const faceHeight = app.screen.height * 0.5;
-    
-        if (i === 0) {
-            // Linkes Auge
-            p.baseX = centerX - faceWidth * 0.2;
-            p.baseY = centerY - faceHeight * 0.25;
-        } else if (i === 1) {
-            // Rechtes Auge
-            p.baseX = centerX + faceWidth * 0.2;
-            p.baseY = centerY - faceHeight * 0.25;
-        } else {
-            // Mund (Parabel)
-            const mouthWidth = faceWidth * 0.5; // Mundbreite
-            const mouthHeight = faceHeight * 0.1; // Krümmung
-            const t = (i - 2) / (menu.particles.length - 3); // Normierung [0, 1]
-            const offsetX = mouthWidth * (t - 0.5); // X relativ zum Mund
-            const offsetY = -Math.pow(offsetX / mouthWidth * 2, 2) * mouthHeight; // Parabel
-    
-            p.baseX = centerX + offsetX;
-            p.baseY = centerY + offsetY + faceHeight * 0.2; // Unterhalb der Augen
-        }
-    
-        // Zufällige Bewegung initialisieren
-        p.offsetX = Math.random() * 2 - 1;
-        p.offsetY = Math.random() * 2 - 1;
-    
-        // Berechne aktuelle Position
-        p.x = p.baseX + Math.sin(Date.now() * 0.002 + p.offsetX) * 5; // Bewegung in X
-        p.y = p.baseY + Math.cos(Date.now() * 0.002 + p.offsetY) * 5; // Bewegung in Y
-    */

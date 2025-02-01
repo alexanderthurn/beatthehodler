@@ -58,9 +58,8 @@ https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 # TODO´
 
-- levelCompleted: only if no trade happened
-- save all wins/losses
 - sound does not work on ios if switched app
-- zoom button / mouse wheel?
 - optimize loading
+
+- zoom button / mouse wheel?
 - graph as shader only
