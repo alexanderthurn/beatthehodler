@@ -23,15 +23,46 @@ const gscalebg = 1.0 - gscaleb // bottom in absolute percentage where graph ends
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
 
+    const [graphVertexShader, 
+        graphFragmentShader, 
+        ownVertexShader, 
+        ownFragmentShader, 
+        backgroundVertexShader, 
+        backgroundFragmentShader,
+        data] = await Promise.all(
+        [loadShader('./gfx/graph.vert'), 
+        loadShader('./gfx/graph.frag'),
+        loadShader('./gfx/own.vert'), 
+        loadShader('./gfx/own.frag'), 
+        loadShader('./gfx/background.vert'), 
+        loadShader('./gfx/background.frag'),fetchData(coins)]
+    )
 
-    const graphVertexShader = await loadShader('./gfx/graph.vert')
-    const graphFragmentShader = await loadShader('./gfx/graph.frag')
-    const ownVertexShader = await loadShader('./gfx/own.vert')
-    const ownFragmentShader = await loadShader('./gfx/own.frag')
-    const backgroundVertexShader = await loadShader('./gfx/background.vert')
-    const backgroundFragmentShader = await loadShader('./gfx/background.frag')
-
-    await fetchData(coins);
+    const [
+        textureWhiteCoin,
+        textureSpeedNormal,
+        textureSpeedFast, 
+        textureBtnMenu,
+        textureBtnStop,
+        textureBtnPlay,
+        textureBtnTrade,
+        texturePlayer,
+        textureHodler,
+        textureHodlerMirror,
+        textureCloud
+    ] = await Promise.all([
+        PIXI.Assets.load({src: 'gfx/white.png'}),
+        PIXI.Assets.load({src: 'gfx/normal.png'}),
+        PIXI.Assets.load({src: 'gfx/fast.png'}),
+        PIXI.Assets.load({src: 'gfx/menu.png'}),
+        PIXI.Assets.load({src: 'gfx/stop.png'}),
+        PIXI.Assets.load({src: 'gfx/play.png'}),
+        PIXI.Assets.load({src: 'gfx/trade.png'}),
+        PIXI.Assets.load({src: 'gfx/player.png'}),
+        PIXI.Assets.load({src: 'gfx/hodler.png'}),
+        PIXI.Assets.load({src: 'gfx/hodler_mirror.png'}),
+        PIXI.Assets.load({src: 'gfx/cloud.png'})
+    ])
 
     const app = new PIXI.Application();
     await app.init({
@@ -92,22 +123,7 @@ async function initGame() {
     coins[key].texture = await PIXI.Assets.load({
         src: coins[key].image,
     });
-
-  
-}))
-
-
-let textureWhiteCoin = await PIXI.Assets.load({src: 'gfx/white.png'})
-let textureSpeedNormal = await PIXI.Assets.load({src: 'gfx/normal.png'})
-let textureSpeedFast = await PIXI.Assets.load({src: 'gfx/fast.png'})
-let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
-let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
-let textureBtnPlay = await PIXI.Assets.load({src: 'gfx/play.png'})
-let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
-let texturePlayer = await PIXI.Assets.load({src: 'gfx/player.png'})
-let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
-let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
-let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
+    }))
 
 
     PIXI.Assets.addBundle('fonts', {

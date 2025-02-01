@@ -257,7 +257,7 @@ async function fetchData(coins) {
         }
     }));
 
-    await alignData(coins)
+    return alignData(coins)
 }
 async function alignData(coins) {
     // Schritt 1: Finde alle Coins mit Daten
