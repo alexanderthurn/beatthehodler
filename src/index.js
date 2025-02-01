@@ -145,9 +145,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     let graphBorderAreaRight = new PIXI.Graphics()
     graphBorder.cheight = 0
     graphBorder.cwidth = 0
-    containerForeground.addChild(graphBorder)
-
-
     const bigtextContainer = new PIXI.Container()
     const bigTextBackground = new PIXI.Graphics().circle(0, 0, 1).fill({color: 0xffffff,alpha:0.0})
     const bigtextLabel = new PIXI.Text({text: '', style: textStyleCenteredBlack})
@@ -187,6 +184,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     backgroundImage.rotation =  0.1;
     const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
     containerBackground.addChildAt(background,0);
+   
 
     let btnMenuSprite = new PIXI.Sprite(textureBtnMenu);
     btnMenuSprite.anchor.set(0.5,0.5)
@@ -669,8 +667,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
        
     })
 
-    
-    containerBackground.addChildAt(containerGraphs,2)
+    containerBackground.addChild(graphBorder)
+    containerBackground.addChildAt(containerGraphs,3)
     containerBackground.addChild(containerGraphsForeground)
 
     
