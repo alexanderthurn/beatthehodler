@@ -158,7 +158,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerForeground.addChild(dateLabel);
     containerForeground.addChild(bigtextContainer);
 
-
+    let bigTextLayer = new PIXI.RenderLayer({sortableChildren: true})
 
 
     const stopContainer = new PIXI.Container()
@@ -284,10 +284,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
     app.stage.addChild(containerBackground)
     app.stage.addChild(containerForeground)
+    app.stage.addChild(bigTextLayer)
     app.stage.addChild(containerParticles)
     app.stage.addChild(containerMenu)
 
-
+    backgroundImage.zIndex = 0
+    bigtextContainer.zIndex = 1
+    //bigTextLayer.attach(backgroundImage)
+    bigTextLayer.attach(bigtextContainer)
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
@@ -675,6 +679,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     menu.visible = false
     startNewGame(gameData.levels.find(level => level.name === 'menu'))
     showMenu(!menu.visible)
+
+
+   
+
     app.ticker.add((deltaTime) => {
 
         handleGamepadInput()
@@ -1006,7 +1014,18 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         bigtextContainer.alpha = bigtextContainer.active
         maxPriceLabel.visible = minPriceLabel.visible = priceLabelContainer.visible = !isFinalScreen
         
-       
+       if (bigtextContainer.visible && bigtextContainer.active) {
+        if (!bigtextContainer.attached) {
+            bigTextLayer.attach(backgroundImage)
+            bigtextContainer.attached = true
+        }
+       } else {
+        if (bigtextContainer.attached) {
+            bigTextLayer.detach(backgroundImage)
+            bigtextContainer.attached = false
+        }
+   
+       }
        
         bigtextLabel.scale = swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
 
