@@ -1,9 +1,7 @@
 name: Deploy to FTP
 
 on:
-  push:
-    branches:
-      - main  # oder der Branch, den du verwendest
+  workflow_dispatch:
 
 jobs:
   deploy:
