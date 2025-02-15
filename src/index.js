@@ -927,12 +927,21 @@ async function initGame() {
                 let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
                 let resTotal = (100*percentageTotal)-100
                 
-                if (yourCoinName !== fiatName) {
-                    ownLabel.text =  `You have:\n${formatCurrency(yourCoins, yourCoinName, 2)}`
+                
+                if (stopIndex > -1 && paused > buyPaused) {
+                    ownLabel.text =  `You: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n` +
+                    `HODLer: ${formatCurrency(1,'BTC', coins['BTC'].digits)}\n`+
+                    `1 ${formatCurrency(null,'BTC', 0)} = ${formatCurrency(coins['BTC'].data[currentIndexInteger]?.price, fiatName, coins[fiatName].digits)}`
+
+                   /* if (resTotal < 0) {
+                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(- ${-resTotal.toFixed(0)}%)`
+                    } else {
+                       ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(+ ${resTotal.toFixed(0)}%)`
+                    }*/
+
                 } else {
                     ownLabel.text =  `You have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 }
-      
 
                 ownLabel.scale = 0.8
                 hodlerSprite.scale = 0.04*Math.max(8,Math.min(12,stepX))*0.2
