@@ -83,7 +83,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.addChild(menu.clickTitle)
 
     menu.clickTitle2 = new PIXI.Text({text: 'Press left mouse button, "A" on controller or "ENTER" on keyboard.', style: menu.textStyleClick }) 
-    menu.clickTitle2.textMobile = 'Touch screen to start'
+    menu.clickTitle2.textMobile = ''
     menu.clickTitle2.textDesktop = 'Press left mouse button, "A" on controller or "ENTER" on keyboard.'
     menu.clickTitle2.anchor.set(0.5,0.5)
     menu.addChild(menu.clickTitle2)

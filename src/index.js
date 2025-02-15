@@ -928,17 +928,9 @@ async function initGame() {
                 let resTotal = (100*percentageTotal)-100
                 
                 if (yourCoinName !== fiatName) {
-                    if (resTotal < 0) {
-                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, 2)}\n- ${-resTotal.toFixed(0)}%`
-                    } else {
-                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, 2)}\n+ ${resTotal.toFixed(0)}%`
-                    } 
+                    ownLabel.text =  `You have:\n${formatCurrency(yourCoins, yourCoinName, 2)}`
                 } else {
-                    if (resTotal < 0) {
-                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n${formatCurrency(1.0*percentageTotal, 'BTC', 2)}\n- ${-resTotal.toFixed(0)}%`
-                    } else {
-                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n${formatCurrency(1.0*percentageTotal, 'BTC', 2)}\n+ ${resTotal.toFixed(0)}%`
-                    }       
+                    ownLabel.text =  `You have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 }
       
 
