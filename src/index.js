@@ -919,20 +919,29 @@ async function initGame() {
                     p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, tp)
                 }
 
-                ownLabelContainer.x = p.x
-                ownLabelContainer.y = p.y
+                ownLabelContainer.x = 0.9*ownLabelContainer.x + 0.1*p.x
+                ownLabelContainer.y = 0.9*ownLabelContainer.y + 0.1*p.y
 
                
 
                 let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
                 let resTotal = (100*percentageTotal)-100
-                if (resTotal < 0) {
-                 //   ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(- ${-resTotal.toFixed(0)}%)`
-                    ownLabel.text =  `- ${-resTotal.toFixed(0)}%`
+                
+                if (yourCoinName !== fiatName) {
+                    if (resTotal < 0) {
+                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, 2)}\n- ${-resTotal.toFixed(0)}%`
+                    } else {
+                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, 2)}\n+ ${resTotal.toFixed(0)}%`
+                    } 
                 } else {
-                //    ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(+ ${resTotal.toFixed(0)}%)`
-                    ownLabel.text =  `+ ${resTotal.toFixed(0)}%`
+                    if (resTotal < 0) {
+                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n${formatCurrency(1.0*percentageTotal, 'BTC', 2)}\n- ${-resTotal.toFixed(0)}%`
+                    } else {
+                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n${formatCurrency(1.0*percentageTotal, 'BTC', 2)}\n+ ${resTotal.toFixed(0)}%`
+                    }       
                 }
+      
+
                 ownLabel.scale = 0.8
                 hodlerSprite.scale = 0.04*Math.max(8,Math.min(12,stepX))*0.2
                 ownSprite.scale =  hodlerSprite.scale.x*Math.max(0.5, Math.min(2.0,1.0+ (percentageTotal-1.0)*0.5))
@@ -1027,8 +1036,9 @@ async function initGame() {
                     txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
                     txt += `the HODLer by trading.\n\n`
-                    txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
-                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
+                    txt += `You have 1${formatCurrency(null,options.coinNames[1])}\n`
+                    txt += `The HODLER has 1${formatCurrency(null,options.coinNames[1])}\n`
+                    txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n\n`
                     txt += `What do you want?`
                 }
                 
