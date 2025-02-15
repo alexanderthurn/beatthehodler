@@ -95,6 +95,15 @@ const SoundManager = {
             window.removeEventListener('keyup', handleKeyUpOnce);
         });
 
+        window.addEventListener('blur', function() {
+            if (SoundManager.mutedMusic === false) SoundManager.muteMusic();
+            if (SoundManager.mutedSounds === false) SoundManager.muteSounds();
+        });
+        
+        window.addEventListener('focus', function() {
+            if (SoundManager.mutedMusic) SoundManager.unmuteMusic();
+            if (SoundManager.mutedSounds) SoundManager.unmuteSounds();
+        });
 
             // Gamepad-Überprüfung
         let gamepadLoop = function () {
