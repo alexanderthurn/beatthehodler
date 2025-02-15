@@ -269,8 +269,8 @@ async function initGame() {
     let ownLabel = new PIXI.Text({text: "+ 400%", style: textStyleBorder})
     ownLabelContainer.addChild(ownLabel)
     ownLabel.anchor.set(1,1)
-    ownLabel.x = -40
-    ownLabel.y = -60
+    ownLabel.baseX = -40
+    ownLabel.baseY = -60
 
     let priceLabel = new PIXI.Text({text: "100$", style: textStyleBorder});
     let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyleBorder});
@@ -1023,11 +1023,17 @@ async function initGame() {
 
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y}
                 if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height}
-                if (ownLabelContainer.x < app.screen.width*0.1+ownLabel.width-ownLabel.x) {
-                    ownLabelContainer.x = app.screen.width*0.1 +ownLabel.width-ownLabel.x
+                
+                if (ownLabelContainer.x + ownLabel.baseX - ownLabel.width < app.screen.width*0.1) {
+                    ownLabel.x = app.screen.width*0.1 +ownLabel.width-ownLabelContainer.x
+                } else {
+                    ownLabel.x = ownLabel.baseX
                 }
-                if (ownLabelContainer.y < app.screen.height*0.1+ownLabel.height-ownLabel.y) {
-                    ownLabelContainer.y = app.screen.height*0.1 +ownLabel.height-ownLabel.y
+
+                if (ownLabelContainer.y +ownLabel.baseY -ownLabel.height < app.screen.height*0.1) {
+                    ownLabel.y = app.screen.height*0.1 +ownLabel.height-ownLabelContainer.y
+                } else {
+                    ownLabel.y = ownLabel.baseY
                 }
                 let pHodler = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
                 hodlerContainer.x = pHodler.x
