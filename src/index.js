@@ -808,7 +808,7 @@ async function initGame() {
         let stopIndex = stopIndizes.indexOf(currentIndexInteger)
         let trade = trades.find(t => t.index === currentIndexInteger)
 
-        maxVisiblePoints = isFinalScreen ? options.indexEnd-options.indexStart : 100
+        maxVisiblePoints = isFinalScreen ? options.indexEnd-options.indexStart : Math.floor(30*(app.screen.width/320))
         currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
         const stepX = (visibleWidth) / (maxVisiblePoints-3);
         isFinalScreen = currentDate >= options.dateEnd
@@ -923,32 +923,64 @@ async function initGame() {
                 ownLabelContainer.y = 0.9*ownLabelContainer.y + 0.1*p.y
 
                
-
+                let res = (100*(tp / graphResult.price))-100
                 let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
                 let resTotal = (100*percentageTotal)-100
-                
-                
+                let ownText = ''
+               
                 if (stopIndex > -1 && paused > buyPaused) {
-                    ownLabel.text =  `You: ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n` +
-                    `HODLer: ${formatCurrency(1,'BTC', coins['BTC'].digits)}\n`+
-                    `1 ${formatCurrency(null,'BTC', 0)} = ${formatCurrency(coins['BTC'].data[currentIndexInteger]?.price, fiatName, coins[fiatName].digits)}`
+                    ownText =   `HODLer: ${formatCurrency(1,'BTC', 0)}\n`
+                    ownText += `= ${formatCurrency(coins['BTC'].data[currentIndexInteger]?.price, fiatName, coins[fiatName].digits)}\n\n`
+                    ownText +=   `You: ${formatCurrency(yourCoins, yourCoinName, 2)}\n`
 
-                   /* if (resTotal < 0) {
-                        ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(- ${-resTotal.toFixed(0)}%)`
+                    if (yourCoinName === fiatName) {
+                        ownText += `= ${formatCurrency(yourCoins/coins['BTC'].data[currentIndexInteger]?.price, 'BTC', 2)}\n`
                     } else {
-                       ownLabel.text =  `${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n(+ ${resTotal.toFixed(0)}%)`
+                  //      ownText += `= ${formatCurrency(yourCoins*coins['BTC'].data[currentIndexInteger]?.price, fiatName, coins[fiatName].digits)}\n`
+                    }
+                   
+                  
+                    
+                    if (resTotal < 0) {
+                        ownText += `\n${-resTotal.toFixed(0)} % less\n`
+                        ownText += `than the HODLer \n\n`
+    
+                      //  ownText +=  `Total: - ${-resTotal.toFixed(0)}%`
+                    } else {
+                        ownText += `\n${resTotal.toFixed(0)} % more\n`
+                        ownText += `than the HODLer`
+                       // ownText+=  `Total: + ${resTotal.toFixed(0)}%`
+                    }
+                  
+                              /* txt += `HODLer  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
+                    let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
+                    let res = (100*percentageTotal)-100
+                    if (res < 0) {
+                        txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}   (- ${-res.toFixed(0)}%)\n\n`
+                    } else {
+                        txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}   (+ ${res.toFixed(0)}%)\n\n`
                     }*/
 
+
+
                 } else {
-                    ownLabel.text =  `You have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                    ownText =  `You have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+
+                    if (yourCoinName === fiatName) {
+                        if (res < 0) {
+                            ownText += `\n\n        - ${-res.toFixed(0)}%`
+                        } else {
+                            ownText += `\n\n        + ${res.toFixed(0)}%`
+                        }
+                    }
                 }
+                ownLabel.text = ownText
 
                 ownLabel.scale = 0.8
                 hodlerSprite.scale = 0.04*Math.max(8,Math.min(12,stepX))*0.2
                 ownSprite.scale =  hodlerSprite.scale.x*Math.max(0.5, Math.min(2.0,1.0+ (percentageTotal-1.0)*0.5))
                 hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
-                let res = (100*(tp / graphResult.price))-100
                
                 if (yourCoinName !== fiatName && stopIndex < 0 && !isFinalScreen && !isMenuVisible()) {
                     if (shepardSoundDown) {
@@ -991,8 +1023,12 @@ async function initGame() {
 
                 if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y}
                 if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height}
-            
-              
+                if (ownLabelContainer.x < app.screen.width*0.1+ownLabel.width-ownLabel.x) {
+                    ownLabelContainer.x = app.screen.width*0.1 +ownLabel.width-ownLabel.x
+                }
+                if (ownLabelContainer.y < app.screen.height*0.1+ownLabel.height-ownLabel.y) {
+                    ownLabelContainer.y = app.screen.height*0.1 +ownLabel.height-ownLabel.y
+                }
                 let pHodler = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
                 hodlerContainer.x = pHodler.x
                 hodlerContainer.y = pHodler.y
@@ -1008,20 +1044,10 @@ async function initGame() {
         
         let txt = ''
 
-        txt += `Today   ${currentDate.toLocaleDateString()}\n`
-        txt += `HODLer  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
-        let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
-        let res = (100*percentageTotal)-100
-        if (res < 0) {
-            txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}   (- ${-res.toFixed(0)}%)\n\n`
-        } else {
-            txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}   (+ ${res.toFixed(0)}%)\n\n`
-        }
-
-        dateLabel.text = txt
+        dateLabel.text = `${currentDate.toLocaleDateString()}`
         dateLabel.visible = true
         dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.005)
-        dateLabel.scale.set(8*SCALE_TEXT_BASE*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5)
+        dateLabel.scale.set(8*SCALE_TEXT_BASE*(Math.min(1080,Math.max(640,app.screen.width))/640.0))
 
         txt = ''
         if (!isFinalScreen) { 
@@ -1036,7 +1062,8 @@ async function initGame() {
                     txt += `Level ${options.name}\n\n`
                     txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
                     txt += `Your goal is to beat\n`
-                    txt += `the HODLer by trading.\n\n`
+                    txt += `the HODLer by trading.\n`
+                    txt += `The HODLer never sells.\n\n`
                     txt += `You have 1${formatCurrency(null,options.coinNames[1])}\n`
                     txt += `The HODLER has 1${formatCurrency(null,options.coinNames[1])}\n`
                     txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n\n`
@@ -1066,8 +1093,9 @@ async function initGame() {
            
             txt += `HODLer  ${formatCurrency(options.fiatBTCHodler/ coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n`
             txt += `You     ${formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n\n`
-           
-        
+               
+
+
             if (fiatTrades.length === 0) { 
                 txt += `You did not trade\n`;
                 txt += `You are the HODLer\n\n`;
