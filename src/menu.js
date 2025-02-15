@@ -82,6 +82,13 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.clickTitle.anchor.set(0.5,1.5)
     menu.addChild(menu.clickTitle)
 
+    menu.clickTitle2 = new PIXI.Text({text: 'Press left mouse button, "A" on controller or "ENTER" on keyboard.', style: menu.textStyleClick }) 
+    menu.clickTitle2.textMobile = 'Touch screen to start'
+    menu.clickTitle2.textDesktop = 'Press left mouse button, "A" on controller or "ENTER" on keyboard.'
+    menu.clickTitle2.anchor.set(0.5,0.5)
+    menu.addChild(menu.clickTitle2)
+
+
     menu.levelGroupsContainer = new PIXI.Container()
     menu.addChild(menu.levelGroupsContainer)
 
@@ -428,12 +435,17 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         menu.textStyleClick.wordWrapWidth = app.screen.width*0.75*2
         if (app.screen.width < 1280) {
             menu.clickTitle.text = menu.clickTitle.textMobile
+            menu.clickTitle2.text = menu.clickTitle2.textMobile
         } else {
             menu.clickTitle.text = menu.clickTitle.textDesktop
+            menu.clickTitle2.text = menu.clickTitle2.textDesktop
         }
         menu.clickTitle.scale = 0.5
         menu.clickTitle.position.set(app.screen.width*0.5, app.screen.height)
-        menu.clickTitle.alpha =  deltaTime.lastTime % 3000 > 500 ? 1.0 : 0.0
+        menu.clickTitle2.scale = 1.0
+        menu.clickTitle2.position.set(app.screen.width*0.5, app.screen.height*0.85)
+        menu.clickTitle.alpha =  1.0
+        menu.clickTitle2.alpha =  deltaTime.lastTime % 2000 > 500 ? 1.0 : 0.0
         menu.clickTitle.rotation =Math.sin(deltaTime.lastTime*0.01)*0.01
 
         menu.title.scale.set(4*Math.min(1,scaleToFullHD)*0.5)
@@ -467,6 +479,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         menu.spritePlayer.x = 0.9*menu.spritePlayer.x + 0.1*-app.screen.width*0.05
         menu.helpContainer.visible = false
         menu.clickTitle.alpha*=0.92
+        menu.clickTitle2.alpha*=0.92
         menu.title.visible = menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
         menu.subtitle.alpha*=0.92
        
@@ -575,7 +588,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     if(menu.isCompleted) {
         menu.title.text = 'You are the HODLer'
         menu.subtitle.text = 'Congratulations'
-        menu.clickTitle.text = 'You completed the game'
+        menu.clickTitle2.text = ''
         menu.title.rotation = Math.sin(deltaTime.lastTime*0.01)*0.1
         particles.forEach((p,i) => {
             p.x = Math.random() * app.screen.width
