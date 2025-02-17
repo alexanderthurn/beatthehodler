@@ -632,7 +632,6 @@ async function initGame() {
                         showMenu(true)
                     } else {
                         if (stopIndex < 0) {
-                            bigtextContainer.active = true
                             stopIndizes.push(currentIndexInteger)
                             stopIndizes.sort()
                             stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
@@ -691,7 +690,7 @@ async function initGame() {
                 if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
                     
                     if (stopIndex < 0) {
-                        bigtextContainer.active = true
+                        
                         stopIndizes.push(currentIndexInteger)
                         stopIndizes.sort()
                         stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
@@ -937,42 +936,41 @@ async function initGame() {
               
                
                 if (yourCoinName === fiatName) {
-                    ownText +=  `You sold at:\n${formatCurrency(tp, fiatName, coins[fiatName].digits)}\n\n`
+                    ownText +=  `You sold ${formatCurrency(null,options.coinNames[1])} at\n${formatCurrency(tp, fiatName, coins[fiatName].digits)}\n\n`
 
-                    ownText +=   `Current trade:\n`
+                    ownText +=   `Buy back and\n`
                     if (res < 0) {
-                        ownText += `- ${-res.toFixed(0)}%`
+                        ownText += `make - ${-res.toFixed(0)}%`
                     } else {
-                        ownText += `+ ${res.toFixed(0)}%`
+                        ownText += `make + ${res.toFixed(0)}%`
                     }
                 } else {
-                    ownText +=  `You have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                    ownText +=  `You have\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 }
 
                 if (stopIndex > 0 && !isFinalScreen && paused > buyPaused) {
-                    if (yourCoinName === fiatName) {
-                        ownText +=   `\n\nYou have:\n${formatCurrency(yourCoins, yourCoinName, 2)}\n`
-                        ownText += `= ${formatCurrency(yourCoins/coins['BTC'].data[currentIndexInteger]?.price, 'BTC', 2)}`
-                    }
-                    ownText += `,\nwhich is:\n`
-                    if (resTotal < 0) {
-                        ownText += `${-resTotal.toFixed(0)} % less\n`
-                        ownText += `than the HODLer, \n`
-                    } else {
-                        ownText += `${resTotal.toFixed(0)} % more\n`
-                        ownText += `than the HODLer,\n`
-                    }
-                    ownText +=   `who has: ${formatCurrency(1,'BTC', 0)}\n`
 
                     if (bigtextContainer.visible && bigtextContainer.active) {  
+                        if (yourCoinName === fiatName) {
+                            ownText +=   `\n\nYou have\n${formatCurrency(yourCoins, yourCoinName, 2)}\n`
+                            ownText += `= ${formatCurrency(yourCoins/coins['BTC'].data[currentIndexInteger]?.price, 'BTC', 2)}`
+                        }
+                        ownText += `,\nwhich is\n`
+                        if (resTotal < 0) {
+                            ownText += `${-resTotal.toFixed(0)} % less\n`
+                            ownText += `than the HODLer, \n`
+                        } else {
+                            ownText += `${resTotal.toFixed(0)} % more\n`
+                            ownText += `than the HODLer,\n`
+                        }
+                        ownText +=   `who has ${formatCurrency(1,'BTC', 0)}\n`
                         bigText = ownText
-                        ownText = ''
                     }
-
+              
               
                 } 
 
-                if (stopIndex > -1) {
+                if (isFinalScreen || stopIndex === 0 || (stopIndex > 0 && bigtextContainer.visible && bigtextContainer.active)) {
                     ownText = ''
                 }
                    
@@ -1111,13 +1109,13 @@ async function initGame() {
                 bigText += "Congratulations!" 
             } else if (fiat >= options.fiatBTCHodler) {
                 bigText += `You have ${res.toFixed(0)} % more\n`
-                bigText += `than the HODLer, but:\n\n`
+                bigText += `than the HODLer, but\n\n`
                 bigText += `The HODLer\n${word},\n`;
                 bigText += "while you traded.\n\n" 
                 bigText += "Try again?\n" 
             } else {
                 bigText += `You have ${-res.toFixed(0)} % less\n`
-                bigText += `than the HODLer, and: \n\n`
+                bigText += `than the HODLer, and \n\n`
                 bigText += `The HODLer\n${word},\n`;
                 bigText += "while you traded.\n\n" 
                 bigText += "Try again?\n" 
