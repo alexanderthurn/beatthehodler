@@ -71,8 +71,9 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
     menu.subtitle.anchor.set(0.5,-2.0)
     menu.addChild(menu.subtitle)
 
-    menu.finaltitle = new PIXI.Text({text: 'by Alexander Thurn', style: menu.textStyleTitle })
+    menu.finaltitle = new PIXI.Text({text: '', style: menu.textStyleTitle })
     menu.finaltitle.anchor.set(0.5,1.2)
+    menu.finaltitle.texts = ['by Alexander Thurn', 'github.com/alexanderthurn/coinswiper', 'feuerware.com']
     menu.addChild(menu.finaltitle)
 
     menu.clickTitle = new PIXI.Text({text: 'A "HODLer" holds, no matter what!', style: menu.textStyleClick }) 
@@ -402,16 +403,16 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.background.scale.set(app.screen.width / 1024, app.screen.height / 1024)
     menu.background.alpha = 0.0
     menu.audioButtonSprite.scale = (menu.audioButtonSprite.active ? 1.1 : 1.0) * 0.2
-    menu.audioButtonSprite.position.set(app.screen.width - menu.audioButtonSprite.width * 1.2, app.screen.height -menu.audioButtonSprite.height * 1.2 )
+    menu.audioButtonSprite.position.set(app.screen.width - menu.audioButtonSprite.width * 1.2, app.screen.height -menu.audioButtonSprite.height * 1.5 )
     menu.audioButtonSprite.texture = getMute() ? menu.audioOffTexture : menu.audioOnTexture
 
     menu.musicButtonSprite.scale = (menu.musicButtonSprite.active ? 1.1 : 1.0) * 0.2
-    menu.musicButtonSprite.position.set(app.screen.width - menu.musicButtonSprite.width * 2.5, app.screen.height -menu.musicButtonSprite.height * 1.2 )
+    menu.musicButtonSprite.position.set(app.screen.width - menu.musicButtonSprite.width * 2.5, app.screen.height -menu.musicButtonSprite.height * 1.5 )
     menu.musicButtonSprite.texture = getMute('music') ? menu.musicOffTexture : menu.musicOnTexture
 
 
     menu.helpButtonSprite.scale = (menu.helpButtonSprite.active ? 1.1 : 1.0) * 0.2
-    menu.helpButtonSprite.position.set(menu.helpButtonSprite.width * 0.2, app.screen.height -menu.helpButtonSprite.height * 1.2 )
+    menu.helpButtonSprite.position.set(menu.helpButtonSprite.width * 0.2, app.screen.height -menu.helpButtonSprite.height * 1.5 )
    
 
     menu.helpButtonSprite.up = menu.musicButtonSprite.up = menu.audioButtonSprite.up = menu.levelEntries[menu.levelEntries.length-1]
@@ -421,8 +422,11 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
 
     menu.title.scale.set(4*scaleToFullHD*0.5)
     menu.subtitle.scale.set(scaleToFullHD)
-    menu.finaltitle.scale.set(scaleToFullHD)
     menu.finaltitle.position.set(app.screen.width*0.5, app.screen.height)
+    let index = Math.floor((deltaTime.lastTime*0.0002) % menu.finaltitle.texts.length)
+    menu.finaltitle.text = menu.finaltitle.texts[index]
+        
+    menu.finaltitle.scale.set(scaleToFullHD)
 
     menu.spritePlayer.scale = menu.spriteHodler.scale = 0.25*(Math.min(1080,Math.max(640,app.screen.width))/640.0)
     menu.spritePlayer.y = app.screen.height*0.8 + Math.cos(deltaTime.lastTime*0.002)*app.screen.height*0.02
@@ -482,8 +486,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
         menu.clickTitle2.alpha*=0.92
         menu.title.visible = menu.finaltitle.visible = menu.levelGroupsContainer.visible  = menu.musicButtonSprite.visible = menu.audioButtonSprite.visible = menu.helpButtonSprite.visible = true
         menu.subtitle.alpha*=0.92
-       
-        menu.title.position.set(0.9*menu.title.position.x+0.1*app.screen.width*0.5, 0.9*menu.title.position.y+0.1*app.screen.height*0.05)
+       menu.title.position.set(0.9*menu.title.position.x+0.1*app.screen.width*0.5, 0.9*menu.title.position.y+0.1*app.screen.height*0.05)
         menu.subtitle.rotation = menu.title.rotation = 0
         menu.subtitle.position.set(0.9*menu.subtitle.position.x+0.1*app.screen.width*0.5, 0.9*menu.subtitle.position.y+0.1*app.screen.height*0.0)
     }
