@@ -769,3 +769,17 @@ function getNextLevel(level) {
         return level
     }
 }
+
+function getSunFilter(vertex, fragment) {
+    return new PIXI.Filter({
+        glProgram: new PIXI.GlProgram({
+            fragment,
+            vertex,
+        }),
+        resources: {
+            timeUniforms: {
+                uTime: { value: 0.0, type: 'f32' },
+            },
+        },
+    });
+}

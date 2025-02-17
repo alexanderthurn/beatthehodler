@@ -29,13 +29,18 @@ async function initGame() {
         ownFragmentShader, 
         backgroundVertexShader, 
         backgroundFragmentShader,
+        sunVertexShader, 
+        sunFragmentShader,
         data] = await Promise.all(
         [loadShader('./gfx/graph.vert'), 
         loadShader('./gfx/graph.frag'),
         loadShader('./gfx/own.vert'), 
         loadShader('./gfx/own.frag'), 
         loadShader('./gfx/background.vert'), 
-        loadShader('./gfx/background.frag'),fetchData(coins)]
+        loadShader('./gfx/background.frag'),
+        loadShader('./gfx/sun.vert'), 
+        loadShader('./gfx/sun.frag'),
+        fetchData(coins)]
     )
 
 
@@ -212,6 +217,8 @@ async function initGame() {
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
     backgroundImage.scaleWanted = 0.8
     backgroundImage.scale = 0.8
+    
+    backgroundImage.filters = getSunFilter(sunVertexShader, sunFragmentShader);
 
 
     containerBackground.addChild(backgroundImage);
@@ -751,6 +758,9 @@ async function initGame() {
    
 
     app.ticker.add((deltaTime) => {
+
+
+        backgroundImage.filters[0].resources.timeUniforms.uniforms.uTime += 0.04 * deltaTime.deltaTime;
 
         handleGamepadInput()
         
