@@ -250,7 +250,7 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
         ((trade.fromName !== fiatName ? trade.fromPrice : (i === 0 ? trade.fromCoins : trade.toPrice))-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;
   
         if (trade.sprite) {
-            trade.sprite.height = trade.sprite.width = app.renderer.width*0.02
+            trade.sprite.height = trade.sprite.width = Math.max(16, app.renderer.width*0.02)
         }
         
         if (trade.labelPrice) {
