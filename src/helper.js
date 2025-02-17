@@ -465,6 +465,23 @@ function injectGeneratedLevels(gameData) {
     
     }
 
+    for (let i =1;i<3;i++) {
+        gameData.levels.push(
+            {
+                "name": `${13+i*4}-${16+i*4}`,
+                "group": "21",
+                "stops": 2,
+                "canStopManually": true,
+                "dateStart": `20${13+i*4}-01-01 00:00:00 UTC`,
+                "dateEnd": `20${16+i*4}-12-31 00:00:00 UTC`,
+                "coinNames": ["USD","BTC"],
+                "duration": 60000*4
+        })
+    }
+   
+   
+
+
     gameData.levels.push(
         {
             "name": '14-24',

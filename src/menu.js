@@ -493,8 +493,8 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
 
     let cw = app.screen.width * 0.9
     let ch = app.screen.height *0.9 - menu.levelGroupsContainer.position.y
-    let cols = cw > ch*2 ? 4 : 3 
-    let rows = cw > ch*2 ? 3 : 4
+    let cols = cw > ch*2 ? 5 : 4 
+    let rows = cw > ch*2 ? 4 : 5
     let colw = cw / cols
     let colh = ch / rows
     colh = Math.min(colw, colh)
