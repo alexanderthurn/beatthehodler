@@ -851,6 +851,7 @@ async function initGame() {
             
             if (!trade) {
                 paused = Number.MAX_VALUE
+                bigtextContainer.active = true
             } else {
               /*  if (stopIndex < stopIndizes.length-1) {
                     maxVisiblePoints = Math.max(7, Math.floor((stopIndizes[stopIndex+1] - stopIndizes[stopIndex])*1.1))
@@ -927,29 +928,45 @@ async function initGame() {
                 let resTotal = (100*percentageTotal)-100
                 let ownText = ''
                
-                if (stopIndex > -1 && paused > buyPaused) {
-                    ownText +=   `You have:\n${formatCurrency(yourCoins, yourCoinName, 2)}\n`
+                if (yourCoinName === fiatName) {
+                    ownText +=  `You sold at:\n${formatCurrency(tp, fiatName, coins[fiatName].digits)}\n\n`
 
-                    if (yourCoinName === fiatName) {
-                        ownText += `= ${formatCurrency(yourCoins/coins['BTC'].data[currentIndexInteger]?.price, 'BTC', 2)}\n`
+                    ownText +=   `Current trade:\n`
+                    if (res < 0) {
+                        ownText += `- ${-res.toFixed(0)}%`
                     } else {
+                        ownText += `+ ${res.toFixed(0)}%`
+                    }
+                } else {
+                    ownText +=  `You have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
+                }
+
+                if (stopIndex > -1 && paused > buyPaused) {
+                    
+                    
+                    if (yourCoinName === fiatName) {
+                        ownText +=   `\n\nYou have:\n${formatCurrency(yourCoins, yourCoinName, 2)}\n`
+                        ownText += `= ${formatCurrency(yourCoins/coins['BTC'].data[currentIndexInteger]?.price, 'BTC', 2)}`
+                    } else {
+                 //      `
                   //      ownText += `= ${formatCurrency(yourCoins*coins['BTC'].data[currentIndexInteger]?.price, fiatName, coins[fiatName].digits)}\n`
                     }
                    
                   
-                    
+                    ownText += `,\nwhich is:\n`
+
                     if (resTotal < 0) {
-                        ownText += `\n${-resTotal.toFixed(0)} % less\n`
-                        ownText += `than the HODLer\n\n`
+                        ownText += `${-resTotal.toFixed(0)} % less\n`
+                        ownText += `than the HODLer, \n`
     
                       //  ownText +=  `Total: - ${-resTotal.toFixed(0)}%`
                     } else {
-                        ownText += `\n${resTotal.toFixed(0)} % more\n`
-                        ownText += `than the HODLer\n\n`
+                        ownText += `${resTotal.toFixed(0)} % more\n`
+                        ownText += `than the HODLer,\n`
                        // ownText+=  `Total: + ${resTotal.toFixed(0)}%`
                     }
-                    ownText +=   `HODLer: ${formatCurrency(1,'BTC', 0)}\n`
-                    ownText += `= ${formatCurrency(coins['BTC'].data[currentIndexInteger]?.price, fiatName, coins[fiatName].digits)}\n\n`
+                    ownText +=   `who has: ${formatCurrency(1,'BTC', 0)}\n`
+                   // ownText += `= ${formatCurrency(coins['BTC'].data[currentIndexInteger]?.price, fiatName, coins[fiatName].digits)}\n\n`
                   
 
                   
@@ -961,20 +978,10 @@ async function initGame() {
                     } else {
                         txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}   (+ ${res.toFixed(0)}%)\n\n`
                     }*/
-
-
-
-                } else {
-                    ownText =  `You have:\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
-
-                    if (yourCoinName === fiatName) {
-                        if (res < 0) {
-                            ownText += `\n\n        - ${-res.toFixed(0)}%`
-                        } else {
-                            ownText += `\n\n        + ${res.toFixed(0)}%`
-                        }
-                    }
-                }
+                } 
+                   
+                
+                
                 playerLabel.text = ownText
 
                 playerLabel.scale = 0.8
