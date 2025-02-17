@@ -55,14 +55,31 @@ const SoundManager = {
         return PIXI.sound?.play(soundName, {...options, muted: SoundManager.mutedSounds})
     },
 
-    playMusic: (musicname) => {
-        SoundManager.musicName = musicname
-
+    playMusic: async (musicname) => {
         if (PIXI.sound) {
             SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.stop())
-            PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance: true})
         }
 
+        SoundManager.musicName = musicname
+        let loopTimeout = false;
+        setTimeout(() => {
+            loopTimeout = true;
+        }, 2000);
+
+        while( SoundManager.getMusicSounds().filter(s => s.isPlaying).length > 0) {
+            if (loopTimeout) {
+                break; // Brich die Schleife ab, wenn der Timeout erreicht ist
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 10)); // Beispiel für 10ms Verzögerung
+
+        }
+
+        if (PIXI.sound) {
+            PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance: true})
+        }
+        
+      
     },
     stopMusic: () => {
         SoundManager.musicName = null
