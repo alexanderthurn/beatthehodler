@@ -1177,9 +1177,9 @@ async function initGame() {
             stopLabel.text = 'MENU'
             
         } else{
-            swapLabel.text = (stopIndex > -1 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
-            stopLabel.text = (stopIndex > -1 ? yourCoinName : 'Pause')    
-            stopImage.texture = (stopIndex > -1 ? coins[yourCoinName].texture : textureBtnStop) 
+            swapLabel.text = (stopIndex === 0 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
+            stopLabel.text = (stopIndex === 0 ? yourCoinName : (stopIndex > 0 ? 'Resume' : 'Pause'))    
+            stopImage.texture = (stopIndex === 0 ? coins[yourCoinName].texture : (stopIndex > 0 ? textureBtnPlay : textureBtnStop)) 
             swapImage.texture = coins[yourCoinName === 'USD' ? 'BTC' : 'USD'].texture
         }
 
