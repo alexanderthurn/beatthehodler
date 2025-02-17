@@ -920,9 +920,8 @@ async function initGame() {
                 }
 
                 ownLabelContainer.x = 0.9*ownLabelContainer.x + 0.1*p.x
-                ownLabelContainer.y = 0.9*ownLabelContainer.y + 0.1*p.y
-
-               
+                ownLabelContainer.y =  0.9*ownLabelContainer.y + 0.1*p.y
+          
                 let res = (100*(tp / graphResult.price))-100
                 let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
                 let resTotal = (100*percentageTotal)-100

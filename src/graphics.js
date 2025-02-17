@@ -217,7 +217,13 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     graph.maxPriceLabel.x  = graph.minPriceLabel.x  = graph.priceLabel.x =  graph.logo.x
     graph.priceLabel.yOriginal =0.9*graph.priceLabel.yOriginal+ 0.1*(app.renderer.height*gscalebg-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale)
+    if (isNaN( graph.priceLabel.yOriginal)) {
+        graph.priceLabel.yOriginal = 0
+    }
     graph.priceLabel.y = Math.min(graph.minPriceLabel.y - graph.minPriceLabel.height*2, Math.max(graph.priceLabel.y, graph.maxPriceLabel.y + graph.minPriceLabel.height*2))
+    if (isNaN( graph.priceLabel.y)) {
+        graph.priceLabel.y = 0
+    }
     if (isStopScreen && !isFinalScreen) {
         graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = options.coinNames.length < 3 || focusedCoinName === graph.coinName
        
@@ -413,6 +419,9 @@ function getGraphXYForIndexAndPrice (graph, index, price = null) {
     let result = {x: 0, y:0}
     result.x =  (index - (graph.currentIndexInteger-graph.maxVisiblePoints+2+graph.diffCurrentIndexIntToFloat)) * graph.stepX;
     result.y = graph.app.renderer.height*gscalebg-(price-graph.minPrice)/(graph.maxPrice-graph.minPrice)*graph.app.renderer.height*gscale;
+    if (isNaN(result.y)) {
+        result.y = 0
+    }
     return result
 }
 

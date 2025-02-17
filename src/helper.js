@@ -467,14 +467,14 @@ function injectGeneratedLevels(gameData) {
 
     gameData.levels.push(
         {
-            "name": '13-24',
+            "name": '14-24',
             "group": "21",
             "stops": 2,
             "canStopManually": true,
-            "dateStart": "2013-01-01 00:00:00 UTC",
+            "dateStart": "2014-01-01 00:00:00 UTC",
             "dateEnd": "2024-12-31 00:00:00 UTC",
             "coinNames": ["USD","BTC"],
-            "duration": 120000
+            "duration": 60000*11
     })
    
 
