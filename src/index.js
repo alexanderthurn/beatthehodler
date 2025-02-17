@@ -19,6 +19,7 @@ const gscale = 0.5 // how much screen height does the graph take
 const gscaleb = 1.0 - gscale - gscalet // how much screen height does the bottom menu take
 const gscalebg = 1.0 - gscaleb // bottom in absolute percentage where graph ends
 
+const durationMinFinalScreen = 1500
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
@@ -481,7 +482,7 @@ async function initGame() {
             toName: to, 
             
             toCoins: -1,
-            
+            timestamp: Date.now(),
             sprite: null,
             container: new PIXI.Container(),
         }
@@ -611,7 +612,7 @@ async function initGame() {
                 case ' ':
                 case 'w':
                 case 'Gamepads0':
-                    if (isFinalScreen) {                
+                    if (isFinalScreen && timestampAge(trades[trades.length-1].timestamp) > durationMinFinalScreen) {                
                         if (yourFiat === options.fiatBTCHodler) {
                             startNewGame(getNextLevel(options))
                         } else {
@@ -634,9 +635,13 @@ async function initGame() {
                 case 's':
                 case 'Gamepads2':
                 case 'ArrowDown':
-                    if (isFinalScreen) {                
-                        startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                        showMenu(true)
+                    if (isFinalScreen) {   
+                        
+                        if (timestampAge(trades[trades.length-1].timestamp) > durationMinFinalScreen) {
+                            startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                            showMenu(true)
+                        }
+                       
                     } else {
                         if (stopIndex < 0) {
                             stopIndizes.push(currentIndexInteger)
@@ -679,16 +684,20 @@ async function initGame() {
                 showMenu(true)
                 btnMenuSprite.active = false
             } else if (isFinalScreen) {
-                if (stopImage.active) {
-                    startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                    showMenu(true)
-                } else if (swapImage.active) {
-                    if (yourFiat === options.fiatBTCHodler) {
-                        startNewGame(getNextLevel(options))
-                    } else {
-                        startNewGame(options)
+
+                if (timestampAge(trades[trades.length-1].timestamp) > durationMinFinalScreen) {
+                    if (stopImage.active) {
+                        startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                        showMenu(true)
+                    } else if (swapImage.active) {
+                        if (yourFiat === options.fiatBTCHodler) {
+                            startNewGame(getNextLevel(options))
+                        } else {
+                            startNewGame(options)
+                        }
                     }
                 }
+                
             }  else {
 
                 
@@ -1186,6 +1195,9 @@ async function initGame() {
             }
             stopLabel.text = 'MENU'
             
+           
+            stopLabel.alpha = stopImage.alpha = swapLabel.alpha = swapImage.alpha = timestampAge(trades[trades.length-1].timestamp) / durationMinFinalScreen - 1.0
+
         } else{
             swapLabel.text = (stopIndex === 0 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
             stopLabel.text = (stopIndex === 0 ? yourCoinName : (stopIndex > 0 ? 'Resume' : 'Pause'))    
@@ -1199,6 +1211,8 @@ async function initGame() {
         swapImage.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height)
         swapLabel.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height-swapImage.height*0.75)
         
+       
+
         stopContainer.visible =  isFinalScreen || !trade
 
         btnMenuSprite.scale = (btnMenuSprite.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5

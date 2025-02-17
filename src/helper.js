@@ -783,3 +783,11 @@ function getSunFilter(vertex, fragment) {
         },
     });
 }
+
+function isTimestampOlderThen(timestamp, milliseconds) {
+    return Date.now() - timestamp > milliseconds;
+}
+
+function timestampAge(timestamp) {
+    return Date.now() - timestamp ;
+}
