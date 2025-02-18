@@ -3,7 +3,7 @@
 
 Welcome to the ultimate Bitcoin challenge! Your goal is simple: outperform the HODLer.
 
-![Screenshot](misc/hodlerscreen.png)
+![Screenshot](misc/hodlerscreen.png =640x)
 
 ## Preview
 
