@@ -7,10 +7,9 @@ Your goal is simple: outperform the HODLer.
 
 ## Preview
 
-https://beatthehodler.feuerware.com
-
+- Production: https://beatthehodler.feuerware.com
 - Dev: https://alexanderthurn.github.io/coinswiper/
-
+- Source: https://github.com/alexanderthurn/coinswiper
 
 
 
