@@ -8,8 +8,8 @@ Welcome to the ultimate Bitcoin challenge! Your goal is simple: outperform the H
 ## Preview
 
 - Production: https://beatthehodler.feuerware.com
-- Dev: https://alexanderthurn.github.io/coinswiper/
-- Source: https://github.com/alexanderthurn/coinswiper
+- Dev: https://alexanderthurn.github.io/beatthehodler/
+- Source: https://github.com/alexanderthurn/beatthehodler
 
 <img src="misc/screen1.jpg" alt="Screenshot1" width="640">
 <img src="misc/screen2.jpg" alt="Screenshot1" width="640">

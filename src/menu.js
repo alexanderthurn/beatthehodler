@@ -73,7 +73,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
 
     menu.finaltitle = new PIXI.Text({text: '', style: menu.textStyleTitle })
     menu.finaltitle.anchor.set(0.5,1.2)
-    menu.finaltitle.texts = ['by Alexander Thurn', 'github.com/alexanderthurn/coinswiper', 'feuerware.com']
+    menu.finaltitle.texts = ['by Alexander Thurn', 'github.com/alexanderthurn/beatthehodler', 'feuerware.com']
     menu.addChild(menu.finaltitle)
 
     menu.clickTitle = new PIXI.Text({text: 'A "HODLer" holds, no matter what!', style: menu.textStyleClick }) 
