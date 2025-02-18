@@ -505,9 +505,9 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
     menu.levelGroups.forEach((group,index) => {
         group.levelEntries.forEach((entry,index2) => {
             entry.indexText.scale.set(0.4* (Math.max(640, app.screen.width)/640) * (entry.active ? 1.1 : 1.0))
-            entry.indexSubText.scale.set(0.3* (Math.max(640, app.screen.width)/640)* (entry.active ? 1.1 : 1.0)) 
-            entry.indexSubText.position.set(0,  entry.indexText.height/2)
-            entry.indexText.position.set(0,  -entry.indexText.height/2)
+            entry.indexSubText.scale.set(0.25* (Math.max(640, app.screen.width)/640)* (entry.active ? 1.1 : 1.0)) 
+            entry.indexSubText.position.set(0,  entry.indexText.height*0.5)
+            entry.indexText.position.set(0,  -entry.indexText.height*0.25)
             let win = getWin(entry.level.name)
             let score = 100*(win?.p || 1.0)-100
 
