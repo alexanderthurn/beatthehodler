@@ -1,10 +1,22 @@
 
-# Preview
+# Beat the HODLer
+
+## Preview
 
 https://alexanderthurn.github.io/coinswiper/
 
 
-# Crypto Logos
+
+
+## Data
+
+https://www.coingecko.com/en/coins/bitcoin/historical_data?start=2009-1-1
+https://www.coingecko.com/en/coins/ethereum/historical_data?start=2009-1-1
+https://www.coingecko.com/en/coins/solana/historical_data?start=2009-1-1
+https://www.coingecko.com/en/coins/dogecoin/historical_data?start=2009-1-1
+https://www.coingecko.com/en/coins/cardano/historical_data?start=2009-1-1
+
+## Crypto Logos
 
 https://cryptologos.cc/bitcoin
 https://cryptologos.cc/
@@ -17,16 +29,7 @@ DOGE: BA9F32  F7F0DE
 ETH: 383938 FFFFFF
 
 
-# Data
-
-https://www.coingecko.com/en/coins/bitcoin/historical_data?start=2009-1-1
-https://www.coingecko.com/en/coins/ethereum/historical_data?start=2009-1-1
-https://www.coingecko.com/en/coins/solana/historical_data?start=2009-1-1
-https://www.coingecko.com/en/coins/dogecoin/historical_data?start=2009-1-1
-https://www.coingecko.com/en/coins/cardano/historical_data?start=2009-1-1
-
-
-# Font
+## Font
 
 https://www.fontspace.com/xolonium-font-f17644
 
@@ -36,7 +39,7 @@ link: https://www.fontspace.com/xolonium-font-f17644
 
 
 
-# sfx
+## sfx
 
 https://jfxr.frozenfractal.com/
 
@@ -52,13 +55,13 @@ Sound Effect by <a href="https://pixabay.com/users/shut_up_ghost-32917765/?utm_s
 Sound Effect by <a href="https://pixabay.com/users/shut_up_ghost-32917765/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=168473">Ghostie Graves</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=168473">Pixabay</a>
 
 
-# Icon Pack
+## Icon Pack
 
 https://forum.affinity.serif.com/index.php?/topic/139587-icon-pack/
 
 
 
-# Performance optimizations
+## Performance optimizations notes
 01.02.2025: 
 
 Before Optim:
@@ -70,9 +73,14 @@ Normal: No TP, but parallel: 26 requests - 652ms 3.1MB transferred  2.6 MB resou
 Slow 4G: Finish: 21.57s DOMContentLoaded 3.335 s Load 3.335s
 
 
-# TODO
+## TODO
 
 - zoom button / mouse wheel?
 - graph as shader only
-- sound does not mute if switched back from other tab
-- show local percentage when usd?
+
+
+## Licenses
+
+- Code: [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+- Pixabay Resources: <a href="https://pixabay.com/service/license-summary/">pixabay.com</a>
+- for the other assets please check out their websites
