@@ -1,12 +1,23 @@
 
 # Beat the HODLer
 
+Welcome to the ultimate Bitcoin challenge!
+
+Your goal is simple: outperform the HODLer.
+
 ## Preview
 
-https://alexanderthurn.github.io/coinswiper/
+https://beatthehodler.feuerware.com
+
+- Dev: https://alexanderthurn.github.io/coinswiper/
 
 
 
+
+
+## Author
+
+Alexander Thurn
 
 ## Data
 
@@ -71,6 +82,13 @@ Slow 4G: Finish: 22.40s DOMContentLoaded 3.33 s Load 3.33s
 After:
 Normal: No TP, but parallel: 26 requests - 652ms 3.1MB transferred  2.6 MB resources DOMContentLoaded 319ms Loaded 323ms
 Slow 4G: Finish: 21.57s DOMContentLoaded 3.335 s Load 3.335s
+
+
+## Development
+
+- Install python3
+- Open a terminal and run `python3 -m http.server 3333`
+- Open `http://localhost:3333` in your webbrowser. If it says it is insecure due to http, open it in another browser or in private mode
 
 
 ## TODO
