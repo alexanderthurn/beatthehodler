@@ -3,7 +3,7 @@
 
 Welcome to the ultimate Bitcoin challenge! Your goal is simple: outperform the HODLer.
 
-![Screenshot](misc/hodlerscreen.jpg)
+<img src="misc/hodlerscreen.jpg" alt="Screenshot1" width="640">
 
 ## Preview
 
@@ -11,6 +11,8 @@ Welcome to the ultimate Bitcoin challenge! Your goal is simple: outperform the H
 - Dev: https://alexanderthurn.github.io/coinswiper/
 - Source: https://github.com/alexanderthurn/coinswiper
 
+![Screenshot2](misc/screen1.jpg)
+![Screenshot3](misc/screen2.jpg)
 
 
 
