@@ -1,9 +1,9 @@
 
 # Beat the HODLer
 
-Welcome to the ultimate Bitcoin challenge!
+Welcome to the ultimate Bitcoin challenge! Your goal is simple: outperform the HODLer.
 
-Your goal is simple: outperform the HODLer.
+![Screenshot](misc/hodlerscreen.png)
 
 ## Preview
 
@@ -17,6 +17,11 @@ Your goal is simple: outperform the HODLer.
 ## Author
 
 Alexander Thurn
+
+
+## Engine
+
+Pixi.js: https://pixijs.com/
 
 ## Data
 
