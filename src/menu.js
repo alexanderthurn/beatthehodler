@@ -179,7 +179,7 @@ async function createMenu(gameData, app, coins, textStyle, textStyleCentered, te
 
 
     menu.helpContainer = new PIXI.Container()
-    const gameInstructions = "Welcome to the ultimate Bitcoin challenge!\nYour goal is simple: outperform the HODLer.\n\nHow it works:\n- The Bitcoin price fluctuates over time. Buy low, sell high!\n- At the end of the game, your performance is compared to a HODLer (who simply holds BTC).\n- Your score is based on how much better (or worse) you did compared to HODLing.\n\nControls:\n- Gamepad, Mouse, or Keyboard - Play however you like!\n\nWinning?\n- The secret lesson: HODLing is king. The best way to win...is to do nothing. Thx coingecko.com for coin data, fontspace for font, frozenfractal.com for its sfx generator and pixabay for sounds.";
+    const gameInstructions = "Welcome to the ultimate Bitcoin challenge!\nYour goal is simple: outperform the HODLer.\n\nHow it works:\n- The Bitcoin price fluctuates over time. Buy low, sell high!\n- At the end of the game, your performance is compared to a HODLer (who simply holds BTC).\n- Your score is based on how much better (or worse) you did compared to HODLing.\n\nControls:\n- Gamepad, Mouse, or Keyboard - Play however you like!\n\nWinning?\n- The secret lesson: HODLing is king. The best way to win...is to do nothing. \n\nThx coingecko.com for coin data, fontspace for font, frozenfractal.com for its sfx generator and pixabay for sounds.";
 
     menu.helpText = new PIXI.Text({text: gameInstructions, style: menu.textStyleHelper})
     menu.helpText.anchor.set(0.5,0)
