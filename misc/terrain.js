@@ -79,7 +79,7 @@ async function initGame() {
 
     document.body.appendChild(app.canvas);
     const containerTerrain = new PIXI.Container()
-    app.stage.addChild(containerTerrain)
+    app.containerGame.addChild(containerTerrain)
     const terrain = createTerrain(app, backgroundVertexShader, backgroundFragmentShader, textureBTC);
     containerTerrain.addChildAt(terrain,0);
 

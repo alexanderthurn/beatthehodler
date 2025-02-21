@@ -21,9 +21,107 @@ const gscalebg = 1.0 - gscaleb // bottom in absolute percentage where graph ends
 
 const durationMinFinalScreen = 1500
 
+class CoinApplication extends PIXI.Application {
+    constructor(options) {
+        super(options)
+
+        this.containerGame = new PIXI.Container()
+        this.containerLoading = new PIXI.Container()
+    }
+
+    async init(options) {
+        await super.init(options)   
+        document.body.appendChild(this.canvas);
+        this.stage.addChild(this.containerGame, this.containerLoading)
+
+        const textStyle = new PIXI.TextStyle({
+            fontFamily: 'Xolonium',
+            fontStyle: 'Bold',
+            fontSize: 64,
+            fill: '#fff',
+            wordWrap: false,
+            wordWrapWidth: 440,
+        });
+    
+
+        this.containerLoading.bar = new PIXI.Graphics() 
+        this.containerLoading.title = new PIXI.Text({text: 'Beat the HODLer', style: textStyle})
+        this.containerLoading.text = new PIXI.Text({text: 'aaa', style: textStyle})
+        this.containerLoading.title.anchor.set(0.5,0.0)
+        this.containerLoading.text.anchor.set(0.5,-2.0)
+        this.containerLoading.addChild(this.containerLoading.bar, this.containerLoading.title, this.containerLoading.text)
+        this.containerGame.visible = false
+        this.containerLoading.visible = true
+        this.ticker.add(this.onUpdateLoader, this)
+    }
+
+    onUpdateLoader(ticker) {
+        let scaleToFullHD = this.screen.width/1920
+        this.containerLoading.bar.position.set(this.screen.width*0.5, this.screen.height*0.8)
+        this.containerLoading.text.position.set(this.screen.width*0.5, this.screen.height*0.6)
+        this.containerLoading.title.position.set(this.screen.width*0.5, this.screen.height*0.1)
+        this.containerLoading.title.scale.set(4*scaleToFullHD*0.5)
+        
+        this.containerLoading.text.position.set(this.screen.width*0.5, this.screen.height*0.15)
+        this.containerLoading.text.scale.set(4*Math.min(0.5,scaleToFullHD)*0.25)
+        this.containerLoading.bar.scale = 0.99+0.01*Math.sin(ticker.lastTime*0.01)
+        this.containerLoading.bar.clear()
+        this.containerLoading.bar.rect(-this.screen.width*0.25, -this.screen.height*0.05, this.screen.width*0.5, this.screen.height*0.1).stroke({color: 0xffffff, width: this.screen.height*0.01, alpha:1.0}).rect(-this.screen.width*0.25, -this.screen.height*0.05, this.screen.width*0.5*this.containerLoading.percentage, this.screen.height*0.1).fill();
+    }
+
+
+    setLoading(percentage, text = '') {
+        console.log('setLoading', percentage, text)
+        this.containerLoading.percentage = percentage
+        if (text !== undefined)
+            this.containerLoading.text.text = text
+        this.render()
+    }
+
+    finishLoading() {
+        this.ticker.remove(this.onUpdateLoader, this)
+        this.containerGame.visible = true
+        this.containerLoading.visible = false
+    }
+
+}
+
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
 
+    
+    const app = new CoinApplication();
+    await app.init({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundColor: 0xf4b400,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+        resizeTo: window
+    });
+
+
+    app.setLoading(0.0, 'Loading fonts')
+
+    PIXI.Assets.addBundle('fonts', {
+        XoloniumBold: {
+            src: './gfx/XoloniumBold-xKZO.ttf',
+            data: { family: 'Xolonium Bold' },
+        },
+        Xolonium: {
+            src: './gfx/Xolonium-pn4D.ttf',
+            data: { family: 'Xolonium' },
+        },
+    });
+
+    await PIXI.Assets.loadBundle('fonts')
+
+
+
+    app.setLoading(0.2, 'Loading shaders')
+
+    
     const [graphVertexShader, 
         graphFragmentShader, 
         ownVertexShader, 
@@ -45,6 +143,7 @@ async function initGame() {
     )
 
 
+    app.setLoading(0.4, 'Loading graphics')
 
     const spriteSheet = await PIXI.Assets.load('gfx/texturepack.json');
 
@@ -89,17 +188,8 @@ async function initGame() {
 
 
 
-    const app = new PIXI.Application();
-    await app.init({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        backgroundColor: 0xf4b400,
-        antialias: true,
-        resolution: window.devicePixelRatio || 1,
-        autoDensity: true,
-        resizeTo: window
-    });
-
+    app.setLoading(0.7, 'Loading sounds')
+  
     SoundManager.initSafe(app)
     Promise.all(Object.keys(coins).map(async (key) => {
         SoundManager.add(key,coins[key].sound )
@@ -122,13 +212,14 @@ async function initGame() {
     SoundManager.add('game_lost', 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3')
     SoundManager.add('game_won',  'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3')
 
-    document.body.appendChild(app.canvas);
+    
+
     app.canvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
     });
     app.canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
-    });
+    }, {passive: true});
 
 
     app.stage.eventMode = 'static'
@@ -144,21 +235,8 @@ async function initGame() {
   
    containerForeground.visible = containerBackground.visible = containerMenu.visible = false
 
-
-
-
-    PIXI.Assets.addBundle('fonts', {
-        XoloniumBold: {
-            src: './gfx/XoloniumBold-xKZO.ttf',
-            data: { family: 'Xolonium Bold' },
-        },
-        Xolonium: {
-            src: './gfx/Xolonium-pn4D.ttf',
-            data: { family: 'Xolonium' },
-        },
-    });
-
-    await PIXI.Assets.loadBundle('fonts')
+    
+    app.setLoading(0.9, 'Initializing game')
 
     const textStyle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
@@ -322,11 +400,11 @@ async function initGame() {
         particles.push(particle)
     }
 
-    app.stage.addChild(containerBackground)
-    app.stage.addChild(containerForeground)
-    app.stage.addChild(bigTextLayer)
-    app.stage.addChild(containerParticles)
-    app.stage.addChild(containerMenu)
+    app.containerGame.addChild(containerBackground)
+    app.containerGame.addChild(containerForeground)
+    app.containerGame.addChild(bigTextLayer)
+    app.containerGame.addChild(containerParticles)
+    app.containerGame.addChild(containerMenu)
 
     backgroundImage.zIndex = 0
     bigtextContainer.zIndex = 1
@@ -734,6 +812,8 @@ async function initGame() {
        
     })
 
+    
+    app.setLoading(1.0, 'Initializing game')
     containerBackground.addChild(graphBorder)
     containerBackground.addChildAt(containerGraphs,3)
     containerBackground.addChild(containerGraphsForeground)
@@ -742,7 +822,6 @@ async function initGame() {
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
     
     menu.visible = false
-    
     
     if (getQueryParam('demo')) {
         showMenu(true)
@@ -765,7 +844,7 @@ async function initGame() {
 
 
    
-
+    app.finishLoading()
     app.ticker.add((deltaTime) => {
 
 
