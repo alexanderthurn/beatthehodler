@@ -71,7 +71,6 @@ class CoinApplication extends PIXI.Application {
 
 
     setLoading(percentage, text = '') {
-        console.log('setLoading', percentage, text)
         this.containerLoading.percentage = percentage
         if (text !== undefined)
             this.containerLoading.text.text = text
