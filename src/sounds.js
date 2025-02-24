@@ -138,12 +138,17 @@ const SoundManager = {
 
     },
     add: function(name, url) {
-        if (PIXI.sound) {
-            PIXI.sound.add(name,url )
-        } else {
-            SoundManager.toAdd.push({name,url})
-        }
-        
+        if (typeof name === 'string') {
+            if (PIXI.sound) {
+                PIXI.sound.add(name,url )
+            } else {
+                SoundManager.toAdd.push({name,url})
+            }
+        } else if (Array.isArray(name)) {
+            name.forEach(nameUrlPair => this.add(nameUrlPair.name, nameUrlPair.url))
+        } else if (typeof name === 'object') {
+            this.add(name.name, name.url)
+        } 
     },
     _init: function() {
        // PIXI.sound.disableAutoPause = true

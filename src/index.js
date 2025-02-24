@@ -193,32 +193,32 @@ async function initGame() {
     Promise.all(Object.keys(coins).map(async (key) => {
         SoundManager.add(key,coins[key].sound )
     }))
-    SoundManager.add('music_menu', 'sfx/song1.mp3')
-    SoundManager.add('music_game1', 'sfx/song2.mp3')
-    SoundManager.add('music_about', 'sfx/song3.mp3')
-    SoundManager.add('trade_won1', 'sfx/coin1.wav')
-    SoundManager.add('trade_won2', 'sfx/coin2.wav')
-    SoundManager.add('trade_won3', 'sfx/coin3.wav')
-    SoundManager.add('trade_won4', 'sfx/coin4.wav')
-    SoundManager.add('trade_won5', 'sfx/coin5.wav')
-    SoundManager.add('trade_lost1', 'sfx/lost1.wav')
-    SoundManager.add('trade_lost2', 'sfx/lost2.wav')
-    SoundManager.add('trade_lost3', 'sfx/lost3.wav')
-    SoundManager.add('trade_lost4', 'sfx/lost4.wav')
-    SoundManager.add('trade_lost5', 'sfx/lost5.wav')
-    SoundManager.add('shepard_up', 'sfx/ascending-tones-168471.mp3')
-    SoundManager.add('shepard_down', 'sfx/descending-tones-168472.mp3')
-    SoundManager.add('game_lost', 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3')
-    SoundManager.add('game_won',  'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3')
-
-    
-
+    SoundManager.add([
+        {name: 'music_menu', url: 'sfx/song1.mp3'},
+        {name: 'music_game1', url: 'sfx/song2.mp3'},
+        {name: 'music_about', url: 'sfx/song3.mp3'},
+        {name: 'trade_won1', url: 'sfx/coin1.wav'},
+        {name: 'trade_won2', url: 'sfx/coin2.wav'},
+        {name: 'trade_won3', url: 'sfx/coin3.wav'},
+        {name: 'trade_won4', url: 'sfx/coin4.wav'},
+        {name: 'trade_won5', url: 'sfx/coin5.wav'},
+        {name: 'trade_lost1', url: 'sfx/lost1.wav'},
+        {name: 'trade_lost2', url: 'sfx/lost2.wav'},
+        {name: 'trade_lost3', url: 'sfx/lost3.wav'},
+        {name: 'trade_lost4', url: 'sfx/lost4.wav'},
+        {name: 'trade_lost5', url: 'sfx/lost5.wav'},
+        {name: 'shepard_up', url: 'sfx/ascending-tones-168471.mp3'},
+        {name: 'shepard_down', url: 'sfx/descending-tones-168472.mp3'},
+        {name: 'game_lost', url: 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3'},
+        {name: 'game_won', url:  'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3'}
+    ])
+        
     app.canvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-    });
+    });/*
     app.canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-    }, {passive: true});
+     //   e.preventDefault();
+    });*/
 
 
     app.stage.eventMode = 'static'
