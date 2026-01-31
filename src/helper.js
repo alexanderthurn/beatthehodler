@@ -1,18 +1,18 @@
 function smoothLogScale(baseSize, percentage, minScale, maxScale) {
     let scaleFactor = Math.log(1 + Math.abs(percentage) / 50) / Math.log(2); // Sanfte Progression
     scaleFactor = percentage >= 0 ? 1 + scaleFactor : 1 - scaleFactor;
-    
+
     let newSize = baseSize * scaleFactor;
-    
-    return Math.max(minScale * baseSize, Math.min(maxScale * baseSize, newSize)); 
+
+    return Math.max(minScale * baseSize, Math.min(maxScale * baseSize, newSize));
 }
 function getBooleanFromLocalStorage(key) {
     const value = localStorage.getItem(key);
-    
+
     if (value === null) return false; // Kein Wert vorhanden
     if (value === "true") return true;
     if (value === "false") return false;
-    
+
     return false
 }
 
@@ -32,7 +32,7 @@ function loadScript(url) {
 function getFloatFromLocalStorage(key, defaultValue = 0.0) {
     const value = localStorage.getItem(key);
     const parsed = parseFloat(value);
-    
+
     return !isNaN(parsed) ? parsed : defaultValue;
 }
 
@@ -48,7 +48,7 @@ function calculateNormal(xA, yA, xB, yB) {
 function hexToRGB(hex, a) {
     // Entfernt das # falls vorhanden
     hex = hex.replace(/^#/, '');
-    
+
     // Konvertiert die Hex-Werte zu Dezimal
     let r = parseInt(hex.substring(0, 2), 16) / 255;
     let g = parseInt(hex.substring(2, 4), 16) / 255;
@@ -137,10 +137,10 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
         } else {
             fractionDigits = 1
         }
-      }
+    }
 
 
-   
+
 
     let formatted;
 
@@ -148,12 +148,12 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
         const suffixes = ['', 'K', 'M', 'B', 'T']; // Tausend, Million, Milliarde, Billion
         let tier = Math.floor(Math.log10(Math.abs(price)) / 3); // Bestimmen des Tiers
         tier = Math.min(tier, suffixes.length - 1); // Begrenzen auf verfügbare Suffixe
-       
+
 
         // Abkürzung erst ab zwei Stellen verwenden
         if (tier >= 1) { // Abkürzen ab Tausender (1 oder mehr Stellen im Tier)
             formatted = formatCurrencyInner(price / Math.pow(10, tier * 3), currency, locale, fractionDigits)
-        
+
             const parts = formatCurrencyInnerToParts(1, currency, locale)
 
             const symbolIndex = parts.findIndex(part => part.type === 'currency');
@@ -161,13 +161,13 @@ function formatCurrency(price, currency, fractionDigits, abbreviate = false) {
             if (symbolIndex < 1) {
                 formatted += suffixes[tier];
             } else {
-                if (parts[symbolIndex-1].type === 'literal') {
-                    formatted = formatted.replace(parts[symbolIndex].value, suffixes[tier] + parts[symbolIndex].value).replace(parts[symbolIndex-1].value + suffixes[tier], suffixes[tier] + parts[symbolIndex-1].value)
+                if (parts[symbolIndex - 1].type === 'literal') {
+                    formatted = formatted.replace(parts[symbolIndex].value, suffixes[tier] + parts[symbolIndex].value).replace(parts[symbolIndex - 1].value + suffixes[tier], suffixes[tier] + parts[symbolIndex - 1].value)
                 } else {
                     formatted = formatted.replace(parts[symbolIndex].value, suffixes[tier] + parts[symbolIndex].value)
                 }
-             }
-            
+            }
+
         } else {
             formatted = formatCurrencyInner(price, currency, locale, fractionDigits)
         }
@@ -293,7 +293,7 @@ async function alignData(coins) {
     dataCoinNames.forEach(name => {
         let c = coins[name];
         let dataMap = new Map(c.data.map(entry => [entry.date.toISOString().split('T')[0], entry.price])); // Nutze .date direkt
-        let alignedData = dateRange.map((date,index) => ({
+        let alignedData = dateRange.map((date, index) => ({
             date: date, // Behalte das Date-Objekt
             price: dataMap.get(date.toISOString().split('T')[0]) || null, // Fehlende Daten auffüllen mit null
         }));
@@ -303,9 +303,9 @@ async function alignData(coins) {
     // fix holes
     dataCoinNames.forEach(name => {
         let c = coins[name];
-        c.data.forEach((d,i) => {
+        c.data.forEach((d, i) => {
             if (d.price === null && i > 0) {
-                d.price = c.data[i-1].price
+                d.price = c.data[i - 1].price
             }
         })
     })
@@ -332,90 +332,90 @@ async function fetchCSV(filePath) {
 }
 function calculateDifficulty(pricesData, startDate, endDate) {
     if (!pricesData || pricesData.length < 2) {
-      throw new Error("pricesData must contain at least 2 entries.");
+        throw new Error("pricesData must contain at least 2 entries.");
     }
-  
+
     // Filter der Daten basierend auf den angegebenen Datumsbereich
     const filteredPrices = pricesData.filter(entry => {
-      return entry.date >= startDate && entry.date <= endDate;
+        return entry.date >= startDate && entry.date <= endDate;
     });
-  
+
     if (filteredPrices.length < 2) {
-      throw new Error("Filtered pricesData must contain at least 2 entries within the specified date range.");
+        throw new Error("Filtered pricesData must contain at least 2 entries within the specified date range.");
     }
-  
+
     const dailyChanges = [];
-  
+
     // Berechnung der täglichen prozentualen Preisänderungen
     for (let i = 1; i < filteredPrices.length; i++) {
-      const previousPrice = filteredPrices[i - 1].price;
-      const currentPrice = filteredPrices[i].price;
-  
-      if (previousPrice > 0) {
-        const dailyChange = ((currentPrice - previousPrice) / previousPrice) * 100; // Prozentuale Änderung
-        dailyChanges.push(dailyChange);
-      }
+        const previousPrice = filteredPrices[i - 1].price;
+        const currentPrice = filteredPrices[i].price;
+
+        if (previousPrice > 0) {
+            const dailyChange = ((currentPrice - previousPrice) / previousPrice) * 100; // Prozentuale Änderung
+            dailyChanges.push(dailyChange);
+        }
     }
-  
+
     // Mittelwert der täglichen Preisänderungen berechnen
     const mean = dailyChanges.reduce((sum, change) => sum + change, 0) / dailyChanges.length;
-  
+
     // Standardabweichung berechnen
     const squaredDifferences = dailyChanges.map(change => Math.pow(change - mean, 2));
     const variance = squaredDifferences.reduce((sum, diff) => sum + diff, 0) / dailyChanges.length;
     const standardDeviation = Math.sqrt(variance);
-  
+
     return standardDeviation;
-  }
-  
-  function assignRelativeDifficulties(gameData) {
+}
+
+function assignRelativeDifficulties(gameData) {
     const allDifficulties = [];
-  
+
     // Zuerst berechnen wir die Standardabweichungen für alle Level
     gameData.levels.forEach(level => {
-      const dataCoinNames = level.coinNames.filter(name => coins[name].data);
-      const pricesData = coins[dataCoinNames[0]].data;
-      const startDate = level.dateStart;
-      const endDate = level.dateEnd;
-  
-      const standardDeviation = calculateDifficulty(pricesData, startDate, endDate);
-      allDifficulties.push({ level, standardDeviation });
+        const dataCoinNames = level.coinNames.filter(name => coins[name].data);
+        const pricesData = coins[dataCoinNames[0]].data;
+        const startDate = level.dateStart;
+        const endDate = level.dateEnd;
+
+        const standardDeviation = calculateDifficulty(pricesData, startDate, endDate);
+        allDifficulties.push({ level, standardDeviation });
     });
-  
+
     // Min- und Max-Werte der Standardabweichungen finden
     const minDeviation = Math.min(...allDifficulties.map(item => item.standardDeviation));
     const maxDeviation = Math.max(...allDifficulties.map(item => item.standardDeviation));
-  
+
     // Schwierigkeitsgrad relativ zu allen anderen berechnen und normalisieren
     allDifficulties.forEach(item => {
-      const normalizedDifficulty = (item.standardDeviation - minDeviation) / (maxDeviation - minDeviation);
-      item.level.difficulty = Math.max(0, Math.min(9, Math.floor(normalizedDifficulty * 9)));
+        const normalizedDifficulty = (item.standardDeviation - minDeviation) / (maxDeviation - minDeviation);
+        item.level.difficulty = Math.max(0, Math.min(9, Math.floor(normalizedDifficulty * 9)));
     });
-  }
+}
 
 
 function calculateLevelStatistics(level, coins) {
 
     let dataCoinNames = level.coinNames.filter(name => coins[name].data);
-    
+
     let fiatBest = level.fiatStart
     let fiatWorst = level.fiatStart
 
-    for (let i=1;i<level.stopIndizes.length;i++) {
+    for (let i = 1; i < level.stopIndizes.length; i++) {
 
         let bestFactor = 1
         let worstFactor = 1
         dataCoinNames.forEach(name => {
             let pricesData = coins[name].data
-            
-            let price1 = pricesData[level.stopIndizes[i]].price 
-            let price2 = pricesData[level.stopIndizes[i-1]].price
+
+            let price1 = pricesData[level.stopIndizes[i]].price
+            let price2 = pricesData[level.stopIndizes[i - 1]].price
 
             if (price1 === null || price2 === null) {
                 return
             }
 
-            let factor = price1/ price2
+            let factor = price1 / price2
             if (factor > bestFactor) {
                 bestFactor = factor
             }
@@ -427,13 +427,13 @@ function calculateLevelStatistics(level, coins) {
 
         })
 
-      
+
         if (bestFactor > 1.0) {
-            fiatBest*=bestFactor  
+            fiatBest *= bestFactor
         }
-        
+
         if (worstFactor < 1.0) {
-            fiatWorst*=worstFactor
+            fiatWorst *= worstFactor
         }
     }
 
@@ -442,44 +442,44 @@ function calculateLevelStatistics(level, coins) {
 
     let pricesDataBitcoin = coins['BTC'].data
     level.btcBTCHodler = (level.fiatStart / pricesDataBitcoin[level.stopIndizes[0]].price)
-    level.fiatBTCHodler = level.btcBTCHodler * pricesDataBitcoin[level.stopIndizes[level.stopIndizes.length-1]].price
+    level.fiatBTCHodler = level.btcBTCHodler * pricesDataBitcoin[level.stopIndizes[level.stopIndizes.length - 1]].price
 }
 
 function injectGeneratedLevels(gameData) {
 
-    for (let i=2014;i<2025;i++) {
+    for (let i = 2014; i < 2025; i++) {
         let length = gameData.levels.filter(l => l.group === '21').length
-        if (length < 21)  {
+        if (length < 21) {
             gameData.levels.push(
                 {
                     "name": '' + i,
                     "group": "21",
                     "stops": 2,
                     "canStopManually": true,
-                    "dateStart": i+"-01-01 00:00:00 UTC",
-                    "dateEnd": i+"-12-31 00:00:00 UTC",
-                    "coinNames": ["USD","BTC"],
+                    "dateStart": i + "-01-01 00:00:00 UTC",
+                    "dateEnd": i + "-12-31 00:00:00 UTC",
+                    "coinNames": ["USD", "BTC"],
                     "duration": 60000
-            })
+                })
         }
-    
+
     }
 
-    for (let i =1;i<3;i++) {
+    for (let i = 1; i < 3; i++) {
         gameData.levels.push(
             {
-                "name": `${13+i*4}-${16+i*4}`,
+                "name": `${13 + i * 4}-${16 + i * 4}`,
                 "group": "21",
                 "stops": 2,
                 "canStopManually": true,
-                "dateStart": `20${13+i*4}-01-01 00:00:00 UTC`,
-                "dateEnd": `20${16+i*4}-12-31 00:00:00 UTC`,
-                "coinNames": ["USD","BTC"],
-                "duration": 60000*4
-        })
+                "dateStart": `20${13 + i * 4}-01-01 00:00:00 UTC`,
+                "dateEnd": `20${16 + i * 4}-12-31 00:00:00 UTC`,
+                "coinNames": ["USD", "BTC"],
+                "duration": 60000 * 4
+            })
     }
-   
-   
+
+
 
 
     gameData.levels.push(
@@ -490,39 +490,39 @@ function injectGeneratedLevels(gameData) {
             "canStopManually": true,
             "dateStart": "2014-01-01 00:00:00 UTC",
             "dateEnd": "2024-12-31 00:00:00 UTC",
-            "coinNames": ["USD","BTC"],
-            "duration": 60000*11
-    })
-   
+            "coinNames": ["USD", "BTC"],
+            "duration": 60000 * 11
+        })
+
 
 }
 // Funktion, um CSV-Daten in ein Array von Objekten zu konvertieren
 function parseGameData(jsonString, coins) {
-    var gameData = JSON.parse(jsonString) 
+    var gameData = JSON.parse(jsonString)
     injectGeneratedLevels(gameData)
-    
-    gameData.levels.forEach((level,index) => {
+
+    gameData.levels.forEach((level, index) => {
         if (!level.coinNames) {
             //level.coinNames= Object.keys(coins).filter(name => name === 'BTC' || name === 'ADA'  || name === 'USD')
-             level.coinNames = Object.keys(coins)
-        } 
-       
+            level.coinNames = Object.keys(coins)
+        }
+
         let dataCoinNames = level.coinNames.filter(name => coins[name].data);
         let pricesData = coins[dataCoinNames[0]].data
         level.canStopManually = level.canStopManually || true
         level.duration = level.duration || 30000
         level.dateStart = level.dateStart && parseDate(level.dateStart) || pricesData[0].date
-        level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length-1].date
+        level.dateEnd = level.dateEnd && parseDate(level.dateEnd) || pricesData[pricesData.length - 1].date
         level.stops = level.stops || 8
         level.dateStart = pricesData[findClosestDateIndex(pricesData, level.dateStart)].date
         level.dateEnd = pricesData[findClosestDateIndex(pricesData, level.dateEnd)].date
         level.indexStart = Math.max(0, findClosestDateIndex(pricesData, level.dateStart))
         level.indexEnd = Math.max(0, findClosestDateIndex(pricesData, level.dateEnd))
-        level.maxPrice = pricesData.filter((p,index) => index >= level.indexStart && index <= level.indexEnd).reduce((max, p) => Math.max(p.price, max),0)
-        level.minPrice = pricesData.filter((p,index) => index >= level.indexStart && index <= level.indexEnd).reduce((max, p) => Math.min(p.price, max),Number.MAX_VALUE)
+        level.maxPrice = pricesData.filter((p, index) => index >= level.indexStart && index <= level.indexEnd).reduce((max, p) => Math.max(p.price, max), 0)
+        level.minPrice = pricesData.filter((p, index) => index >= level.indexStart && index <= level.indexEnd).reduce((max, p) => Math.min(p.price, max), Number.MAX_VALUE)
         level.music = level.music || 'music_game1'
-        level.fiatStart = pricesData[ level.indexStart].price || 1000
-        level.next = index < gameData.levels.length ? gameData.levels[index+1] : null
+        level.fiatStart = pricesData[level.indexStart].price || 1000
+        level.next = index < gameData.levels.length ? gameData.levels[index + 1] : null
         if (typeof level.stops === 'number' && !isNaN(level.stops)) {
             level.stops = generateDatesBetween(level.dateStart, level.dateEnd, level.stops)
         } else if (Array.isArray(level.stops)) {
@@ -530,11 +530,11 @@ function parseGameData(jsonString, coins) {
         }
         level.stopIndizes = level.stops.map(d => findClosestDateIndex(pricesData, d))
         calculateLevelStatistics(level, coins)
-       // level.difficulty = calculateDifficulty(pricesData, level.dateStart,  level.dateEnd )
+        // level.difficulty = calculateDifficulty(pricesData, level.dateStart,  level.dateEnd )
     })
-    
+
     assignRelativeDifficulties(gameData);
-   
+
     return gameData;
 }
 
@@ -558,14 +558,14 @@ function getQueryParam(key) {
     const params = new URLSearchParams(window.location.search);
     return params.get(key); // Gibt den Wert des Parameters oder null zurück
 }
-     /* DO NOOT DELETE !!!!!
-        priceLabel.x = app.renderer.width*1
-        priceLabel.y = app.renderer.height*0.8
-        priceLabel.text = formatCurrency(0.00021, fiatName,null, true) + '\n' + formatCurrency(0.0021, fiatName,null, true) + '\n' + formatCurrency(0.021, fiatName,null, true) + '\n' +  formatCurrency(0.21, fiatName,null, true) + '\n' + formatCurrency(2.21, fiatName,null, true) + '\n' + formatCurrency(21.21, fiatName,null, true) + '\n' + formatCurrency(212.21, fiatName,null, true) + '\n' + formatCurrency(2121.21, fiatName,null, true) + '\n' + formatCurrency(21212.21, fiatName,null, true) + '\n' + formatCurrency(221212.21, fiatName,null, true) + '\n' + formatCurrency(2212121.21, fiatName,null, true) + '\n' + formatCurrency(22121212.21, fiatName,null, true)  + '\n' + formatCurrency(221212121.21, fiatName,null, true) + '\n' + formatCurrency(2212121221.21, fiatName,null, true) 
-        */
+/* DO NOOT DELETE !!!!!
+   priceLabel.x = app.renderer.width*1
+   priceLabel.y = app.renderer.height*0.8
+   priceLabel.text = formatCurrency(0.00021, fiatName,null, true) + '\n' + formatCurrency(0.0021, fiatName,null, true) + '\n' + formatCurrency(0.021, fiatName,null, true) + '\n' +  formatCurrency(0.21, fiatName,null, true) + '\n' + formatCurrency(2.21, fiatName,null, true) + '\n' + formatCurrency(21.21, fiatName,null, true) + '\n' + formatCurrency(212.21, fiatName,null, true) + '\n' + formatCurrency(2121.21, fiatName,null, true) + '\n' + formatCurrency(21212.21, fiatName,null, true) + '\n' + formatCurrency(221212.21, fiatName,null, true) + '\n' + formatCurrency(2212121.21, fiatName,null, true) + '\n' + formatCurrency(22121212.21, fiatName,null, true)  + '\n' + formatCurrency(221212121.21, fiatName,null, true) + '\n' + formatCurrency(2212121221.21, fiatName,null, true) 
+   */
 
 
-        const gamepadStates = {};
+const gamepadStates = {};
 
 // Gamepad-Eingaben auf KeyUp-Logik mappen
 function handleGamepadInput() {
@@ -635,7 +635,7 @@ function handleGamepadInput() {
                 // Optional: KeyUp für Loslassen des Buttons
             }
 
-            state.buttons[buttonIndex] = button.pressed; 
+            state.buttons[buttonIndex] = button.pressed;
         })
 
     }
@@ -644,7 +644,7 @@ function handleGamepadInput() {
 function triggerCustomKey(key) {
     if (key) {
         const event = new CustomEvent('customkey', {
-            detail: {key: key},
+            detail: { key: key },
             bubbles: true
         });
         document.dispatchEvent(event);
@@ -657,7 +657,7 @@ function saveSpeed(speed) {
 }
 
 function loadSpeed() {
-    return getFloatFromLocalStorage('speed',1.0)
+    return getFloatFromLocalStorage('speed', 1.0)
 }
 
 function changeSpeed(oldSpeed, reverse = false) {
@@ -668,7 +668,7 @@ function changeSpeed(oldSpeed, reverse = false) {
     } else {
         nextIndex = (speeds.indexOf(oldSpeed) - 1)
         if (nextIndex < 0) {
-            nextIndex = speeds.length-1;
+            nextIndex = speeds.length - 1;
         }
     }
     return speeds[nextIndex];
@@ -687,9 +687,9 @@ function formatSpeedAsFraction(speed) {
 let localStorageCache = {}
 
 function setMute(value, type = '') {
-    localStorageCache['mute'+type] = value
-    localStorage.setItem('mute'+type, value)
-    
+    localStorageCache['mute' + type] = value
+    localStorage.setItem('mute' + type, value)
+
     if (type === 'music') {
         if (value) {
             SoundManager.muteMusic()
@@ -704,11 +704,11 @@ function setMute(value, type = '') {
             SoundManager.unmuteSounds()
         }
     }
-   
+
 }
 
 function getMute(type = '') {
-    return localStorageCache['mute'+type] ?? getBooleanFromLocalStorage('mute'+type)
+    return localStorageCache['mute' + type] ?? getBooleanFromLocalStorage('mute' + type)
 }
 
 function setWin(levelName, percentage, tradeCount) {
@@ -721,19 +721,19 @@ function setWin(levelName, percentage, tradeCount) {
         t: tradeCount
     };
 
-    if (!localStorageCache[key] || localStorageCache[key] && (localStorageCache[key].p !== newEntry.p  || localStorageCache[key].t !== newEntry.t)) {
+    if (!localStorageCache[key] || localStorageCache[key] && (localStorageCache[key].p !== newEntry.p || localStorageCache[key].t !== newEntry.t)) {
         localStorageCache[key] = newEntry
 
         try {
             let history = JSON.parse(localStorage.getItem(historyKey)) || [];
             history.push(newEntry);
             localStorage.setItem(historyKey, JSON.stringify(history));
-            
+
             let bestScore = JSON.parse(localStorage.getItem(key));
             if (!bestScore || percentage > bestScore.p) {
                 localStorage.setItem(key, JSON.stringify(newEntry));
             }
-            
+
             if (tradeCount === 0) {
                 localStorage.setItem(hodledKey, "21");
             }
@@ -753,7 +753,7 @@ function getWin(levelName) {
         let content = localStorage.getItem(key)
         if (content) {
             result = JSON.parse(localStorage.getItem(key));
-        } 
+        }
     }
 
     if (result) {
@@ -789,5 +789,5 @@ function isTimestampOlderThen(timestamp, milliseconds) {
 }
 
 function timestampAge(timestamp) {
-    return Date.now() - timestamp ;
+    return Date.now() - timestamp;
 }

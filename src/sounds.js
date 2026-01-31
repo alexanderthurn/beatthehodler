@@ -7,14 +7,14 @@ const SoundManager = {
     mutedMusic: false,
     toAdd: [],
 
-    getSFXSounds: () => {  
+    getSFXSounds: () => {
         if (PIXI.sound) {
             return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') === -1).map(k => PIXI.sound._sounds[k])
         } else {
             return []
         }
     },
-    getMusicSounds: () => {  
+    getMusicSounds: () => {
         if (PIXI.sound) {
             return Object.keys(PIXI.sound?._sounds).filter(k => k.indexOf('music') > -1).map(k => PIXI.sound._sounds[k])
         } else {
@@ -22,37 +22,37 @@ const SoundManager = {
         }
     },
     muteMusic: () => {
-        SoundManager.mutedMusic= true
+        SoundManager.mutedMusic = true
         if (PIXI.sound) {
             SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.muted = true)
         }
-    }, 
+    },
 
     unmuteMusic: () => {
-        SoundManager.mutedMusic= false
+        SoundManager.mutedMusic = false
         if (PIXI.sound) {
             SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.muted = false)
             SoundManager.getMusicSounds().filter(s => s.isPlaying).map(s => s.instances).filter(ia => ia[0].muted).forEach(ia => ia[0].muted = false)
         }
     },
     muteSounds: () => {
-        SoundManager.mutedSounds= true
+        SoundManager.mutedSounds = true
         if (PIXI.sound) {
             SoundManager.getSFXSounds().filter(s => s.isPlaying).forEach(s => s.muted = true)
         }
     },
 
     unmuteSounds: () => {
-        SoundManager.mutedSounds= false
+        SoundManager.mutedSounds = false
         if (PIXI.sound) {
             SoundManager.getSFXSounds().filter(s => s.isPlaying && s.muted === true).forEach(s => s.muted = false)
             SoundManager.getSFXSounds().filter(s => s.isPlaying).map(s => s.instances).filter(ia => ia[0].muted).forEach(ia => ia[0].muted = false)
-            
+
         }
     },
 
     playSFX: (soundName, options = {}) => {
-        return PIXI.sound?.play(soundName, {...options, muted: SoundManager.mutedSounds})
+        return PIXI.sound?.play(soundName, { ...options, muted: SoundManager.mutedSounds })
     },
 
     playMusic: async (musicname) => {
@@ -66,7 +66,7 @@ const SoundManager = {
             loopTimeout = true;
         }, 2000);
 
-        while( SoundManager.getMusicSounds().filter(s => s.isPlaying).length > 0) {
+        while (SoundManager.getMusicSounds().filter(s => s.isPlaying).length > 0) {
             if (loopTimeout) {
                 break; // Brich die Schleife ab, wenn der Timeout erreicht ist
             }
@@ -76,10 +76,10 @@ const SoundManager = {
         }
 
         if (PIXI.sound) {
-            PIXI.sound?.play(musicname, {volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance: true})
+            PIXI.sound?.play(musicname, { volume: 0.3, loop: true, muted: SoundManager.mutedMusic, singleInstance: true })
         }
-        
-      
+
+
     },
     stopMusic: () => {
         SoundManager.musicName = null
@@ -87,18 +87,18 @@ const SoundManager = {
             SoundManager.getMusicSounds().filter(s => s.isPlaying).forEach(s => s.stop())
         }
     },
-    initSafe: function(app) {
-        
+    initSafe: function (app) {
+
         let loadAndInit = () => {
             if (!SoundManager.isInit) {
                 SoundManager.isInit = true
                 loadScript('lib/pixi-sound.js')
-                .then(() => {
-                    SoundManager._init()
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
+                    .then(() => {
+                        SoundManager._init()
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
             }
         }
 
@@ -112,12 +112,12 @@ const SoundManager = {
             window.removeEventListener('keyup', handleKeyUpOnce);
         });
 
-        window.addEventListener('focus', function() {
+        window.addEventListener('focus', function () {
             if (SoundManager.mutedMusic) SoundManager.muteMusic();
             if (SoundManager.mutedSounds) SoundManager.muteSounds();
         });
 
-            // Gamepad-Überprüfung
+        // Gamepad-Überprüfung
         let gamepadLoop = function () {
             const gamepads = navigator.getGamepads();
             for (const gamepad of gamepads) {
@@ -137,27 +137,27 @@ const SoundManager = {
         gamepadLoop();
 
     },
-    add: function(name, url) {
+    add: function (name, url) {
         if (typeof name === 'string') {
             if (PIXI.sound) {
-                PIXI.sound.add(name,url )
+                PIXI.sound.add(name, url)
             } else {
-                SoundManager.toAdd.push({name,url})
+                SoundManager.toAdd.push({ name, url })
             }
         } else if (Array.isArray(name)) {
             name.forEach(nameUrlPair => this.add(nameUrlPair.name, nameUrlPair.url))
         } else if (typeof name === 'object') {
             this.add(name.name, name.url)
-        } 
+        }
     },
-    _init: function() {
-       // PIXI.sound.disableAutoPause = true
+    _init: function () {
+        // PIXI.sound.disableAutoPause = true
         SoundManager.toAdd.forEach(s => {
             SoundManager.add(s.name, s.url)
         })
         if (SoundManager.musicName) {
             SoundManager.playMusic(SoundManager.musicName)
-        } 
+        }
     }
 }
 
