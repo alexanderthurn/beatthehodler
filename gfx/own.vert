@@ -1,13 +1,14 @@
 precision mediump float;
+precision mediump int;
 
 attribute vec2 aPosition;
 attribute vec2 aUV;
-attribute vec4 aColor;
 attribute float aIndex;
 
 varying vec4 vColor;
 varying vec2 vPosition;
 varying vec2 vUV;
+varying float vIndex;
 
 uniform mat3 uProjectionMatrix;
 uniform mat3 uWorldTransformMatrix;
@@ -27,7 +28,9 @@ void main() {
     vec2 scaledPosition = vec2(aPosition.x*uScale.x,aPosition.y*uScale.y);
     mat3 mvp = uProjectionMatrix * uWorldTransformMatrix * uTransformMatrix;
     gl_Position = vec4((mvp * vec3(scaledPosition, 1.0)).xy, 0.0, 1.0);
-    vColor = vec4(aColor.rgb, aColor.a * uAlpha);
+   
+    vColor = vec4(1.0,1.0,1.0,1.0);
+    vIndex = aIndex;
     vPosition = aPosition;
     vUV = aUV;
 }

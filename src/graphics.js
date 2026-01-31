@@ -7,7 +7,11 @@ async function loadShader(url) {
 }
 
 
-function createOwnLines(dataPoints, lineWidth, coin) {
+function createOwnLines(dataPoints, lineWidth, texture) {
+
+
+    const textureUVs = texture.uvs
+
     const vertices = []
     const indices = []
     const colors = []
@@ -26,10 +30,10 @@ function createOwnLines(dataPoints, lineWidth, coin) {
             x-halfWidth+lineWidth*2, y    // P4: Oben rechts
         );
 
-        uvs.push(0,0)
-        uvs.push(0,1)
-        uvs.push(1,1)
-        uvs.push(1,0)
+        uvs.push(textureUVs.x0,textureUVs.y0)
+        uvs.push(textureUVs.x1,textureUVs.y1)
+        uvs.push(textureUVs.x2,textureUVs.y2)
+        uvs.push(textureUVs.x3,textureUVs.y3)
    
         for (let h = 0; h < 4; h++) {
             pointIndices.push(i)
@@ -149,19 +153,29 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
     for(let i=0;i<parsedData.length-1;i++) {
         const ix = i*8
         let y = parsedData[i].price || 0;
-        d[ix + 1] = -100
-        d[ix + 3] = -100
-        d[ix + 5] = -100
-        d[ix + 7] = -100
+
+        if (app.screen.width < 640 || i > options.indexEnd || i < options.indexStart || isFinalScreen) {
+            d[ix + 1] = -100
+            d[ix + 3] = -100
+            d[ix + 5] = -100
+            d[ix + 7] = -100
+        } else {
+            d[ix + 1] = y - heightHalf
+            d[ix + 3] = y + heightHalf
+            d[ix + 5] = y + heightHalf
+            d[ix + 7] = y-heightHalf;
+        }
+
+
+
     }
-    let realTrades = trades.filter(trade => (trade.fromName !== trade.toName && (trade.toName === fiatName || trade.fromName === fiatName)))
+    let realTrades = trades.filter((trade,i) => ((i === 0 || trade.fromName !== trade.toName) && (trade.toName === fiatName || trade.fromName === fiatName)))
+    
+    
     realTrades.forEach((trade, i) => {
         if (trade.toName === fiatName) {
-            let toIndex = i < realTrades.length-1 ? realTrades[i+1].index : parsedData.length-1
-            
-            let y = trade.fromPrice;
-            let y2 = i < realTrades.length-1 ? realTrades[i+1].toPrice : parsedData[parsedData.length-1].price
-
+            let toIndex = i < realTrades.length-1 ? realTrades[i+1].index : options.indexEnd-1
+            let y = trade.fromName !== fiatName ? trade.fromPrice : trade.fromCoins;
             for(let i=trade.index;i<toIndex;i++) {
                 const ix = i*8
                 d[ix + 1] = y - heightHalf
@@ -169,8 +183,6 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
                 d[ix + 5] = y + heightHalf
                 d[ix + 7] = y-heightHalf;
             }
-           
-
         }
     })
 
@@ -205,7 +217,13 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     graph.maxPriceLabel.x  = graph.minPriceLabel.x  = graph.priceLabel.x =  graph.logo.x
     graph.priceLabel.yOriginal =0.9*graph.priceLabel.yOriginal+ 0.1*(app.renderer.height*gscalebg-  (price-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale)
+    if (isNaN( graph.priceLabel.yOriginal)) {
+        graph.priceLabel.yOriginal = 0
+    }
     graph.priceLabel.y = Math.min(graph.minPriceLabel.y - graph.minPriceLabel.height*2, Math.max(graph.priceLabel.y, graph.maxPriceLabel.y + graph.minPriceLabel.height*2))
+    if (isNaN( graph.priceLabel.y)) {
+        graph.priceLabel.y = 0
+    }
     if (isStopScreen && !isFinalScreen) {
         graph.priceLabel.visible = graph.maxPriceLabel.visible = graph.minPriceLabel.visible = options.coinNames.length < 3 || focusedCoinName === graph.coinName
        
@@ -226,29 +244,31 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 
     //graph.logoSprite.visible = isStopScreen || yourCoinName === graph.coinName
  
-    trades.filter(trade => (trade.fromName === graph.coinName || trade.toName === graph.coinName)).forEach((trade) => {
+    trades.filter((trade,i) => (i === 0 || trade.fromName === graph.coinName || trade.toName === graph.coinName || trade.final)).forEach((trade,i) => {
         trade.container.x =  (trade.index - (currentIndexInteger-maxVisiblePoints+2)) * stepX;
-        trade.container.y = app.renderer.height*gscalebg-  ((trade.fromName === graph.coinName ? trade.fromPrice : trade.toPrice)-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;
+        trade.container.y = app.renderer.height*gscalebg-  
+        ((trade.fromName !== fiatName ? trade.fromPrice : (i === 0 ? trade.fromCoins : trade.toPrice))-minPrice)/(maxPrice-minPrice)*app.renderer.height*gscale;
+  
         if (trade.sprite) {
-            trade.sprite.height = trade.sprite.width = app.renderer.width*0.02
+            trade.sprite.height = trade.sprite.width = Math.max(16, app.renderer.width*0.02)
         }
         
-        if (trade.index > currentIndexInteger - maxVisiblePoints) {  
-            trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
-        } else {
-            trade.labelPrice.position.set(0,0)
+        if (trade.labelPrice) {
+            if (trade.index > currentIndexInteger - maxVisiblePoints) {  
+                trade.labelPrice.position.set(trade.labelPrice.width*0.5,0) 
+            } else {
+                trade.labelPrice.position.set(0,0)
+            }
+            trade.labelPrice.visible = false
+            trade.labelPrice.scale = SCALE_TEXT_BASE
         }
+     
 
         if (trade.labelPercentage) { 
             trade.labelPercentage.scale = 0.6
             trade.labelPercentage.y = trade.tradeBefore.container.y - trade.container.y-10
             trade.labelPercentage.x = (trade.tradeBefore.container.x - trade.container.x)*0.5
         }
-
-        trade.labelPrice.visible = false
-
-        trade.labelPrice.scale = SCALE_TEXT_BASE
-
 
         trade.container.visible = options.coinNames.length < 3 || !focusedCoinName || focusedCoinName === graph.coinName
      })
@@ -276,14 +296,13 @@ function updateGraph(graph, app,currentIndexInteger, maxVisiblePoints, stepX, is
 function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader,textureCloud) {
     
     let parsedData = coins[coinName].data
-    let ownLines = createOwnLines(parsedData,1, coins[coinName])
+    let ownLines = createOwnLines(parsedData,1, textureCloud)
     let linesBottom = createStockBottomLines(parsedData, 1, coins[coinName])
    
 
     const geometryOwnLines = new PIXI.Geometry({
         attributes: {
             aPosition: ownLines.vertices,
-            aColor: ownLines.colors,
             aIndex: ownLines.pointIndices,
             aUV: ownLines.uv
         },
@@ -332,7 +351,6 @@ function createGraph(coinName, graphVertexShader, graphFragmentShader, coins, te
             uTexture: textureCloud.source,
             graphUniforms: {
                 uCurrentIndex: {type: 'i32', value: 0},
-                uAlpha: {type: 'f32', value: 1.0},
                 uMaxVisiblePoints: {type: 'i32', value: 3},
                 uScale: { value: [1.0, 1.0], type: 'vec2<f32>' }
             }
@@ -401,6 +419,9 @@ function getGraphXYForIndexAndPrice (graph, index, price = null) {
     let result = {x: 0, y:0}
     result.x =  (index - (graph.currentIndexInteger-graph.maxVisiblePoints+2+graph.diffCurrentIndexIntToFloat)) * graph.stepX;
     result.y = graph.app.renderer.height*gscalebg-(price-graph.minPrice)/(graph.maxPrice-graph.minPrice)*graph.app.renderer.height*gscale;
+    if (isNaN(result.y)) {
+        result.y = 0
+    }
     return result
 }
 

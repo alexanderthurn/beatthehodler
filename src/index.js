@@ -5,13 +5,13 @@ const hodlerActivities = [
 ];
 
 const coins = {
-    USD: { color: '#85BB65', colorInt: 0x85BB65, image: './gfx/usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
-    BTC: { color: '#F7931B', colorInt: 0xF7931B,image: './gfx/btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8},
-    ADA: { color: '#0133AD', colorInt: 0x0133AD,image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
+    USD: { color: '#85BB65', colorInt: 0x85BB65, image: 'usd.png', currency: 'USD', sound: 'sfx/usd.wav', csv: null, data: null, audio: null, texture: null, digits: 2},
+    BTC: { color: '#F7931B', colorInt: 0xF7931B,image: 'btc.png', currency: 'BTC', sound: 'sfx/btc.wav', csv: 'data/btc-usd-max.csv',  digits: 8}
+/*    ADA: { color: '#0133AD', colorInt: 0x0133AD,image: './gfx/ada.png', currency: 'ADA', sound: 'sfx/btc.wav', csv: 'data/ada-usd-max.csv',  digits: 2},
     DOGE: { color: '#BA9F32', colorInt: 0xBA9F325,image: './gfx/doge.png', currency: 'D', sound: 'sfx/btc.wav', csv: 'data/doge-usd-max.csv',  digits: 2},
     ETH: { color: '#383938', colorInt: 0x383938,image: './gfx/eth.png', currency: 'ETH', sound: 'sfx/btc.wav', csv: 'data/eth-usd-max.csv',  digits: 2},
     SOL: { color: '#BD3EF3', colorInt: 0xBD3EF3,image: './gfx/sol.png', currency: 'SOL', sound: 'sfx/btc.wav', csv: 'data/sol-usd-max.csv',  digits: 2},
-}
+*/}
 
 const SCALE_TEXT_BASE = 1.0/16.0*1.5
 const gscalet = 0.25 // how much screen height space on top
@@ -19,21 +19,77 @@ const gscale = 0.5 // how much screen height does the graph take
 const gscaleb = 1.0 - gscale - gscalet // how much screen height does the bottom menu take
 const gscalebg = 1.0 - gscaleb // bottom in absolute percentage where graph ends
 
+const durationMinFinalScreen = 1500
+
+class CoinApplication extends PIXI.Application {
+    constructor(options) {
+        super(options)
+
+        this.containerGame = new PIXI.Container()
+        this.containerLoading = new PIXI.Container()
+    }
+
+    async init(options) {
+        await super.init(options)   
+        document.body.appendChild(this.canvas);
+        this.stage.addChild(this.containerGame, this.containerLoading)
+
+        const textStyle = new PIXI.TextStyle({
+            fontFamily: 'Xolonium',
+            fontStyle: 'Bold',
+            fontSize: 64,
+            fill: '#fff',
+            wordWrap: false,
+            wordWrapWidth: 440,
+        });
+    
+
+        this.containerLoading.bar = new PIXI.Graphics() 
+        this.containerLoading.title = new PIXI.Text({text: 'Beat the HODLer', style: textStyle})
+        this.containerLoading.text = new PIXI.Text({text: 'aaa', style: textStyle})
+        this.containerLoading.title.anchor.set(0.5,0.0)
+        this.containerLoading.text.anchor.set(0.5,-2.0)
+        this.containerLoading.addChild(this.containerLoading.bar, this.containerLoading.title, this.containerLoading.text)
+        this.containerGame.visible = false
+        this.containerLoading.visible = true
+        this.ticker.add(this.onUpdateLoader, this)
+    }
+
+    onUpdateLoader(ticker) {
+        let scaleToFullHD = this.screen.width/1920
+        this.containerLoading.bar.position.set(this.screen.width*0.5, this.screen.height*0.8)
+        this.containerLoading.text.position.set(this.screen.width*0.5, this.screen.height*0.6)
+        this.containerLoading.title.position.set(this.screen.width*0.5, this.screen.height*0.1)
+        this.containerLoading.title.scale.set(4*scaleToFullHD*0.5)
+        
+        this.containerLoading.text.position.set(this.screen.width*0.5, this.screen.height*0.15)
+        this.containerLoading.text.scale.set(4*Math.min(0.5,scaleToFullHD)*0.25)
+        this.containerLoading.bar.scale = 0.99+0.01*Math.sin(ticker.lastTime*0.01)
+        this.containerLoading.bar.clear()
+        this.containerLoading.bar.rect(-this.screen.width*0.25, -this.screen.height*0.05, this.screen.width*0.5, this.screen.height*0.1).stroke({color: 0xffffff, width: this.screen.height*0.01, alpha:1.0}).rect(-this.screen.width*0.25, -this.screen.height*0.05, this.screen.width*0.5*this.containerLoading.percentage, this.screen.height*0.1).fill();
+    }
+
+
+    setLoading(percentage, text = '') {
+        this.containerLoading.percentage = percentage
+        if (text !== undefined)
+            this.containerLoading.text.text = text
+        this.render()
+    }
+
+    finishLoading() {
+        this.ticker.remove(this.onUpdateLoader, this)
+        this.containerGame.visible = true
+        this.containerLoading.visible = false
+    }
+
+}
 
 // Funktion, um den Graphen mit Pixi.js zu zeichnen
 async function initGame() {
 
-
-    const graphVertexShader = await loadShader('./gfx/graph.vert')
-    const graphFragmentShader = await loadShader('./gfx/graph.frag')
-    const ownVertexShader = await loadShader('./gfx/own.vert')
-    const ownFragmentShader = await loadShader('./gfx/own.frag')
-    const backgroundVertexShader = await loadShader('./gfx/background.vert')
-    const backgroundFragmentShader = await loadShader('./gfx/background.frag')
-
-    await fetchData(coins);
-
-    const app = new PIXI.Application();
+    
+    const app = new CoinApplication();
     await app.init({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -44,35 +100,125 @@ async function initGame() {
         resizeTo: window
     });
 
+
+    app.setLoading(0.0, 'Loading fonts')
+
+    PIXI.Assets.addBundle('fonts', {
+        XoloniumBold: {
+            src: './gfx/XoloniumBold-xKZO.ttf',
+            data: { family: 'Xolonium Bold' },
+        },
+        Xolonium: {
+            src: './gfx/Xolonium-pn4D.ttf',
+            data: { family: 'Xolonium' },
+        },
+    });
+
+    await PIXI.Assets.loadBundle('fonts')
+
+
+
+    app.setLoading(0.2, 'Loading shaders')
+
+    
+    const [graphVertexShader, 
+        graphFragmentShader, 
+        ownVertexShader, 
+        ownFragmentShader, 
+        backgroundVertexShader, 
+        backgroundFragmentShader,
+        sunVertexShader, 
+        sunFragmentShader,
+        data] = await Promise.all(
+        [loadShader('./gfx/graph.vert'), 
+        loadShader('./gfx/graph.frag'),
+        loadShader('./gfx/own.vert'), 
+        loadShader('./gfx/own.frag'), 
+        loadShader('./gfx/background.vert'), 
+        loadShader('./gfx/background.frag'),
+        loadShader('./gfx/sun.vert'), 
+        loadShader('./gfx/sun.frag'),
+        fetchData(coins)]
+    )
+
+
+    app.setLoading(0.4, 'Loading graphics')
+
+    const spriteSheet = await PIXI.Assets.load('gfx/texturepack.json');
+
+    const [
+        textureWhiteCoin,
+        textureSpeedNormal,
+        textureSpeedFast, 
+        textureBtnMenu,
+        textureBtnStop,
+        textureBtnPlay,
+        textureBtnTrade,
+        texturePlayer,
+        textureHodler,
+        textureHodlerMirror,
+        textureCloud,
+        audioOnTexture,
+        audioOffTexture,
+        musicOnTexture,
+        musicOffTexture,
+        helpTexture    
+    ] = [
+        spriteSheet.textures['white.png'],
+         spriteSheet.textures['normal.png'],
+         spriteSheet.textures['fast.png'],
+         spriteSheet.textures['menu.png'],
+         spriteSheet.textures['stop.png'],
+         spriteSheet.textures['play.png'],
+        spriteSheet.textures['trade.png'],
+         spriteSheet.textures['player.png'],
+         spriteSheet.textures['hodler.png'],
+         spriteSheet.textures['hodler_mirror.png'],
+         spriteSheet.textures['cloud.png'],
+         spriteSheet.textures['audio_on.png'],
+         spriteSheet.textures['audio_off.png'],
+         spriteSheet.textures['music_on.png'],
+         spriteSheet.textures['music_off.png'],
+         spriteSheet.textures['help.png']
+    ]
+    Object.keys(coins).map(async (key) => {
+        coins[key].texture =  spriteSheet.textures[coins[key].image]
+    })
+
+
+
+    app.setLoading(0.7, 'Loading sounds')
+  
     SoundManager.initSafe(app)
     Promise.all(Object.keys(coins).map(async (key) => {
         SoundManager.add(key,coins[key].sound )
     }))
-    SoundManager.add('music_menu', 'sfx/song1.mp3')
-    SoundManager.add('music_game1', 'sfx/song2.mp3')
-    SoundManager.add('music_about', 'sfx/song3.mp3')
-    SoundManager.add('trade_won1', 'sfx/coin1.wav')
-    SoundManager.add('trade_won2', 'sfx/coin2.wav')
-    SoundManager.add('trade_won3', 'sfx/coin3.wav')
-    SoundManager.add('trade_won4', 'sfx/coin4.wav')
-    SoundManager.add('trade_won5', 'sfx/coin5.wav')
-    SoundManager.add('trade_lost1', 'sfx/lost1.wav')
-    SoundManager.add('trade_lost2', 'sfx/lost2.wav')
-    SoundManager.add('trade_lost3', 'sfx/lost3.wav')
-    SoundManager.add('trade_lost4', 'sfx/lost4.wav')
-    SoundManager.add('trade_lost5', 'sfx/lost5.wav')
-    SoundManager.add('shepard_up', 'sfx/ascending-tones-168471.mp3')
-    SoundManager.add('shepard_down', 'sfx/descending-tones-168472.mp3')
-    SoundManager.add('game_lost', 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3')
-    SoundManager.add('game_won',  'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3')
-
-    document.body.appendChild(app.canvas);
+    SoundManager.add([
+        {name: 'music_menu', url: 'sfx/song1.mp3'},
+        {name: 'music_game1', url: 'sfx/song2.mp3'},
+        {name: 'music_about', url: 'sfx/song3.mp3'},
+        {name: 'trade_won1', url: 'sfx/coin1.wav'},
+        {name: 'trade_won2', url: 'sfx/coin2.wav'},
+        {name: 'trade_won3', url: 'sfx/coin3.wav'},
+        {name: 'trade_won4', url: 'sfx/coin4.wav'},
+        {name: 'trade_won5', url: 'sfx/coin5.wav'},
+        {name: 'trade_lost1', url: 'sfx/lost1.wav'},
+        {name: 'trade_lost2', url: 'sfx/lost2.wav'},
+        {name: 'trade_lost3', url: 'sfx/lost3.wav'},
+        {name: 'trade_lost4', url: 'sfx/lost4.wav'},
+        {name: 'trade_lost5', url: 'sfx/lost5.wav'},
+        {name: 'shepard_up', url: 'sfx/ascending-tones-168471.mp3'},
+        {name: 'shepard_down', url: 'sfx/descending-tones-168472.mp3'},
+        {name: 'game_lost', url: 'sfx/8-bit-video-game-lose-sound-version-1-145828.mp3'},
+        {name: 'game_won', url:  'sfx/brass-fanfare-with-timpani-and-winchimes-reverberated-146260.mp3'}
+    ])
+        
     app.canvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-    });
+    });/*
     app.canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-    });
+     //   e.preventDefault();
+    });*/
 
 
     app.stage.eventMode = 'static'
@@ -88,39 +234,8 @@ async function initGame() {
   
    containerForeground.visible = containerBackground.visible = containerMenu.visible = false
 
-   await Promise.all(Object.keys(coins).map(async (key) => {
-    coins[key].texture = await PIXI.Assets.load({
-        src: coins[key].image,
-    });
-
-  
-}))
-
-
-let textureSpeedSlow = await PIXI.Assets.load({src: 'gfx/slow.png'})
-let textureSpeedNormal = await PIXI.Assets.load({src: 'gfx/normal.png'})
-let textureSpeedFast = await PIXI.Assets.load({src: 'gfx/fast.png'})
-let textureBtnMenu = await PIXI.Assets.load({src: 'gfx/menu.png'})
-let textureBtnStop = await PIXI.Assets.load({src: 'gfx/stop.png'})
-let textureBtnTrade = await PIXI.Assets.load({src: 'gfx/trade.png'})
-let texturePlayer = await PIXI.Assets.load({src: 'gfx/player.png'})
-let textureHodler = await PIXI.Assets.load({src: 'gfx/hodler.png'})
-let textureHodlerMirror = await PIXI.Assets.load({src: 'gfx/hodler_mirror.png'})
-let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
-
-
-    PIXI.Assets.addBundle('fonts', {
-        XoloniumBold: {
-            src: './gfx/XoloniumBold-xKZO.ttf',
-            data: { family: 'Xolonium Bold' },
-        },
-        Xolonium: {
-            src: './gfx/Xolonium-pn4D.ttf',
-            data: { family: 'Xolonium' },
-        },
-    });
-
-    await PIXI.Assets.loadBundle('fonts')
+    
+    app.setLoading(0.9, 'Initializing game')
 
     const textStyle = new PIXI.TextStyle({
         fontFamily: 'Xolonium',
@@ -133,12 +248,23 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     textStyleCentered.align = 'center'
 
     const textStyleBorder = textStyle.clone()
-    textStyleBorder.stroke = {color: '#4d4d4d', width: 2}
+    textStyleBorder.stroke = {color: '#000000', width: 3}
 
-
+    const textStyleCenteredBlack = textStyleCentered.clone()
+    textStyleCenteredBlack.fill = '#000'
+    textStyleCenteredBlack.stroke = {color: '#ffffff', width: 3}
+   
+    let graphBorder = new PIXI.Graphics()
+    let graphBorderMask = new PIXI.Graphics()
+    let graphBorderAreaRight = new PIXI.Graphics()
+    graphBorder.cheight = 0
+    graphBorder.cwidth = 0
     const bigtextContainer = new PIXI.Container()
-    const bigTextBackground = new PIXI.Graphics()
-    const bigtextLabel = new PIXI.Text({text: '', style: textStyleCentered})
+    bigtextContainer.active = false
+    bigtextContainer.visible = false
+
+    const bigTextBackground = new PIXI.Graphics().circle(0, 0, 1).fill({color: 0xffffff,alpha:0.0})
+    const bigtextLabel = new PIXI.Text({text: '', style: textStyleCenteredBlack})
     bigtextLabel.anchor.set(0.5,0.5)
     bigtextContainer.addChild(bigTextBackground)
     bigtextContainer.addChild(bigtextLabel)
@@ -146,13 +272,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerForeground.addChild(dateLabel);
     containerForeground.addChild(bigtextContainer);
 
-    
-
-
-    bigtextContainer.hodlerSprite = new PIXI.Sprite(textureHodler)
-    bigtextContainer.playerSprite = new PIXI.Sprite(texturePlayer)
-    bigtextContainer.playerSprite.scale = bigtextContainer.hodlerSprite.scale = 0.075
-    bigtextContainer.addChild(bigtextContainer.playerSprite, bigtextContainer.hodlerSprite)
+    let bigTextLayer = new PIXI.RenderLayer({sortableChildren: true})
 
 
     const stopContainer = new PIXI.Container()
@@ -171,15 +291,19 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     stopContainer.addChild(swapLabel);
     containerForeground.addChild(stopContainer);
 
-    const backgroundImage = new PIXI.Sprite({blendMode: 'normal'}); //screen
+    const backgroundImage = new PIXI.Sprite(); //screen
     backgroundImage.anchor.set(0.5); // Zentrieren um den Mittelpunkt
-
+    backgroundImage.scaleWanted = 0.8
+    backgroundImage.scale = 0.8
+    
+    backgroundImage.filters = getSunFilter(sunVertexShader, sunFragmentShader);
 
 
     containerBackground.addChild(backgroundImage);
     backgroundImage.rotation =  0.1;
     const background = createBackground(backgroundVertexShader, backgroundFragmentShader);
     containerBackground.addChildAt(background,0);
+   
 
     let btnMenuSprite = new PIXI.Sprite(textureBtnMenu);
     btnMenuSprite.anchor.set(0.5,0.5)
@@ -198,14 +322,12 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     containerForeground.addChild(btnSpeedContainer)
 
     let containerGraphsForeground = new PIXI.Container()
-    let graphBorder = new PIXI.Graphics()
-    let graphBorderMask = new PIXI.Graphics()
-    let graphBorderAreaRight = new PIXI.Graphics()
-    graphBorder.cheight = 0
-    graphBorder.cwidth = 0
-    containerGraphsForeground.addChild(graphBorder)
+
+
+
+
     containerGraphsForeground.addChild(graphBorderAreaRight)
-    let ownLabelContainer = new PIXI.Container()
+    let playerContainer = new PIXI.Container()
     let hodlerContainer = new PIXI.Container()
     let hodlerSprite = new PIXI.Sprite(textureHodler)
     hodlerSprite.scale = 0.05
@@ -214,40 +336,40 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     let ownSprite = new PIXI.Sprite(texturePlayer)
     ownSprite.scale = 0.05
     ownSprite.anchor.set(0.5,0.8)
-    let ownLabelLine =  new PIXI.Graphics()
-    ownLabelLine.visible = false
+    let playerLabelLine =  new PIXI.Graphics()
+    playerLabelLine.visible = false
     let priceLabelContainer = new PIXI.Container()
     let priceLabelLine = new PIXI.Graphics()
     //priceLabelLine.rotateTransform(45*Math.PI/180).rect(-40,-2,38,4).rotateTransform(-90*Math.PI/180).rect(-40,-2,38,4).rotateTransform(45*Math.PI/180)
     for(let i=0;i<100;i++) {
         priceLabelLine.rect(-100-20-i*25,-2,18,4)
-        ownLabelLine.rect(-20-i*25,-2,18,4)
+        playerLabelLine.rect(-20-i*25,-2,18,4)
     }
     priceLabelLine.fill({color: 0xffffff,alpha:1})
     priceLabelLine.visible = false
     priceLabelContainer.addChild(priceLabelLine)
-    ownLabelLine.fill({color: 0xffff00,alpha:1})
-    ownLabelContainer.addChild(ownLabelLine)
-    ownLabelContainer.addChild(ownSprite)
-    let ownLabel = new PIXI.Text({text: "+ 400%", style: textStyleBorder})
-    ownLabelContainer.addChild(ownLabel)
-    ownLabel.anchor.set(1,1)
-    ownLabel.x = -60
-    ownLabel.y = -50
+    playerLabelLine.fill({color: 0xffff00,alpha:1})
+    playerContainer.addChild(playerLabelLine)
+    playerContainer.addChild(ownSprite)
+    let playerLabel = new PIXI.Text({text: "+ 400%", style: textStyleBorder})
+    playerContainer.addChild(playerLabel)
+    playerLabel.anchor.set(1,1)
+    playerLabel.baseX = -40
+    playerLabel.baseY = -60
 
-    let priceLabel = new PIXI.Text({text: "100$", style: textStyle});
-    let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyle});
-    let minPriceLabel =new PIXI.Text({text: "200$", style: textStyle});
+    let priceLabel = new PIXI.Text({text: "100$", style: textStyleBorder});
+    let maxPriceLabel =new PIXI.Text({text: "150$", style: textStyleBorder});
+    let minPriceLabel =new PIXI.Text({text: "200$", style: textStyleBorder});
     priceLabel.anchor.set(1.1,0.5)
     maxPriceLabel.anchor.set(1.1,0)
     minPriceLabel.anchor.set(1.1,1)
     priceLabelContainer.addChild(priceLabel)
     containerGraphsForeground.addChild(hodlerContainer)
-    containerGraphsForeground.addChild(ownLabelContainer)
+    containerGraphsForeground.addChild(playerContainer)
     containerGraphsForeground.addChild(priceLabelContainer)
     containerGraphsForeground.addChild(maxPriceLabel)
     containerGraphsForeground.addChild(minPriceLabel)
-    ownLabel.scale = priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 0.6
+    playerLabel.scale = priceLabel.scale = maxPriceLabel.scale = minPriceLabel.scale = 0.6
  
    
 
@@ -268,8 +390,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             y: 0,
             xTarget:0,
             yTarget:0,
-            scaleX:0.01,
-            scaleY:0.01,
+            scaleX:0.04,
+            scaleY:0.04,
             anchorX: 0.5,
             anchorY: 0.5
         })
@@ -277,16 +399,30 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         particles.push(particle)
     }
 
-    app.stage.addChild(containerBackground)
-    app.stage.addChild(containerParticles)
-    app.stage.addChild(containerForeground)
-    app.stage.addChild(containerMenu)
+    app.containerGame.addChild(containerBackground)
+    app.containerGame.addChild(containerForeground)
+    app.containerGame.addChild(bigTextLayer)
+    app.containerGame.addChild(containerParticles)
+    app.containerGame.addChild(containerMenu)
 
-
+    backgroundImage.zIndex = 0
+    bigtextContainer.zIndex = 1
+    bigTextLayer.attach(bigtextContainer)
     const buyPaused = 1000
    
     const gameData = await fetchGameData(coins)
-    const menu = await createMenu(gameData, app, coins, textStyle, textStyleCentered, textureHodlerMirror, texturePlayer)
+
+
+    let texturesMenu = {}
+    texturesMenu.texturePlayer = texturePlayer
+    texturesMenu.textureHodler = textureHodler
+    texturesMenu.textureHodlerMirror = textureHodlerMirror
+    texturesMenu.audioOnTexture = audioOnTexture 
+    texturesMenu.audioOffTexture = audioOffTexture 
+    texturesMenu.musicOnTexture = musicOnTexture 
+    texturesMenu.musicOffTexture = musicOffTexture
+    texturesMenu.helpTexture = helpTexture 
+    const menu = await createMenu(gameData, app, coins, textStyle, textStyleCentered, texturesMenu)
     containerMenu.addChild(menu)
 
     function isMenuVisible() {
@@ -301,46 +437,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         }
     }
 
-    let localStorageCache = {}
-
-    function setMute(value, type = '') {
-        localStorageCache['mute'+type] = value
-        localStorage.setItem('mute'+type, value)
-        
-        if (type === 'music') {
-            if (value) {
-                SoundManager.muteMusic()
-            } else {
-                SoundManager.unmuteMusic()
-            }
-        } else {
-            if (value) {
-                SoundManager.muteSounds()
-            } else {
-    
-                SoundManager.unmuteSounds()
-            }
-        }
-       
-    }
-
-    function getMute(type = '') {
-        return localStorageCache['mute'+type] ?? getBooleanFromLocalStorage('mute'+type)
-    }
 
     setMute(getMute())
     setMute(getMute('music'),'music')
 
-    function setWin(level, value) {
-        if (localStorageCache['l'+level] !== value) {
-            localStorageCache['l'+level] = value
-            localStorage.setItem('l'+level, value)
-        }
-    }
-
-    function getWin(level) {
-        return localStorageCache['l'+level] ?? getFloatFromLocalStorage('l'+level)
-    }
+    
 
     let options
     var maxVisiblePoints
@@ -378,7 +479,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         paused = Number.MAX_VALUE
         gameDurationMilliseconds = options.duration
         factorMilliSeconds =  (options.indexEnd - options.indexStart) / gameDurationMilliseconds; // Intervall in Sekunden
-        factorSpeed = (getQueryParam('fast') ? 5.0 : 1.0) * loadSpeed()
+        factorSpeed = options.factorSpeed || (getQueryParam('fast') ? 5.0 : 1.0) * loadSpeed()
         currentIndexFloat = options.indexStart; // Zeitverfolgung
         currentIndexInteger = Math.floor(currentIndexFloat)
         focusedCoinName = null
@@ -395,12 +496,17 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         })
 
        
+        particles.forEach((p,i) => { 
+            p.x =  -100
+            p.y = -100
+            p.xTarget = -100; 
+            p.yTarget = -150;        
+        })
     
         graphs = options.coinNames.filter(name => name !== fiatName).map((c,i) => {
             let container = new PIXI.Container()
             let graph = createGraph(c, graphVertexShader, graphFragmentShader, coins, textStyle, ownVertexShader, ownFragmentShader, textureCloud)
             container.addChild(graph)
-        
             return {
                 coinName: c,
                 index: i,
@@ -419,6 +525,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         trades = []
 
+        if (!isMenuVisible()) {
+            bigtextContainer.active = true
+
+        } else {
+            bigtextContainer.active = false
+
+        }
+
     }
 
  
@@ -432,7 +546,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         let trade =  {
             index: currentIndexInteger, 
-
+            final: options?.final,
             percentage: null,
             tradeBefore: null,
             fiat: -1,
@@ -445,14 +559,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             toName: to, 
             
             toCoins: -1,
-            
+            timestamp: Date.now(),
             sprite: null,
             container: new PIXI.Container(),
         }
 
         
         trade.toCoins = (trade.fromCoins * trade.fromPrice) / trade.toPrice
-        
+
       
 
      
@@ -460,7 +574,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         trade.labelPrice.anchor.set(0.5,1.5)
       
         trade.container.addChild(trade.labelPrice)
-        if (from === to) {
+        if (from === to && trades.length > 0) {
             trade.labelPrice.scale.set(8*1.0)
         } else {
             trade.sprite = new PIXI.Sprite(coins[to].texture)
@@ -476,8 +590,8 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         yourCoins = trade.toCoins
         yourCoinName = trade.toName
        
-        let tradesDifferent = trades.filter(t => t.fromName !== t.toName && t.toName === trade.fromName)
-        if (tradesDifferent.length > 0 && trade.fromName === fiatName && trade.toName !== trade.fromName) {
+        let tradesDifferent = trades.filter((t,i) => ((i === 0 || t.fromName !== t.toName) && (t.toName === trade.fromName || (trade.final && i === trades.length-1))))
+        if (tradesDifferent.length > 0 && trade.fromName === fiatName && (trade.toName !== trade.fromName || trade.final)) {
             trade.tradeBefore = tradesDifferent[tradesDifferent.length-1]
             trade.labelPercentage = new PIXI.Text({text: "", style: textStyleBorder})
             trade.labelPercentage.anchor.set(0.5,1.2)  
@@ -499,13 +613,14 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             if (res < 0) {
                 trade.labelPercentage.text  = `- ${-res.toFixed(0)}%`
                 !options?.silent && SoundManager.playSFX('trade_lost' + sfxIndex)
+
             } else {
                 trade.labelPercentage.text  = `+ ${res.toFixed(0)}%`
                 !options?.silent && SoundManager.playSFX('trade_won' + sfxIndex)
 
                 particles.forEach((p,i) => { 
-                    p.x =  ownLabelContainer.x
-                    p.y = ownLabelContainer.y
+                    p.x =  playerContainer.x
+                    p.y = playerContainer.y
                     p.xTarget = Math.random()*app.screen.width;                 // X-Wert der Kurve
                     p.yTarget = -150;        
                 })
@@ -513,11 +628,12 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
 
         } else {
-            !options?.silent && trade.toName !== trade.fromName && SoundManager.playSFX(trade.toName)
+            !options?.silent && (trade.toName !== trade.fromName || trades.length === 0) && SoundManager.playSFX(trade.toName)
         }
         trades.push(trade)
         containerGraphs.addChild(trade.container)
         paused = buyPaused
+        bigtextContainer.active = false
     }
 
 
@@ -527,7 +643,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         } else {
             btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
             btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
-            
             stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
             swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
         }
@@ -549,6 +664,22 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             let stopIndex = stopIndizes.indexOf(currentIndexInteger)
     
             switch (key) {
+                case 'Gamepads3':
+                case 'Control':
+                    bigtextContainer.active = !bigtextContainer.active
+                    break;
+                case '+':
+                case 'Gamepads5':
+                case 'Gamepads7':
+                    factorSpeed = saveSpeed(changeSpeed(factorSpeed))
+                    btnSpeedContainer.active = false
+                    break;
+                case '-':
+                case 'Gamepads4':
+                case 'Gamepads6':
+                    factorSpeed = saveSpeed(changeSpeed(factorSpeed, true))
+                    btnSpeedContainer.active = false
+                    break;
                 case 'Gamepads9':
                 case 'Gamepads1':
                 case 'Escape':
@@ -558,10 +689,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 case ' ':
                 case 'w':
                 case 'Gamepads0':
-                    if (isFinalScreen) {                
-                        if (yourFiat > options.fiatBTCHodler) {
-                            startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                            showMenu(true)
+                    if (isFinalScreen && timestampAge(trades[trades.length-1].timestamp) > durationMinFinalScreen) {                
+                        if (yourFiat === options.fiatBTCHodler) {
+                            startNewGame(getNextLevel(options))
                         } else {
                             startNewGame(options)
                         }
@@ -574,7 +704,6 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                         doTrade(yourCoinName, yourCoinName === 'USD' ? 'BTC' : 'USD')
                     }
                     break;
-                case 'Tab':
                 case 'Enter':
                 case 'p':
                 case 'P': 
@@ -582,16 +711,15 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 case 'ArrowLeft':
                 case 's':
                 case 'Gamepads2':
-                    if (isFinalScreen) {                
-                        if (yourFiat > options.fiatBTCHodler) {
+                case 'ArrowDown':
+                    if (isFinalScreen) {   
+                        
+                        if (timestampAge(trades[trades.length-1].timestamp) > durationMinFinalScreen) {
                             startNewGame(gameData.levels.find(level => level.name === 'menu'))
                             showMenu(true)
-                        } else {
-                            startNewGame(options)
                         }
-                        break;
-                    }
-                case 'ArrowDown':
+                       
+                    } else {
                         if (stopIndex < 0) {
                             stopIndizes.push(currentIndexInteger)
                             stopIndizes.sort()
@@ -600,6 +728,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                         } else {
                             doTrade(yourCoinName, yourCoinName)
                         }
+                    }
                     break;
             }
         }
@@ -610,35 +739,51 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
      app.stage.addEventListener('pointerup', (event) => {
 
+        stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
+        swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
+        btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
+        btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
+ 
         if (isMenuVisible()) {
             menuPointerUpEvent(menu, event, startNewGame,getMute, setMute, showMenu)
         } else {
             
+       
+            if (event.y > app.screen.height*gscalet && event.y < app.screen.height*gscalebg) {
+                bigtextContainer.active = !bigtextContainer.active
+            } 
+            
             if (btnSpeedContainer.getBounds().containsPoint(event.x,event.y)){
                 factorSpeed = saveSpeed(changeSpeed(factorSpeed))
-            }
-            if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
+                btnSpeedContainer.active = false
+            } else if (btnMenuSprite.getBounds().containsPoint(event.x,event.y)){
                 startNewGame(gameData.levels.find(level => level.name === 'menu'))
                 showMenu(true)
+                btnMenuSprite.active = false
             } else if (isFinalScreen) {
-                if (yourFiat > options.fiatBTCHodler) {
-                    startNewGame(gameData.levels.find(level => level.name === 'menu'))
-                    showMenu(true)
-                } else {
-                    startNewGame(options)
+
+                if (timestampAge(trades[trades.length-1].timestamp) > durationMinFinalScreen) {
+                    if (stopImage.active) {
+                        startNewGame(gameData.levels.find(level => level.name === 'menu'))
+                        showMenu(true)
+                    } else if (swapImage.active) {
+                        if (yourFiat === options.fiatBTCHodler) {
+                            startNewGame(getNextLevel(options))
+                        } else {
+                            startNewGame(options)
+                        }
+                    }
                 }
+                
             }  else {
 
                 
-                btnSpeedContainer.active = btnSpeedContainer.visible && btnSpeedContainer.getBounds().containsPoint(event.x,event.y)
-                btnMenuSprite.active = btnMenuSprite.visible && btnMenuSprite.getBounds().containsPoint(event.x,event.y)
-                stopImage.active = stopImage.visible && (stopImage.getBounds().containsPoint(event.x,event.y) || stopLabel.getBounds().containsPoint(event.x,event.y))
-                swapImage.active = swapImage.visible && (swapImage.getBounds().containsPoint(event.x,event.y) || swapLabel.getBounds().containsPoint(event.x,event.y))
-                 let trade = trades.find(t => t.index === currentIndexInteger)
-                 let stopIndex = stopIndizes.indexOf(currentIndexInteger)
+                let trade = trades.find(t => t.index === currentIndexInteger)
+                let stopIndex = stopIndizes.indexOf(currentIndexInteger)
                 if ((swapImage.active || stopImage.active) && !isFinalScreen && !trade && canStopManually) {
                     
                     if (stopIndex < 0) {
+                        
                         stopIndizes.push(currentIndexInteger)
                         stopIndizes.sort()
                         stops.push(coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date)
@@ -651,6 +796,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     } else if (stopImage.active && stopIndex > -1)   {
                         doTrade(yourCoinName, yourCoinName)
                     }
+
                 }
             }
 
@@ -666,16 +812,42 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
     })
 
     
-    containerBackground.addChildAt(containerGraphs,2)
+    app.setLoading(1.0, 'Initializing game')
+    containerBackground.addChild(graphBorder)
+    containerBackground.addChildAt(containerGraphs,3)
     containerBackground.addChild(containerGraphsForeground)
 
     
     containerForeground.visible = containerBackground.visible = containerMenu.visible = true
     
     menu.visible = false
-    startNewGame(gameData.levels.find(level => level.name === 'menu'))
-    showMenu(menu.visible)
+    
+    if (getQueryParam('demo')) {
+        showMenu(true)
+        startNewGame(gameData.levels.find(level => level.name === 'menu'))
+        menu.state = MENU_STATE_HELP
+        menu.demo = true
+    } else if (getQueryParam('level')) {
+        let levelname = getQueryParam('level')
+        let level = gameData.levels.find(level => level.name === levelname)
+        if (!level) {
+            level= gameData.levels.find(level => level.name === '2015')
+        }
+        startNewGame(level)
+        showMenu(false)
+    } else {
+        startNewGame(gameData.levels.find(level => level.name === 'menu'))
+        showMenu(true)
+    }
+    
+
+
+   
+    app.finishLoading()
     app.ticker.add((deltaTime) => {
+
+
+        backgroundImage.filters[0].resources.timeUniforms.uniforms.uTime += 0.04 * deltaTime.deltaTime;
 
         handleGamepadInput()
         
@@ -683,10 +855,12 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             p.x = 0.9*p.x + 0.1*p.xTarget
             p.y = 0.9*p.y + 0.1*p.yTarget
         })
-        updateMenu(menu, app, deltaTime, getMute, getWin, particles)
 
+        let visibleWidth = isFinalScreen ? app.screen.width-10 : app.screen.width-100
 
         if (isMenuVisible()) {
+            updateMenu(menu, app, deltaTime, getMute, getWin, particles)
+
             containerForeground.visible = false
             paused = 0
             if (options.name !== 'menu') {
@@ -733,9 +907,9 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         let stopIndex = stopIndizes.indexOf(currentIndexInteger)
         let trade = trades.find(t => t.index === currentIndexInteger)
 
-        maxVisiblePoints = isFinalScreen ? options.indexEnd-options.indexStart : 100
+        maxVisiblePoints = isFinalScreen ? options.indexEnd-options.indexStart : Math.floor(30*(app.screen.width/320))
         currentDate = coins[Object.keys(coins).find(coinName => coinName !== fiatName)].data[currentIndexInteger].date;
-        const stepX = (app.renderer.width-100) / (maxVisiblePoints-3);
+        const stepX = (visibleWidth) / (maxVisiblePoints-3);
         isFinalScreen = currentDate >= options.dateEnd
         isStopScreen = isFinalScreen || (stopIndizes.indexOf(currentIndexInteger) >= 0 && !trade)
         let diffCurrentIndexIntToFloat=currentIndexFloat-currentIndexInteger
@@ -749,18 +923,31 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             isFinalScreen = false
         }
         
+        //bigtextContainer.active = isFinalScreen || (stopIndex > -1 && paused > buyPaused)
+
         if (stopIndex > -1) {
             
             if (!trade && isFinalScreen) {
-                doTrade(yourCoinName, yourCoinName, {silent: true})
+                
+                doTrade(yourCoinName, yourCoinName, {silent: true, final: true})
+                bigtextContainer.active = true
                 SoundManager.stopMusic()
-                if (yourFiat > options.fiatBTCHodler) {
+                if (yourFiat >= options.fiatBTCHodler) {
                     SoundManager.playSFX('game_won')
                 } else {
                     SoundManager.playSFX('game_lost')
                 }
 
-
+             
+                let tradeCount = trades.filter((trade,i) => ((i > 0 && i < trades.length && trade.fromName !== trade.toName))).length
+                let percentageCount = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
+                let menuWasCompleted = menu.isCompleted
+                setWin(options.name, percentageCount, tradeCount)
+                updateMenu(menu, app, deltaTime, getMute, getWin, particles)
+                if (!menuWasCompleted && menu.isCompleted) {
+                    menu.state = MENU_STATE_INTRO
+                    showMenu(true)
+                }
             }
             
             if (!trade) {
@@ -780,14 +967,15 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
 
         //maxVisiblePoints = Math.max(20, trades.length > 1 ? currentIndexInteger - trades[trades.length-2].index : currentIndexInteger)
 
+        //visibleWidth = app.screen.width
 
-        if (graphBorder.cheight !== app.screen.height*gscale || graphBorder.cwidth !== app.screen.width-100) {
+        if (graphBorder.cheight !== app.screen.height*gscale || graphBorder.cwidth !== visibleWidth) {
             graphBorder.cheight = app.screen.height*gscale
-            graphBorder.cwidth = app.screen.width-100
+            graphBorder.cwidth = visibleWidth
             graphBorder.clear()
             graphBorder.rect(0,app.screen.height*gscalebg,app.screen.width,app.screen.height*(1.0-gscalebg)).fill({color: 0x4d4d4d}).rect(0, app.screen.height*gscalet, graphBorder.cwidth, graphBorder.cheight)//.stroke({color: 0xffffff, width:2})
         
-            graphBorderAreaRight.position.set(app.screen.width-100,app.screen.height*gscalet)
+            graphBorderAreaRight.position.set(visibleWidth,app.screen.height*gscalet)
             graphBorderAreaRight.cheight = graphBorder.cheight
             graphBorderAreaRight.cwidth = 100
             graphBorderAreaRight.clear()
@@ -800,7 +988,7 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             
            
             graphBorderMask.clear()
-            graphBorderMask.rect(0, 0, graphBorder.cwidth, app.screen.height).fill({color: 0xff0000})
+            graphBorderMask.rect(0, 0, isFinalScreen ? app.screen.width : visibleWidth, app.screen.height).fill({color: 0xff0000})
         
             containerGraphs.cmask = graphBorderMask
         }
@@ -809,6 +997,10 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         if (!isMenuVisible()) {
             sunPos.y-=100
         }
+
+  let ownText = ''
+   let bigText = ''
+
         graphs.forEach(g => {
             let graphResult = updateGraph(g.graph, app, currentIndexInteger, maxVisiblePoints, stepX, isFinalScreen, isStopScreen, stopIndizes.indexOf(currentIndexInteger), coins, fiatName, trades, focusedCoinName, diffCurrentIndexIntToFloat, options, yourCoinName, isMenuVisible(), ownPriceData,sunPos , color)
             
@@ -819,11 +1011,11 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                 minPriceLabel.text = g.graph.minPriceLabel.text
                 maxPriceLabel.text = g.graph.maxPriceLabel.text
 
-                //ownLabelContainer.mask = graphBorderMask
-                //ownLabelContainer.x = graphBorderAreaRight.x
-
-                let ts = trades.filter(t => t.toName !== t.fromName)
-                let tp = ts.length < 1 ? yourFiat : ts[ts.length-1]?.fromPrice
+                //playerContainer.mask = graphBorderMask
+                //playerContainer.x = graphBorderAreaRight.x
+                let ts = trades.filter((trade,i) => ((i === 0 || trade.fromName !== trade.toName) && (trade.toName === fiatName || trade.fromName === fiatName)))
+                //trades.filter((t,i) => t.toName !== t.fromName)
+                let tp = ts.length < 1 ? yourFiat : (ts[ts.length-1].fromName !== fiatName ? ts[ts.length-1].fromPrice : ts[ts.length-1].fromCoins)
 
                 let p
                 if (yourCoinName !== fiatName) {
@@ -832,23 +1024,61 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, tp)
                 }
 
-                ownLabelContainer.x = p.x
-                ownLabelContainer.y = p.y
-
-                if (!isFinalScreen && yourCoinName === fiatName && stopIndex !== 0 && !isMenuVisible()) {
-                    ownLabel.visible = true
-                    ownLabel.scale = 0.8;
-                } else {
-                    ownLabel.visible = false
-                }
-
-
+                playerContainer.x = 0.9*playerContainer.x + 0.1*p.x
+                playerContainer.y =  0.9*playerContainer.y + 0.1*p.y
+          
                 let res = (100*(tp / graphResult.price))-100
-                if (res < 0) {
-                    ownLabel.text = `- ${-res.toFixed(0)}%`
+                let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
+                let resTotal = (100*percentageTotal)-100
+              
+               
+                if (yourCoinName === fiatName) {
+                    ownText +=  `You sold ${formatCurrency(null,options.coinNames[1])} at\n${formatCurrency(tp, fiatName, coins[fiatName].digits)}\n\n`
+
+                    ownText +=   `Buy back and\n`
+                    if (res < 0) {
+                        ownText += `make - ${-res.toFixed(0)}%`
+                    } else {
+                        ownText += `make + ${res.toFixed(0)}%`
+                    }
                 } else {
-                    ownLabel.text = `+ ${res.toFixed(0)}%`
+                    ownText +=  `You have\n${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}`
                 }
+
+                if (stopIndex > 0 && !isFinalScreen && paused > buyPaused) {
+
+                    if (bigtextContainer.visible && bigtextContainer.active) {  
+                        if (yourCoinName === fiatName) {
+                            ownText +=   `\n\nYou have\n${formatCurrency(yourCoins, yourCoinName, 2)}\n`
+                            ownText += `= ${formatCurrency(yourCoins/coins['BTC'].data[currentIndexInteger]?.price, 'BTC', 2)}`
+                        }
+                        ownText += `,\nwhich is\n`
+                        if (resTotal < 0) {
+                            ownText += `${-resTotal.toFixed(0)} % less\n`
+                            ownText += `than the HODLer, \n`
+                        } else {
+                            ownText += `${resTotal.toFixed(0)} % more\n`
+                            ownText += `than the HODLer,\n`
+                        }
+                        ownText +=   `who has ${formatCurrency(1,'BTC', 0)}\n`
+                        bigText = ownText
+                    }
+              
+              
+                } 
+
+                if (isFinalScreen || stopIndex === 0 || (stopIndex > 0 && bigtextContainer.visible && bigtextContainer.active)) {
+                    ownText = ''
+                }
+                   
+                
+                
+                playerLabel.text = ownText
+
+                playerLabel.scale = 0.8
+                hodlerSprite.scale = 0.04*Math.max(8,Math.min(12,stepX))*0.2
+                ownSprite.scale =  hodlerSprite.scale.x*Math.max(0.5, Math.min(2.0,1.0+ (percentageTotal-1.0)*0.5))
+                hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
 
                
                 if (yourCoinName !== fiatName && stopIndex < 0 && !isFinalScreen && !isMenuVisible()) {
@@ -890,136 +1120,127 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
                     }
                 }
 
-                if (ownLabelContainer.y < graphBorderAreaRight.y) {ownLabelContainer.y = graphBorderAreaRight.y + Math.random()*10}
-                if (ownLabelContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {ownLabelContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height - Math.random()*10}
-            
-                if (isFinalScreen) {
-                    let p = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
-                    hodlerContainer.x = p.x
-                    hodlerContainer.y = p.y
-
-                    hodlerContainer.visible = true
-                    ownLabelContainer.visible = true
-
-                    let p2 = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat, yourFiat)
-                    ownLabelContainer.x = p2.x
-                    ownLabelContainer.y = p2.y
-
+                if (playerContainer.y < graphBorderAreaRight.y) {playerContainer.y = graphBorderAreaRight.y}
+                if (playerContainer.y > graphBorderAreaRight.y+graphBorderAreaRight.height) {playerContainer.y = graphBorderAreaRight.y+graphBorderAreaRight.height}
+                
+                if (playerContainer.x + playerLabel.baseX - playerLabel.width < app.screen.width*0.1) {
+                    playerLabel.x = app.screen.width*0.1 +playerLabel.width-playerContainer.x
                 } else {
-                    hodlerContainer.visible = yourCoinName !== fiatName
-                    ownLabelContainer.visible = yourCoinName === fiatName
-                    hodlerContainer.x = ownLabelContainer.x
-                    hodlerContainer.y = ownLabelContainer.y
+                    playerLabel.x = playerLabel.baseX
                 }
 
-            
-          
-
+                if (playerContainer.y +playerLabel.baseY -playerLabel.height < app.screen.height*0.1) {
+                    playerLabel.y = app.screen.height*0.1 +playerLabel.height-playerContainer.y
+                } else {
+                    playerLabel.y = playerLabel.baseY
+                }
+                let pHodler = getGraphXYForIndexAndPrice(g.graph, currentIndexFloat)
+                hodlerContainer.x = pHodler.x
+                hodlerContainer.y = pHodler.y
+                
+                hodlerContainer.visible = isFinalScreen
+                playerContainer.visible = true
+                playerLabel.visible = !(bigtextContainer.visible && bigtextContainer.active)
                
             }
         })
 
 
         
-        let txt = ''
+     
 
-        txt += `Today   ${currentDate.toLocaleDateString()}\n`
-        txt += `Hodler  ${formatCurrency(options.btcBTCHodler, 'BTC', coins['BTC'].digits)}\n`
-        let percentageTotal = (yourCoinName === fiatName ? yourCoins : yourCoins*coins['BTC'].data[currentIndexInteger]?.price) / coins['BTC'].data[currentIndexInteger]?.price
-        let res = (100*percentageTotal)-100
-        if (res < 0) {
-            txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}   (- ${-res.toFixed(0)}%)\n\n`
-        } else {
-            txt += `You      ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}   (+ ${res.toFixed(0)}%)\n\n`
-        }
-
-        dateLabel.text = txt
+        dateLabel.text = `${currentDate.toLocaleDateString()}`
         dateLabel.visible = true
         dateLabel.position.set(app.screen.width*0.01, app.screen.height*0.005)
-        dateLabel.scale.set(8*SCALE_TEXT_BASE*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5)
+        dateLabel.scale.set(8*SCALE_TEXT_BASE*(Math.min(1080,Math.max(640,app.screen.width))/640.0))
 
-        txt = ''
         if (!isFinalScreen) { 
             if (stopIndex === 0) {
                 if (!canStopManually) {
-                    txt += `You will trade ${stopIndizes.length-1} ${stopIndizes.length-1 > 1 ? 'times' : 'time'} between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
-                    txt += `The trading ${stopIndizes.length-1 > 1 ? 'dates are' : 'date is'} fixed.\n\n`
-                    txt += `Read the graph,\n`
-                    txt += `Choose wisely and\n`
-                    txt += `Beat the HODler`
+                    bigText += `You will trade ${stopIndizes.length-1} ${stopIndizes.length-1 > 1 ? 'times' : 'time'} between\n${options.dateStart.toLocaleDateString()} and ${options.dateEnd.toLocaleDateString()}\n\n`
+                    bigText += `The trading ${stopIndizes.length-1 > 1 ? 'dates are' : 'date is'} fixed.\n\n`
+                    bigText += `Read the graph,\n`
+                    bigText += `Choose wisely and\n`
+                    bigText += `Beat the HODler`
                 } else {
-                    txt += `Level ${options.name}\n\n\n`
-                    txt += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
-                    txt += `Your goal is to beat\n`
-                    txt += `a HODLer by trading.\n`
-                    txt += `Every percent counts!\n\n`
-                    txt += `You have ${formatCurrency(yourCoins, yourCoinName, coins[yourCoinName].digits)}\n\n`
-                    //txt += `You have 1${formatCurrency(null,options.coinNames[1])}\n\n`
-                    txt += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n`
-                    txt += `\n    = $ OWNED\n`
-                    txt += `\n    = ${formatCurrency(null,options.coinNames[1])} OWNED`
+                    bigText += `Level ${options.name}\n\n`
+                    bigText += `You will trade between\n${options.dateStart.toLocaleDateString()} and\n${options.dateEnd.toLocaleDateString()}\n\n`
+                    bigText += `Your goal is to beat\n`
+                    bigText += `the HODLer by trading.\n`
+                    bigText += `The HODLer never sells.\n\n`
+                    bigText += `You have 1${formatCurrency(null,options.coinNames[1])}\n`
+                    bigText += `The HODLER has 1${formatCurrency(null,options.coinNames[1])}\n`
+                    bigText += `1${formatCurrency(null,options.coinNames[1])}= ${formatCurrency(coins[options.coinNames[1]].data[currentIndexInteger]?.price, fiatName, coins[options.coinNames[0]].digits)}\n\n`
+                    bigText += `What do you want?`
                 }
-               
+                
             } 
         } else {
             
-
+            let fiatTrades = trades.filter(trade => trade.toName === fiatName)
             let fiat = yourFiat 
             let res = (100*(fiat / options.fiatBTCHodler - 1))
-            txt += " --- Game Over ---\n\n" 
-            txt += `Level ${options.name}\n`
-            if (fiat > options.fiatBTCHodler) {
-                txt += "You won, nice!\n\n" 
+            bigText += `Level ${options.name}\n`
+            
+            
+            if (fiatTrades.length === 0) {
+                bigText += "You won, nice!\n\n" 
+            } else if (fiat >= options.fiatBTCHodler) {
+                bigText += "Good, but not perfect!\n\n" 
             } else {
-                txt += "Oh no, you lost\n\n" 
+                bigText += "Oh no, you lost\n\n" 
             }
-            if (getWin(options.name) === 0 || res > getWin(options.name)) {
-                setWin(options.name, res)
-            }
+
+
 
             const word = hodlerActivities[Math.floor((deltaTime.lastTime * 0.0005) % hodlerActivities.length)];
-             
-            if (fiat > options.fiatBTCHodler) {
-                txt += `You have ${res.toFixed(0)}% more\n`
-                txt += `than the HODLer.\n\n`
-            } else {
-                txt += `You have ${-res.toFixed(0)}% less\n`
-                txt += `than the HODLer.\n\n`
-            }
+           
+            bigText += `HODLer  ${formatCurrency(options.fiatBTCHodler/ coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n`
+            bigText += `You     ${formatCurrency(yourFiat / coins['BTC'].data[currentIndexInteger]?.price, 'BTC', coins['BTC'].digits)}\n\n`
+               
 
-            txt += `By the way:\n`;
-            txt += `The HODLer\n${word},\n`;
-            txt += "while you traded.\n\n" 
-            txt += "Was it worth\nthe risk and time?"
+
+            if (fiatTrades.length === 0) { 
+                bigText += `You did not trade\n`;
+                bigText += `You are the HODLer\n\n`;
+                bigText += "Congratulations!" 
+            } else if (fiat >= options.fiatBTCHodler) {
+                bigText += `You have ${res.toFixed(0)} % more\n`
+                bigText += `than the HODLer, but\n\n`
+                bigText += `The HODLer\n${word},\n`;
+                bigText += "while you traded.\n\n" 
+                bigText += "Try again?\n" 
+            } else {
+                bigText += `You have ${-res.toFixed(0)} % less\n`
+                bigText += `than the HODLer, and \n\n`
+                bigText += `The HODLer\n${word},\n`;
+                bigText += "while you traded.\n\n" 
+                bigText += "Try again?\n" 
+            }
+            
+            //bigText += "Was it worth\nthe risk and time?"
           
         }
         
 
-        bigtextContainer.visible = isFinalScreen || stopIndex === 0
-        priceLabelContainer.visible = !isFinalScreen
+        bigtextContainer.visible = (!isMenuVisible() && (stopIndex > -1) )
+        bigtextContainer.alpha = bigtextContainer.active
+        maxPriceLabel.visible = minPriceLabel.visible = priceLabelContainer.visible = !isFinalScreen
         
-        if (bigtextContainer.visible) {
-            bigtextLabel.text = txt
-            bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*0.4)
-            bigtextContainer.scale.set(8*0.75*SCALE_TEXT_BASE)
-            bigTextBackground.clear()
-            bigTextBackground.rect(-bigtextLabel.width/2, -bigtextLabel.height/2, bigtextLabel.width, bigtextLabel.height).fill(0x4d4d4d).stroke({color: 0xffffff, width: 2})
-            bigTextBackground.scale = 1.1
-
-            if (stopIndex === 0) {
-                bigtextContainer.playerSprite.x = -0.6*bigtextContainer.width
-                bigtextContainer.hodlerSprite.x = -0.6*bigtextContainer.width
-                bigtextContainer.playerSprite.y = 0.52*bigtextContainer.height
-                bigtextContainer.hodlerSprite.y = 0.7*bigtextContainer.height
-                
-            } else {
-                bigtextContainer.hodlerSprite.x = bigtextContainer.playerSprite.x = app.screen.width*2
-            }
+       if (bigtextContainer.visible && bigtextContainer.active) {
+        if (!bigtextContainer.attached) {
+            bigTextLayer.attach(backgroundImage)
+            bigtextContainer.attached = true
         }
+       } else {
+        if (bigtextContainer.attached) {
+            bigTextLayer.detach(backgroundImage)
+            bigtextContainer.attached = false
+        }
+   
+       }
        
-
-
-        swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
+        bigtextLabel.scale = swapLabel.scale = stopLabel.scale = 8*0.75*SCALE_TEXT_BASE
 
        
         background.shader.resources.backgroundUniforms.uniforms.uR = color[0];
@@ -1038,17 +1259,39 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
         stopImage.height = stopImage.width = (stopImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
         swapImage.height = swapImage.width = (swapImage.active ? 1.1 : 1.0) * 0.5 * gscaleb*app.renderer.height
  
-        swapLabel.text = (stopIndex > -1 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
-        stopLabel.text = (stopIndex > -1 ? yourCoinName : 'Pause')
-        stopImage.texture = (stopIndex > -1 ? coins[yourCoinName].texture : textureBtnStop) 
-        swapImage.texture = coins[yourCoinName === 'USD' ? 'BTC' : 'USD'].texture
+
+      
+        if (isFinalScreen) {
+            stopImage.texture = textureBtnMenu
+           
+            if (yourFiat === options.fiatBTCHodler) {
+                swapLabel.text = options.next ? options.next.name : 'NEXT'
+                swapImage.texture = textureBtnPlay
+            } else {
+                swapLabel.text = 'TRY AGAIN'
+                swapImage.texture = textureBtnTrade
+            }
+            stopLabel.text = 'MENU'
+            
+           
+            stopLabel.alpha = stopImage.alpha = swapLabel.alpha = swapImage.alpha = timestampAge(trades[trades.length-1].timestamp) / durationMinFinalScreen - 1.0
+
+        } else{
+            swapLabel.text = (stopIndex === 0 ? (yourCoinName === 'USD' ? 'BTC' : 'USD') : (yourCoinName === 'USD' ? 'Buy' : 'Sell')) 
+            stopLabel.text = (stopIndex === 0 ? yourCoinName : (stopIndex > 0 ? 'Resume' : 'Pause'))    
+            stopImage.texture = (stopIndex === 0 ? coins[yourCoinName].texture : (stopIndex > 0 ? textureBtnPlay : textureBtnStop)) 
+            swapImage.texture = coins[yourCoinName === 'USD' ? 'BTC' : 'USD'].texture
+        }
+
         stopImage.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height)
         stopLabel.position.set(app.renderer.width*0.25, 0.6 * gscaleb*app.renderer.height-stopImage.height*0.75)
         
         swapImage.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height)
         swapLabel.position.set(app.renderer.width*0.75, 0.6 * gscaleb*app.renderer.height-swapImage.height*0.75)
         
-        stopContainer.visible =  !isFinalScreen&& !trade
+       
+
+        stopContainer.visible =  isFinalScreen || !trade
 
         btnMenuSprite.scale = (btnMenuSprite.active ? 1.1 : 1.0) *0.3*(Math.min(1080,Math.max(640,app.screen.width))/640.0)*0.5
         btnMenuSprite.position.set(app.screen.width - btnMenuSprite.width*0.6, btnMenuSprite.height*0.7)
@@ -1063,65 +1306,117 @@ let textureCloud = await PIXI.Assets.load({src: 'gfx/cloud.png'})
             btnSpeedSprite.texture = textureSpeedNormal
         }
         
+        if (isMenuVisible()) {
+            backgroundImage.texture = coins['BTC'].texture 
+        } else {
+            backgroundImage.texture = bigtextContainer.active ? textureWhiteCoin : coins[yourCoinName].texture
+        }
 
-        backgroundImage.texture = isMenuVisible() ? coins['BTC'].texture : coins[yourCoinName].texture
-
-        backgroundImage.scale.set(0.2*(Math.min(app.screen.width,1080)/1080))
-        backgroundImage.alpha = 1;
-        backgroundImage.x = app.renderer.width-50-backgroundImage.width*1 + Math.sin(deltaTime.lastTime*0.0001)*0.1*(app.renderer.width-100);
-        backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-
-        if (isMenuVisible()){
-           // containerGraphs.position.set(-diffCurrentIndexIntToFloat*stepX,gscaleb*app.screen.height)
-           backgroundImage.y += (1.0-gscalebg)*app.screen.height
-           containerGraphs.position.set(100-diffCurrentIndexIntToFloat*stepX,(1.0-gscalebg)*app.screen.height)
+     
+       
+        if (isMenuVisible()) {
+            backgroundImage.x = visibleWidth -backgroundImage.width*0.5+ Math.sin(deltaTime.lastTime*0.0001)*0.1*(visibleWidth);
+            backgroundImage.y = app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height*2
+            backgroundImage.scale = 0.8*(Math.min(app.screen.width,1080)/1080)
+        
             graphBorder.visible = false
             containerGraphsForeground.visible = false
             containerGraphs.mask = null
-           // backgroundImage.y = app.renderer.height*0.6 + Math.cos(deltaTime.lastTime*0.0001)*app.renderer.height / 16;
-       
+
         } else {
+            backgroundImage.x = 0.1*backgroundImage.x + 0.9*(visibleWidth -backgroundImage.width*0.5+ (-1.0+Math.sin(deltaTime.lastTime*0.0001))*0.1*(visibleWidth));
+            backgroundImage.y = 0.1*backgroundImage.y + 0.9*(app.renderer.height*0.1 + Math.sin(2*deltaTime.lastTime*0.0001)*app.renderer.height / 16 + (1.0-gscalebg)*app.screen.height)
+            backgroundImage.scaleWanted = 0.8*(Math.min(app.screen.width,1080)/1080)
 
-            /*
-            containerGraphs.mask = containerGraphs.cmask
-            containerGraphsForeground.visible = true
-            containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
+            if (bigtextContainer.visible && bigtextContainer.active) {
+                //backgroundImage.y = app.screen.height*0.3
+                bigtextLabel.text = bigText
+                let w = bigtextLabel.width*1.1
+                let h = bigtextLabel.height*1.1
+                //bigtextContainer.position.set(app.screen.width*0.5, app.screen.height*(gscalet + gscale*0.5))
+                bigTextBackground.scale.set(w,h)
+                if (backgroundImage.width < w) {
+                    backgroundImage.scale = 0.9
+                }
+                if (backgroundImage.x + backgroundImage.width*0.5 > visibleWidth) {
+                    backgroundImage.x = visibleWidth-backgroundImage.width*0.5
+                }
+
+                if (backgroundImage.x - backgroundImage.width*0.5 < 0) {
+                    backgroundImage.x = app.screen.width*0.5
+                }
+
+               // bigtextContainer.position.set(Math.floor(backgroundImage.position.x) ,Math.floor(backgroundImage.position.y))
+               bigtextContainer.position.set(backgroundImage.position.x ,backgroundImage.position.y)
+               containerGraphsForeground.visible = true
+            } else {
+                backgroundImage.scale = backgroundImage.scale.x*0.9 + backgroundImage.scaleWanted*0.1
+                containerGraphsForeground.visible = true
+            }
+
             graphBorder.visible = true
-         */
-           
-            backgroundImage.y += (1.0-gscalebg)*app.screen.height
-            containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
-            graphBorder.visible = true
-            containerGraphsForeground.visible = true
+            graphBorderAreaRight.visible = false
             containerGraphs.mask = containerGraphs.cmask
 
+        }
+        
+
+        if (isMenuVisible()){
+           containerGraphs.position.set(100-diffCurrentIndexIntToFloat*stepX,(1.0-gscalebg)*app.screen.height)
+        } else {
+           containerGraphs.position.set(-stepX*containerGraphs.scale.x-diffCurrentIndexIntToFloat*stepX,0.0)
         }       
 
 
         
-        hodlerSprite.scale = ownSprite.scale = 0.05*Math.max(8,Math.min(12,stepX))*0.2
-        hodlerSprite.x = ownSprite.x = - ownSprite.width*0.3
+
 
         if (isFinalScreen) {
 
-            const A = app.screen.width*0.2; // Horizontale Ausdehnung
-            const B = Math.min(A*0.5,0.4*(app.screen.height*(1.0-gscalebg))); // Vertikale Ausdehnung
-            const centerX = app.screen.width*0.5
-            const centerY = app.screen.height*gscalebg + 0.5*(app.screen.height*(1.0-gscalebg))
+            const A = backgroundImage.width*0.25; // Horizontale Ausdehnung
+            const B = Math.min(A*0.7,0.4*(app.screen.height*(1.0-gscalebg))); // Vertikale Ausdehnung
+            const centerX = backgroundImage.x
+            const centerY = backgroundImage.y + backgroundImage.height*0.6
 
-            particles.forEach((p,i) => {
+            const circleRadius = backgroundImage.height*0.5; // Setze den gewünschten Radius
+            const circleCenterX = backgroundImage.x; // X-Koordinate des Kreiszentrums
+            const circleCenterY = backgroundImage.y; // Y-Koordinate des Kreiszentrums
+            let durationLemniscate = 0
+            let durationCircle = 0
+            if (yourFiat > options.fiatBTCHodler) {
+                durationLemniscate = 0
+                durationCircle = 32
+            } else if (yourFiat === options.fiatBTCHodler) {
+                durationLemniscate = 9
+                durationCircle = 12 
+            } 
 
-                const followOffset = i * 360; // Abstand zwischen den Partikeln
-                const t = deltaTime.lastTime + followOffset; // Zeitversatz für den Wurm-Effekt
-        
-                // Position der Partikel entlang der Lemniskate
-                p.x = centerX + A * Math.sin(t*0.001);                 // X-Wert der Kurve
-                p.y = centerY + B * Math.sin(2 * t*0.001) / 2;        
-  
-                
-            })
-        }
-
+            if (durationLemniscate + durationCircle > 0) {
+                particles.forEach((p, i) => {
+                    const followOffset = i * 300; // Abstand zwischen den Partikeln
+                    const t = (deltaTime.lastTime + followOffset) * 0.001; // Zeitversatz für den Wurm-Effekt
+    
+                    if (t % (durationLemniscate+durationCircle) > durationCircle) {
+                        p.phase = "lemniscate";
+                    } else {
+                        p.phase = "circle"
+                    }
+                    if (p.phase === "circle") {
+                        // Bewegung entlang des Kreises
+                        p.xTarget = circleCenterX + circleRadius * Math.cos(t);
+                        p.yTarget = circleCenterY + circleRadius * Math.sin(t);
+                        
+                        // Nach einer bestimmten Zeit auf die Lemniskate umschalten
+                     
+                    } else if (p.phase === "lemniscate") {
+                        // Bewegung entlang der Lemniskate
+                        p.xTarget = centerX + A * Math.sin(t);
+                        p.yTarget = centerY + B * Math.sin(2 * t) / 2;
+                    }
+                });
+            }
+            
+        } 
     });
 }
 
