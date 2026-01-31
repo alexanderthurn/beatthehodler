@@ -32,6 +32,14 @@ https://www.coingecko.com/en/coins/solana/historical_data?start=2009-1-1
 https://www.coingecko.com/en/coins/dogecoin/historical_data?start=2009-1-1
 https://www.coingecko.com/en/coins/cardano/historical_data?start=2009-1-1
 
+Note: To update the data in the game, download the newest data from the links above. For bitcoin, do not save it in data/btc-usd-max.csv, but in misc/btc-usd-max-coingecko.csv. The data/ file is a merge of coingecko and of a github repository that cointains data before 28.04.2013. This data does not contain everyting, so the final data csv was modified by hand. So compare the two csv (data vs coingecko new) and add only new data from the coingecko download.
+
+Old Data (before 28.04.2013)
+
+https://github.com/Habrador/Bitcoin-price-visualization/blob/main/Bitcoin-price-USD.csv
+
+
+
 ## Crypto Logos
 
 https://cryptologos.cc/bitcoin
