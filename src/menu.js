@@ -546,7 +546,7 @@ function updateMenu(menu, app, deltaTime, getMute, getWin, particles) {
                 }
 
 
-                if (entry.level.difficulty <= 2) {
+                if (entry.level.difficulty <= 1) {
                     entry.indexDifficultyLabel.text = 'NORMAL'
                     entry.indexDifficultyBackground.tint = 0x00ff00
                 } else if (entry.level.difficulty < 5) {
